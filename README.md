@@ -1,10 +1,14 @@
 # dsh × Trading 212
 
+[中文](README.md) | [English](README.en.md)
+
+[![npm version](https://img.shields.io/npm/v/dsh-trading212.svg)](https://www.npmjs.com/package/dsh-trading212)
+
 在 **dsh** 里直接查看自己的 Trading 212 投资组合，并用自然语言提问。只读、低门槛：配置一次 API 密钥后，就能看持仓、历史成交、风险概览和个股买卖点。
 
 > 仅供个人信息整理与研究参考，不构成投资建议。本插件不会下单、修改或取消订单。
 
-![真实 dsh Trading 212 dashboard 连接设置界面；未展示账户金额、持仓、姓名或密钥](docs/images/dashboard-settings.png)
+![真实 dsh Trading 212 dashboard 连接设置界面；未展示账户金额、持仓、姓名或密钥](https://raw.githubusercontent.com/Kevoyuan/dsh-trading212/main/docs/images/dashboard-settings.png)
 
 *真实产品界面截图；画面不包含账户金额、持仓、姓名或 API 密钥。*
 
@@ -23,19 +27,21 @@
 
 1. 已安装并可打开 dsh。
 2. 一个 Trading 212 API Key 和 API Secret。建议先创建 **Demo** 环境密钥。
-3. 从本仓库的 **Releases** 下载 `dsh-trading212-<version>.tgz`。
-
 ### 安装插件
 
-在下载文件所在目录执行：
+直接执行：
 
 ```bash
-dsh plugin --profile web add --save-exact ./dsh-trading212-<version>.tgz
+dsh plugin --profile web add --save-exact dsh-trading212@latest
 ```
 
 然后完全退出并重新打开 dsh。侧边栏左下会出现 `dsh / T212` 切换器，点击 `T212` 即可打开 dashboard。
 
-> npm 版本尚未发布。发布后会在本节补充一行安装命令；目前不需要 npm 才能使用插件。
+也可以从 [GitHub Releases](https://github.com/Kevoyuan/dsh-trading212/releases) 下载 `.tgz`，然后安装本地文件：
+
+```bash
+dsh plugin --profile web add --save-exact ./dsh-trading212-<version>.tgz
+```
 
 ### 连接账户
 
