@@ -106,7 +106,7 @@ function SetupPage({ onConnected }: { onConnected: (status: ConnectionStatus, sn
   return <main className="setup-page"><ConnectionForm onConnected={onConnected} /><aside className="setup-guide"><h2>{tx('创建密钥时请选择', 'Select these key permissions')}</h2><ol><li>{tx('账户摘要读取权限', 'Read account summary')}</li><li>{tx('投资组合读取权限', 'Read portfolio')}</li><li>{tx('订单读取权限', 'Read orders')}</li><li>{tx('历史数据读取权限', 'Read history')}</li></ol><p>{tx('不要授予下单、修改或取消订单权限。如果启用了 IP 限制，请允许当前运行 dsh 的设备。', 'Do not grant permissions to place, modify, or cancel orders. If IP restrictions are enabled, allow the device running dsh.')}</p></aside></main>
 }
 
-const palette = ['#2764d8', '#4f7fe0', '#789be7', '#9fb7ed', '#c5d2ef', '#dce3ec']
+const palette = ['#10b981', '#2563eb', '#8b5cf6', '#ec4899', '#f59e0b', '#06b6d4', '#64748b']
 
 function Allocation({ portfolio }: { portfolio: PortfolioSnapshot }) {
   const currency = portfolio.account.currency
@@ -305,11 +305,13 @@ function PriceHistoryChart({ series, orders, name }: { series: MarketSeries; ord
     const option: EChartsCoreOption = {
       animation: typeof window.matchMedia !== 'function' || !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
       aria: { enabled: true, decal: { show: false }, description: tx(`${name} ${rangeLabel(series.range)}每日收盘价，叠加 Trading 212 买入与卖出成交点。`, `${name} daily close over ${rangeLabel(series.range)}, with Trading 212 buy and sell markers.`) },
-      color: ['#2764d8', '#2764d8', '#b46c19'],
-      grid: { left: 72, right: 24, top: 42, bottom: 72, containLabel: false },
-      legend: { top: 0, left: 0, itemWidth: 18, itemHeight: 9, textStyle: { color: '#687481', fontSize: 10 }, data: [closeName, buyName, sellName] },
+      color: ['#2563eb', '#2563eb', '#d97706'],
+      grid: { left: 72, right: 24, top: 44, bottom: 76, containLabel: false },
+      legend: { top: 0, left: 0, itemWidth: 16, itemHeight: 8, textStyle: { color: '#64746d', fontSize: 11, fontWeight: 500 }, data: [closeName, buyName, sellName] },
       tooltip: {
-        trigger: 'axis', renderMode: 'richText', confine: true, axisPointer: { type: 'cross', snap: false },
+        trigger: 'axis', renderMode: 'richText', confine: true, axisPointer: { type: 'cross', snap: false, lineStyle: { color: '#94a39b', type: 'dashed' } },
+        backgroundColor: 'rgba(9, 16, 13, 0.94)', borderColor: 'rgba(255, 255, 255, 0.12)', borderWidth: 1, padding: [10, 14],
+        textStyle: { color: '#ffffff', fontSize: 11 },
         formatter: (params: unknown) => {
           const rows = Array.isArray(params) ? params as Array<Record<string, unknown>> : []
           const firstRow = rows[0]
@@ -326,13 +328,36 @@ function PriceHistoryChart({ series, orders, name }: { series: MarketSeries; ord
           return lines.join('\n')
         },
       },
-      xAxis: { type: 'time', min: start, max: end, boundaryGap: false, axisLine: { show: true, lineStyle: { color: '#9ca8b4' } }, axisTick: { show: false }, axisLabel: { color: '#687481', fontSize: 10, hideOverlap: true }, splitLine: { show: false } },
-      yAxis: { type: 'value', scale: true, axisLine: { show: true, lineStyle: { color: '#9ca8b4' } }, axisTick: { show: false }, axisLabel: { color: '#687481', fontSize: 10, formatter: (value: number) => formatPrice(value) }, splitLine: { show: true, lineStyle: { color: '#e8edf2' } } },
-      dataZoom: [{ type: 'inside', filterMode: 'none', minSpan: 8 }, { type: 'slider', height: 20, bottom: 18, borderColor: '#dce2e8', fillerColor: 'rgba(39,100,216,.12)', handleStyle: { color: '#2764d8' }, textStyle: { color: '#687481', fontSize: 9 }, brushSelect: false }],
+      xAxis: { type: 'time', min: start, max: end, boundaryGap: false, axisLine: { show: true, lineStyle: { color: '#cbd5cf' } }, axisTick: { show: false }, axisLabel: { color: '#64746d', fontSize: 10.5, hideOverlap: true }, splitLine: { show: false } },
+      yAxis: { type: 'value', scale: true, axisLine: { show: true, lineStyle: { color: '#cbd5cf' } }, axisTick: { show: false }, axisLabel: { color: '#64746d', fontSize: 10.5, formatter: (value: number) => formatPrice(value) }, splitLine: { show: true, lineStyle: { color: '#edf2ee' } } },
+      dataZoom: [{ type: 'inside', filterMode: 'none', minSpan: 8 }, { type: 'slider', height: 22, bottom: 16, borderColor: '#e2e8e4', fillerColor: 'rgba(37, 99, 235, 0.08)', handleStyle: { color: '#2563eb', borderColor: '#ffffff', borderWidth: 1 }, textStyle: { color: '#64746d', fontSize: 9.5 }, brushSelect: false }],
       series: [
-        { name: closeName, type: 'line', data: candles.map(item => [Date.parse(item.time), item.close]), showSymbol: false, sampling: 'lttb', smooth: false, lineStyle: { color: '#2764d8', width: 2.4 }, emphasis: { focus: 'series' }, z: 2 },
-        { name: buyName, type: 'scatter', data: buyData, symbol: 'circle', symbolSize: 12, itemStyle: { color: '#2764d8', borderColor: '#fff', borderWidth: 2 }, z: 5 },
-        { name: sellName, type: 'scatter', data: sellData, symbol: 'diamond', symbolSize: 14, itemStyle: { color: '#b46c19', borderColor: '#fff', borderWidth: 2 }, z: 5 },
+        {
+          name: closeName,
+          type: 'line',
+          data: candles.map(item => [Date.parse(item.time), item.close]),
+          showSymbol: false,
+          sampling: 'lttb',
+          smooth: 0.15,
+          lineStyle: { color: '#2563eb', width: 2.5 },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(37, 99, 235, 0.14)' },
+                { offset: 1, color: 'rgba(37, 99, 235, 0.00)' },
+              ],
+            },
+          },
+          emphasis: { focus: 'series' },
+          z: 2,
+        },
+        { name: buyName, type: 'scatter', data: buyData, symbol: 'circle', symbolSize: 12, itemStyle: { color: '#2563eb', borderColor: '#fff', borderWidth: 2, shadowBlur: 4, shadowColor: 'rgba(37,99,235,0.35)' }, z: 5 },
+        { name: sellName, type: 'scatter', data: sellData, symbol: 'diamond', symbolSize: 14, itemStyle: { color: '#d97706', borderColor: '#fff', borderWidth: 2, shadowBlur: 4, shadowColor: 'rgba(217,119,6,0.35)' }, z: 5 },
       ],
     }
     chart.setOption(option)

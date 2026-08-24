@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "path": "/Volumes/SSD/dotdirs/agents/skills"
+    },
+    {
+      "path": "~/.agents/skills"
+    },
+    {
+      "path": "~/.gemini/antigravity/builtin/skills"
+    },
+    {
+      "path": "~/.gemini/antigravity/skills"
+    }
+  ]
+}
