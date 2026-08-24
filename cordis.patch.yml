@@ -1,0 +1,10 @@
+- insert:
+    - id: trading212
+      name: dsh-trading212
+      inject:
+        - tools
+        - credentials
+        - webServer
+      config:
+        requestTimeoutMs: 15000
+        cacheTtlMs: 5000
