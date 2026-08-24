@@ -19,11 +19,12 @@ describe('official dsh client module loader entry', () => {
       throw new Error(`unexpected client dependency: ${id}`)
     }) as { apply: (ctx: unknown) => void; inject?: unknown }
     expect(typeof client.apply).toBe('function')
-    expect(client.inject).toEqual(['slots'])
+    expect(client.inject).toEqual(['slots', 'locale'])
 
     const registered: string[] = []
     client.apply({
       effect: (callback: () => unknown) => callback(),
+      locale: { getLocale: () => ({ active: 'en' }), subscribe: () => vi.fn() },
       slots: {
         inject: (_name: string, callback: () => unknown) => callback(),
         register: (entry: { name: string }) => { registered.push(entry.name) },

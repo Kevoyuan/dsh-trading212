@@ -29,9 +29,10 @@ vi.mock('./api.ts', async importOriginal => {
 })
 
 import { App } from './App.tsx'
+import { languageStore } from './i18n.ts'
 
 describe('Trading 212 UI interactions', () => {
-  beforeEach(() => { vi.clearAllMocks(); mocks.status.mockResolvedValue({ connected: false, environment: 'demo', writable: true, source: 'none' }); mocks.portfolio.mockResolvedValue(snapshot); mocks.market.mockResolvedValue({ source: 'Yahoo Finance', symbol: 'AAPL', exchange: 'NMS', currency: 'USD', range: '1y', interval: '1d', fetchedAt: '2026-08-24T10:00:00Z', regularMarketPrice: 225, candles: Array.from({ length: 24 }, (_, index) => ({ time: new Date(Date.UTC(2026, 7, index + 1)).toISOString(), close: 200 + index })) }); mocks.history.mockImplementation(async (kind: string) => kind === 'orders' ? { kind, items: [
+  beforeEach(() => { vi.clearAllMocks(); languageStore.setPreference('auto'); mocks.status.mockResolvedValue({ connected: false, environment: 'demo', writable: true, source: 'none' }); mocks.portfolio.mockResolvedValue(snapshot); mocks.market.mockResolvedValue({ source: 'Yahoo Finance', symbol: 'AAPL', exchange: 'NMS', currency: 'USD', range: '1y', interval: '1d', fetchedAt: '2026-08-24T10:00:00Z', regularMarketPrice: 225, candles: Array.from({ length: 24 }, (_, index) => ({ time: new Date(Date.UTC(2026, 7, index + 1)).toISOString(), close: 200 + index })) }); mocks.history.mockImplementation(async (kind: string) => kind === 'orders' ? { kind, items: [
     { order: { id: 1, ticker: 'AAPL_US_EQ', side: 'BUY', status: 'FILLED', type: 'MARKET', instrument: { name: 'Apple', currency: 'USD' } }, fill: { id: 11, filledAt: '2026-08-01T10:00:00Z', price: 210, quantity: 1, walletImpact: { currency: 'EUR', netValue: -190 } } },
     { order: { id: 2, ticker: 'AAPL_US_EQ', side: 'SELL', status: 'FILLED', type: 'MARKET', instrument: { name: 'Apple', currency: 'USD' } }, fill: { id: 12, filledAt: '2026-08-20T10:00:00Z', price: 225, quantity: 0.5, walletImpact: { currency: 'EUR', netValue: 102, realisedProfitLoss: 7 } } },
   ] } : { kind, items: [] }); mocks.disconnect.mockResolvedValue({ connected: false }) })
@@ -82,6 +83,22 @@ describe('Trading 212 UI interactions', () => {
     await user.click(screen.getByRole('button', { name: '确认断开' }))
     await waitFor(() => expect(mocks.disconnect).toHaveBeenCalledOnce())
     expect(await screen.findByRole('heading', { name: '连接你的 Trading 212' })).toBeTruthy()
+  })
+
+  it('follows dsh by default and persists a manual English preference', async () => {
+    mocks.status.mockResolvedValue({ connected: true, environment: 'demo', writable: true, source: 'record' })
+    render(<App />)
+    const user = userEvent.setup()
+    await screen.findByText('账户总价值 · EUR')
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    expect(screen.getByRole('radio', { name: '自动（跟随 dsh）' }).getAttribute('aria-checked')).toBe('true')
+    await user.click(screen.getByRole('radio', { name: 'English' }))
+    expect(await screen.findByRole('button', { name: 'Overview' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Settings' })).toBeTruthy()
+    expect(localStorage.getItem('dsh-trading212:language')).toBe('en')
+    await user.click(screen.getByRole('radio', { name: 'Auto (follow dsh)' }))
+    expect(await screen.findByRole('button', { name: '概览' })).toBeTruthy()
+    expect(localStorage.getItem('dsh-trading212:language')).toBeNull()
   })
 
   it('opens a holding with Yahoo prices and Trading 212 buy and sell markers', async () => {

@@ -94,6 +94,9 @@ fieldset { margin:0 0 22px; padding:0; border:0 } legend,.field>span { margin-bo
 .settings-row>div { min-height:93px; padding:19px; display:grid; gap:8px; align-content:center; border-right:1px solid var(--rule) }
 .settings-row>div:last-child { border-right:0 } .settings-row span { color:var(--muted); font-size:11px } .settings-row strong { font-size:13px }
 .settings-actions { display:flex; gap:10px } .settings-actions .danger-outline { color:var(--danger); border-color:#e0bcbc }
+.language-setting { margin:26px 0 0; padding:18px 19px; display:flex; align-items:center; justify-content:space-between; gap:24px; border:1px solid var(--rule); border-radius:14px; background:linear-gradient(135deg,#fbfdfc,#f4f9f6) }
+.language-setting>div:first-child { display:grid; gap:4px }.language-setting span { color:var(--muted); font-size:10px; letter-spacing:.08em; text-transform:uppercase }.language-setting h2 { margin:0; font-size:15px }.language-setting p { margin:0; color:var(--muted); font-size:11px }
+.language-options { padding:3px; display:flex; gap:2px; border:1px solid #d7e1db; border-radius:999px; background:#fff }.language-options button { min-height:32px; padding:0 12px; border:0; border-radius:999px; background:transparent; color:var(--muted); font:inherit; font-size:11px; cursor:pointer }.language-options button.active { background:#173d2d; color:#fff; box-shadow:0 1px 3px rgba(14,43,31,.18) }
 .read-only-note { padding:16px; display:flex; gap:12px; border-radius:7px; background:#fff7e8; color:#71582d; font-size:12px }
 .read-only-note svg { width:20px; flex:0 0 20px } .back-button { margin-bottom:18px; border:0; background:transparent }
 .help-list { margin:25px 0; display:grid; grid-template-columns:1fr 1fr; gap:1px; overflow:hidden; border:1px solid var(--rule); border-radius:14px; background:var(--rule) }
@@ -190,6 +193,7 @@ fieldset { margin:0 0 22px; padding:0; border:0 } legend,.field>span { margin-bo
   .panel { padding:0 14px 14px; border-radius:14px }.ask-banner { align-items:flex-start; flex-direction:column; border-radius:14px }
   .setup-page { padding:24px 15px 50px; align-items:start } .connection-card { padding:23px 18px }
   .environment-options,.trust-list,.settings-row,.help-list { grid-template-columns:1fr }
+  .language-setting { align-items:flex-start; flex-direction:column }.language-options { width:100% }.language-options button { flex:1 }
   .settings-row>div { min-height:72px; border-right:0; border-bottom:1px solid var(--rule) } .settings-row>div:last-child { border-bottom:0 }
   table,thead,tbody,tr,th,td { display:block } thead { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0) }
   tr { padding:13px 0; border-top:1px solid var(--rule) }

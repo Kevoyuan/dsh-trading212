@@ -65,7 +65,7 @@ export const api = {
 export function diagnosticText(error: ApiError, status?: ConnectionStatus): string {
   return [
     'dsh-trading212 diagnostic',
-    'version: 0.6.3',
+    'version: 0.7.0',
     `code: ${error.code}`,
     `requestId: ${error.requestId}`,
     `environment: ${status?.environment ?? 'unknown'}`,

@@ -1,4 +1,4 @@
-import { Children, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Children, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import * as echarts from 'echarts/core'
 import { LineChart, ScatterChart } from 'echarts/charts'
 import { AriaComponent, DataZoomComponent, GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { ApiError, api, diagnosticText } from './api.ts'
 import { copyText } from './clipboard.ts'
+import { languageStore, localeCode, tx } from './i18n.ts'
 import type { ConnectionStatus } from '../portfolio-service.ts'
 import type { MarketRange, MarketSeries } from '../market-data.ts'
 import type { CashTransaction, Dividend, HistoricalOrder, HistoryItem, HistoryKind, PortfolioSnapshot, Position, TradingEnvironment } from '../trading212.ts'
@@ -20,11 +21,11 @@ type Page = 'overview' | 'holdings' | 'instrument' | 'history' | 'settings' | 'h
 type CopyStatus = 'idle' | 'copied' | 'failed'
 type BootState = { kind: 'loading' } | { kind: 'error'; error: ApiError } | { kind: 'ready'; status: ConnectionStatus }
 
-const money = (value: number | undefined, currency = 'EUR') => new Intl.NumberFormat('zh-CN', {
+const money = (value: number | undefined, currency = 'EUR') => new Intl.NumberFormat(localeCode(), {
   style: 'currency', currency, maximumFractionDigits: 2,
 }).format(value ?? 0)
 
-const decimal = (value: number | undefined, maximumFractionDigits = 2) => new Intl.NumberFormat('zh-CN', {
+const decimal = (value: number | undefined, maximumFractionDigits = 2) => new Intl.NumberFormat(localeCode(), {
   maximumFractionDigits,
 }).format(value ?? 0)
 
@@ -40,17 +41,17 @@ function Brand() {
 function Sidebar({ connected, active, onNavigate }: { connected: boolean; active: Page; onNavigate: (page: Page) => void }) {
   const [open, setOpen] = useState(false)
   const items = connected
-    ? [[LayoutDashboard, 'overview', '概览'], [BriefcaseBusiness, 'holdings', '持仓'], [HistoryIcon, 'history', '历史'], [Settings, 'settings', '设置'], [CircleHelp, 'help', '帮助']] as const
-    : [[BriefcaseBusiness, 'setup', '连接'], [CircleHelp, 'help', '帮助']] as const
+    ? [[LayoutDashboard, 'overview', tx('概览', 'Overview')], [BriefcaseBusiness, 'holdings', tx('持仓', 'Holdings')], [HistoryIcon, 'history', tx('历史', 'History')], [Settings, 'settings', tx('设置', 'Settings')], [CircleHelp, 'help', tx('帮助', 'Help')]] as const
+    : [[BriefcaseBusiness, 'setup', tx('连接', 'Connect')], [CircleHelp, 'help', tx('帮助', 'Help')]] as const
   const navigate = (page: Page) => { onNavigate(page); setOpen(false) }
   return <aside className={`sidebar ${open ? 'menu-open' : ''}`}>
-    <div className="side-head"><Brand /><span className="product-name">Trading 212</span><button className="menu-button" type="button" aria-label={open ? '关闭导航' : '打开导航'} aria-expanded={open} onClick={() => setOpen(value => !value)}>{open ? <X /> : <Menu />}</button></div>
-    <nav aria-label="Trading 212 导航">
+    <div className="side-head"><Brand /><span className="product-name">Trading 212</span><button className="menu-button" type="button" aria-label={open ? tx('关闭导航', 'Close navigation') : tx('打开导航', 'Open navigation')} aria-expanded={open} onClick={() => setOpen(value => !value)}>{open ? <X /> : <Menu />}</button></div>
+    <nav aria-label={tx('Trading 212 导航', 'Trading 212 navigation')}>
       {items.map(([Icon, page, label]) => <button key={page} className={active === page ? 'active' : ''} type="button" aria-current={active === page ? 'page' : undefined} onClick={() => navigate(page)}>
         <Icon size={20} strokeWidth={1.8} /><span>{label}</span>
       </button>)}
     </nav>
-    <div className="side-note"><ShieldCheck /><span>只读连接<br /><small>不会执行交易</small></span></div>
+    <div className="side-note"><ShieldCheck /><span>{tx('只读连接', 'Read-only connection')}<br /><small>{tx('不会执行交易', 'Never places trades')}</small></span></div>
   </aside>
 }
 
@@ -61,13 +62,13 @@ function ErrorPanel({ error, status, onRetry, compact = false }: { error: ApiErr
     catch { setCopyStatus('failed') }
   }
   return <section className={compact ? 'error-panel compact' : 'error-panel'} role="alert" id={`help-${error.code.toLowerCase().replaceAll('_', '-')}`}>
-    <strong>{error.message}</strong><p>{error.causeText}</p><p className="error-action">下一步：{error.action}</p>
-    {error.retryAt && <small>可重试时间：{new Date(error.retryAt).toLocaleTimeString('zh-CN')}</small>}
-    <div className="error-actions">{onRetry && <button type="button" onClick={onRetry}>重试</button>}<button type="button" onClick={() => void copy()}><Clipboard />{copyStatus === 'copied' ? '已复制诊断' : copyStatus === 'failed' ? '复制失败' : '复制诊断'}</button></div>
+    <strong>{error.message}</strong><p>{error.causeText}</p><p className="error-action">{tx('下一步：', 'Next: ')}{error.action}</p>
+    {error.retryAt && <small>{tx('可重试时间：', 'Retry at: ')}{new Date(error.retryAt).toLocaleTimeString(localeCode())}</small>}
+    <div className="error-actions">{onRetry && <button type="button" onClick={onRetry}>{tx('重试', 'Retry')}</button>}<button type="button" onClick={() => void copy()}><Clipboard />{copyStatus === 'copied' ? tx('已复制诊断', 'Diagnostics copied') : copyStatus === 'failed' ? tx('复制失败', 'Copy failed') : tx('复制诊断', 'Copy diagnostics')}</button></div>
   </section>
 }
 
-function ConnectionForm({ onConnected, title = '连接你的 Trading 212' }: { onConnected: (status: ConnectionStatus, snapshot: PortfolioSnapshot) => void; title?: string }) {
+function ConnectionForm({ onConnected, title }: { onConnected: (status: ConnectionStatus, snapshot: PortfolioSnapshot) => void; title?: string }) {
   const [environment, setEnvironment] = useState<TradingEnvironment>('demo')
   const [apiKey, setApiKey] = useState('')
   const [apiSecret, setApiSecret] = useState('')
@@ -85,24 +86,24 @@ function ConnectionForm({ onConnected, title = '连接你的 Trading 212' }: { o
     } finally { setPending(false) }
   }
   return <section className="connection-card">
-    <div className="eyebrow"><ShieldCheck />只读访问</div><h1>{title}</h1><p>选择密钥所属环境，粘贴 Key 和只显示一次的 Secret。保存前会验证账户、持仓和待处理订单。</p>
+    <div className="eyebrow"><ShieldCheck />{tx('只读访问', 'Read-only access')}</div><h1>{title ?? tx('连接你的 Trading 212', 'Connect your Trading 212')}</h1><p>{tx('选择密钥所属环境，粘贴 Key 和只显示一次的 Secret。保存前会验证账户、持仓和待处理订单。', 'Choose the environment for your key, then paste the Key and one-time Secret. We verify your account, holdings, and pending orders before saving.')}</p>
     <form onSubmit={submit}>
-      <fieldset><legend>账户环境</legend><div className="environment-options">
-        <label className={environment === 'demo' ? 'selected' : ''}><input type="radio" name="environment" checked={environment === 'demo'} onChange={() => setEnvironment('demo')} /><span><b>Demo</b><small>模拟账户，推荐先测试</small></span></label>
-        <label className={environment === 'live' ? 'selected live' : ''}><input type="radio" name="environment" checked={environment === 'live'} onChange={() => setEnvironment('live')} /><span><b>Live</b><small>真实账户的只读数据</small></span></label>
+      <fieldset><legend>{tx('账户环境', 'Account environment')}</legend><div className="environment-options">
+        <label className={environment === 'demo' ? 'selected' : ''}><input type="radio" name="environment" checked={environment === 'demo'} onChange={() => setEnvironment('demo')} /><span><b>Demo</b><small>{tx('模拟账户，推荐先测试', 'Practice account, recommended for testing')}</small></span></label>
+        <label className={environment === 'live' ? 'selected live' : ''}><input type="radio" name="environment" checked={environment === 'live'} onChange={() => setEnvironment('live')} /><span><b>Live</b><small>{tx('真实账户的只读数据', 'Read-only data from your live account')}</small></span></label>
       </div></fieldset>
-      <label className="field"><span>API Key</span><input autoComplete="off" value={apiKey} onChange={event => setApiKey(event.target.value)} required minLength={8} placeholder="粘贴 API Key" /></label>
-      <label className="field"><span>API Secret</span><div className="secret-wrap"><input type={showSecret ? 'text' : 'password'} autoComplete="new-password" value={apiSecret} onChange={event => setApiSecret(event.target.value)} required minLength={8} placeholder="粘贴 API Secret" /><button type="button" aria-label={showSecret ? '隐藏 Secret' : '显示 Secret'} onClick={() => setShowSecret(value => !value)}>{showSecret ? <EyeOff /> : <Eye />}</button></div></label>
-      <a className="help-link" href="https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-How-can-I-generate-an-API-key" target="_blank" rel="noreferrer">查看 Trading 212 官方密钥说明 <ArrowRight /></a>
+      <label className="field"><span>API Key</span><input autoComplete="off" value={apiKey} onChange={event => setApiKey(event.target.value)} required minLength={8} placeholder={tx('粘贴 API Key', 'Paste API Key')} /></label>
+      <label className="field"><span>API Secret</span><div className="secret-wrap"><input type={showSecret ? 'text' : 'password'} autoComplete="new-password" value={apiSecret} onChange={event => setApiSecret(event.target.value)} required minLength={8} placeholder={tx('粘贴 API Secret', 'Paste API Secret')} /><button type="button" aria-label={showSecret ? tx('隐藏 Secret', 'Hide Secret') : tx('显示 Secret', 'Show Secret')} onClick={() => setShowSecret(value => !value)}>{showSecret ? <EyeOff /> : <Eye />}</button></div></label>
+      <a className="help-link" href="https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-How-can-I-generate-an-API-key" target="_blank" rel="noreferrer">{tx('查看 Trading 212 官方密钥说明', 'View Trading 212 key instructions')} <ArrowRight /></a>
       {error && <ErrorPanel error={error} compact />}
-      <button className="primary" type="submit" disabled={pending}>{pending ? <><LoaderCircle className="spin" />正在验证完整快照…</> : '测试并保存'}</button>
+      <button className="primary" type="submit" disabled={pending}>{pending ? <><LoaderCircle className="spin" />{tx('正在验证完整快照…', 'Verifying full snapshot…')}</> : tx('测试并保存', 'Test and save')}</button>
     </form>
-    <div className="trust-list"><span><Check />凭据写入 dsh 凭据提供方</span><span><Check />浏览器不会保存 Key 或 Secret</span><span><Check />插件不注册任何下单工具</span></div>
+    <div className="trust-list"><span><Check />{tx('凭据写入 dsh 凭据提供方', 'Credentials go to the dsh credential provider')}</span><span><Check />{tx('浏览器不会保存 Key 或 Secret', 'The browser never stores your Key or Secret')}</span><span><Check />{tx('插件不注册任何下单工具', 'The plugin registers no trading tools')}</span></div>
   </section>
 }
 
 function SetupPage({ onConnected }: { onConnected: (status: ConnectionStatus, snapshot: PortfolioSnapshot) => void }) {
-  return <main className="setup-page"><ConnectionForm onConnected={onConnected} /><aside className="setup-guide"><h2>创建密钥时请选择</h2><ol><li>账户摘要读取权限</li><li>投资组合读取权限</li><li>订单读取权限</li><li>历史数据读取权限</li></ol><p>不要授予下单、修改或取消订单权限。如果启用了 IP 限制，请允许当前运行 dsh 的设备。</p></aside></main>
+  return <main className="setup-page"><ConnectionForm onConnected={onConnected} /><aside className="setup-guide"><h2>{tx('创建密钥时请选择', 'Select these key permissions')}</h2><ol><li>{tx('账户摘要读取权限', 'Read account summary')}</li><li>{tx('投资组合读取权限', 'Read portfolio')}</li><li>{tx('订单读取权限', 'Read orders')}</li><li>{tx('历史数据读取权限', 'Read history')}</li></ol><p>{tx('不要授予下单、修改或取消订单权限。如果启用了 IP 限制，请允许当前运行 dsh 的设备。', 'Do not grant permissions to place, modify, or cancel orders. If IP restrictions are enabled, allow the device running dsh.')}</p></aside></main>
 }
 
 const palette = ['#2764d8', '#4f7fe0', '#789be7', '#9fb7ed', '#c5d2ef', '#dce3ec']
@@ -110,15 +111,15 @@ const palette = ['#2764d8', '#4f7fe0', '#789be7', '#9fb7ed', '#c5d2ef', '#dce3ec
 function Allocation({ portfolio }: { portfolio: PortfolioSnapshot }) {
   const currency = portfolio.account.currency
   const source = portfolio.analytics.allocation
-  if (source.length === 0) return <div className="empty-inline">目前没有持仓</div>
+  if (source.length === 0) return <div className="empty-inline">{tx('目前没有持仓', 'No holdings yet')}</div>
   const leading = source.slice(0, 5)
   const other = source.slice(5)
   const rows = other.length === 0 ? leading : [...leading, {
-    ticker: 'other', name: `其他 ${other.length} 项`, instrumentCurrency: currency,
+    ticker: 'other', name: tx(`其他 ${other.length} 项`, `${other.length} others`), instrumentCurrency: currency,
     currentValue: other.reduce((sum, item) => sum + item.currentValue, 0), totalCost: 0,
     unrealizedProfitLoss: 0, fxImpact: 0, weightPercent: other.reduce((sum, item) => sum + item.weightPercent, 0),
   }]
-  return <div className="allocation" aria-label="持仓市值构成">
+  return <div className="allocation" aria-label={tx('持仓市值构成', 'Holding value allocation')}>
     <div className="allocation-track" role="img" aria-label={rows.map(item => `${item.name} ${plainPercent(item.weightPercent)}`).join('，')}>{rows.map((item, index) => <i key={item.ticker} style={{ width: `${Math.max(item.weightPercent, .4)}%`, background: palette[index] }} />)}</div>
     <div className="allocation-legend">{rows.map((item, index) => <span key={item.ticker}><i style={{ background: palette[index] }} /><b>{item.name}</b><em>{money(item.currentValue, currency)} · {plainPercent(item.weightPercent)}</em></span>)}</div>
   </div>
@@ -126,7 +127,7 @@ function Allocation({ portfolio }: { portfolio: PortfolioSnapshot }) {
 
 function BarList({ rows, currency, signed = false, ariaLabel }: { rows: Array<{ key: string; label: string; detail?: string; value: number }>; currency: string; signed?: boolean; ariaLabel: string }) {
   const max = Math.max(...rows.map(row => Math.abs(row.value)), 1)
-  if (rows.length === 0) return <div className="empty-inline">暂无足够数据</div>
+  if (rows.length === 0) return <div className="empty-inline">{tx('暂无足够数据', 'Not enough data')}</div>
   return <div className={`bar-list ${signed ? 'signed-bars' : ''}`} aria-label={ariaLabel}>{rows.map(row => <div className="bar-row" key={row.key}>
     <div className="bar-label"><strong>{row.label}</strong>{row.detail && <small>{row.detail}</small>}</div>
     <div className="bar-measure"><i className={row.value < 0 ? 'bar-negative' : 'bar-positive'} style={{ width: `${Math.max(Math.abs(row.value) / max * 100, 2)}%` }} /></div>
@@ -139,58 +140,58 @@ function ProfitDrivers({ portfolio }: { portfolio: PortfolioSnapshot }) {
     .sort((a, b) => Math.abs(b.unrealizedProfitLoss) - Math.abs(a.unrealizedProfitLoss))
     .slice(0, 6)
     .map(item => ({ key: item.ticker, label: item.name, detail: `${tickerLabel(item.ticker)} · ${percent(item.returnPercent)}`, value: item.unrealizedProfitLoss }))
-  return <BarList rows={rows} currency={portfolio.account.currency} signed ariaLabel="未实现盈亏贡献排名" />
+  return <BarList rows={rows} currency={portfolio.account.currency} signed ariaLabel={tx('未实现盈亏贡献排名', 'Unrealized return contributors')} />
 }
 
 function CurrencyExposureChart({ portfolio }: { portfolio: PortfolioSnapshot }) {
   const exposure = portfolio.analytics.currencyExposure.slice(0, 6)
-  if (exposure.length < 4) return <div className="exposure-summary">{exposure.map(item => <div key={item.currency}><strong>{item.currency}</strong><span>{money(item.currentValue, portfolio.account.currency)}</span><small>{item.positions} 个持仓 · {plainPercent(item.weightPercent)}</small></div>)}</div>
+  if (exposure.length < 4) return <div className="exposure-summary">{exposure.map(item => <div key={item.currency}><strong>{item.currency}</strong><span>{money(item.currentValue, portfolio.account.currency)}</span><small>{tx(`${item.positions} 个持仓`, `${item.positions} holdings`)} · {plainPercent(item.weightPercent)}</small></div>)}</div>
   const rows = exposure.map(item => ({
-    key: item.currency, label: item.currency, detail: `${item.positions} 个持仓 · ${plainPercent(item.weightPercent)}`, value: item.currentValue,
+    key: item.currency, label: item.currency, detail: `${tx(`${item.positions} 个持仓`, `${item.positions} holdings`)} · ${plainPercent(item.weightPercent)}`, value: item.currentValue,
   }))
-  return <BarList rows={rows} currency={portfolio.account.currency} ariaLabel="按标的交易币种划分的持仓市值" />
+  return <BarList rows={rows} currency={portfolio.account.currency} ariaLabel={tx('按标的交易币种划分的持仓市值', 'Holding value by instrument currency')} />
 }
 
 function HoldingTable({ positions, currency, limit, onSelect }: { positions: Position[]; currency: string; limit?: number; onSelect?: (position: Position) => void }) {
   const rows = [...positions].sort((a, b) => (b.walletImpact?.currentValue ?? 0) - (a.walletImpact?.currentValue ?? 0)).slice(0, limit)
-  if (rows.length === 0) return <div className="empty-state"><BriefcaseBusiness /><strong>目前没有持仓</strong><span>现金和账户总价值仍会显示在概览中。</span></div>
+  if (rows.length === 0) return <div className="empty-state"><BriefcaseBusiness /><strong>{tx('目前没有持仓', 'No holdings yet')}</strong><span>{tx('现金和账户总价值仍会显示在概览中。', 'Cash and total account value still appear in Overview.')}</span></div>
   const invested = positions.reduce((sum, item) => sum + (item.walletImpact?.currentValue ?? 0), 0)
-  return <div className="table-scroll"><table className="holdings-table"><thead><tr><th>资产</th><th>数量</th><th>均价 / 现价</th><th>成本</th><th>市值 / 权重</th><th>未实现收益</th><th>外汇影响</th></tr></thead><tbody>{rows.map((position, index) => {
+  return <div className="table-scroll"><table className="holdings-table"><thead><tr><th>{tx('资产', 'Asset')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('均价 / 现价', 'Average / current')}</th><th>{tx('成本', 'Cost')}</th><th>{tx('市值 / 权重', 'Value / weight')}</th><th>{tx('未实现收益', 'Unrealized return')}</th><th>{tx('外汇影响', 'FX impact')}</th></tr></thead><tbody>{rows.map((position, index) => {
     const value = position.walletImpact?.currentValue ?? 0
     const cost = position.walletImpact?.totalCost ?? 0
     const profit = position.walletImpact?.unrealizedProfitLoss ?? 0
     const fx = position.walletImpact?.fxImpact
-    const label = position.instrument?.name ?? position.instrument?.ticker ?? '未知资产'
-    return <tr key={position.instrument?.ticker ?? index}><td data-label="资产">{onSelect && position.instrument?.ticker ? <button className="asset-link" type="button" onClick={() => onSelect(position)}><strong>{label}</strong><small>{tickerLabel(position.instrument.ticker)} · 查看价格与买卖点 <ArrowRight /></small></button> : <><strong>{label}</strong><small>{tickerLabel(position.instrument?.ticker)} · {position.instrument?.currency ?? currency}</small></>}<small>{(position.quantityInPies ?? 0) > 0 ? `Pie ${decimal(position.quantityInPies, 4)}` : ''}</small></td><td data-label="数量">{decimal(position.quantity, 4)}<small>可交易 {decimal(position.quantityAvailableForTrading, 4)}</small></td><td data-label="均价 / 现价"><strong>{position.averagePricePaid === undefined ? '—' : money(position.averagePricePaid, position.instrument?.currency ?? currency)}</strong><small>{position.currentPrice === undefined ? '—' : money(position.currentPrice, position.instrument?.currency ?? currency)}</small></td><td data-label="成本">{money(cost, currency)}</td><td data-label="市值 / 权重"><strong>{money(value, currency)}</strong><small>{plainPercent(invested ? value / invested * 100 : 0)}</small></td><td data-label="未实现收益" className={profit >= 0 ? 'tone-positive' : 'tone-negative'}><strong>{signedMoney(profit, currency)}</strong><small>{percent(cost ? profit / cost * 100 : undefined)}</small></td><td data-label="外汇影响" className={(fx ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{fx === undefined ? '—' : signedMoney(fx, currency)}</td></tr>
+    const label = position.instrument?.name ?? position.instrument?.ticker ?? tx('未知资产', 'Unknown asset')
+    return <tr key={position.instrument?.ticker ?? index}><td data-label={tx('资产', 'Asset')}>{onSelect && position.instrument?.ticker ? <button className="asset-link" type="button" onClick={() => onSelect(position)}><strong>{label}</strong><small>{tickerLabel(position.instrument.ticker)} · {tx('查看价格与买卖点', 'View price and trades')} <ArrowRight /></small></button> : <><strong>{label}</strong><small>{tickerLabel(position.instrument?.ticker)} · {position.instrument?.currency ?? currency}</small></>}<small>{(position.quantityInPies ?? 0) > 0 ? `Pie ${decimal(position.quantityInPies, 4)}` : ''}</small></td><td data-label={tx('数量', 'Quantity')}>{decimal(position.quantity, 4)}<small>{tx('可交易', 'Tradable')} {decimal(position.quantityAvailableForTrading, 4)}</small></td><td data-label={tx('均价 / 现价', 'Average / current')}><strong>{position.averagePricePaid === undefined ? '—' : money(position.averagePricePaid, position.instrument?.currency ?? currency)}</strong><small>{position.currentPrice === undefined ? '—' : money(position.currentPrice, position.instrument?.currency ?? currency)}</small></td><td data-label={tx('成本', 'Cost')}>{money(cost, currency)}</td><td data-label={tx('市值 / 权重', 'Value / weight')}><strong>{money(value, currency)}</strong><small>{plainPercent(invested ? value / invested * 100 : 0)}</small></td><td data-label={tx('未实现收益', 'Unrealized return')} className={profit >= 0 ? 'tone-positive' : 'tone-negative'}><strong>{signedMoney(profit, currency)}</strong><small>{percent(cost ? profit / cost * 100 : undefined)}</small></td><td data-label={tx('外汇影响', 'FX impact')} className={(fx ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{fx === undefined ? '—' : signedMoney(fx, currency)}</td></tr>
   })}</tbody></table></div>
 }
 
 function PendingOrders({ orders, currency }: { orders: PortfolioSnapshot['pendingOrders']; currency: string }) {
-  if (orders.length === 0) return <div className="empty-inline order-empty">没有待处理订单</div>
-  return <div className="table-scroll"><table><thead><tr><th>资产与时间</th><th>方向 / 类型</th><th>数量</th><th>限价 / 止损</th><th>状态</th></tr></thead><tbody>{orders.map(order => <tr key={order.id}>
-    <td data-label="资产与时间"><strong>{order.instrument?.name ?? order.ticker}</strong><small>{order.createdAt ? new Date(order.createdAt).toLocaleString('zh-CN') : tickerLabel(order.ticker)} · {order.initiatedFrom ?? '来源未知'}</small></td>
-    <td data-label="方向 / 类型"><span className={`history-side ${order.side.toLowerCase()}`}>{order.side === 'BUY' ? '买入' : '卖出'}</span><small>{order.type}{order.extendedHours ? ' · 含延长交易时段' : ''}</small></td>
-    <td data-label="数量">{decimal(order.quantity, 4)}<small>已成交 {decimal(order.filledQuantity, 4)}</small></td>
+  if (orders.length === 0) return <div className="empty-inline order-empty">{tx('没有待处理订单', 'No pending orders')}</div>
+  return <div className="table-scroll"><table><thead><tr><th>{tx('资产与时间', 'Asset and time')}</th><th>{tx('方向 / 类型', 'Side / type')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('限价 / 止损', 'Limit / stop')}</th><th>{tx('状态', 'Status')}</th></tr></thead><tbody>{orders.map(order => <tr key={order.id}>
+    <td data-label={tx('资产与时间', 'Asset and time')}><strong>{order.instrument?.name ?? order.ticker}</strong><small>{order.createdAt ? new Date(order.createdAt).toLocaleString(localeCode()) : tickerLabel(order.ticker)} · {order.initiatedFrom ?? tx('来源未知', 'Unknown source')}</small></td>
+    <td data-label={tx('方向 / 类型', 'Side / type')}><span className={`history-side ${order.side.toLowerCase()}`}>{order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')}</span><small>{order.type}{order.extendedHours ? tx(' · 含延长交易时段', ' · Extended hours') : ''}</small></td>
+    <td data-label={tx('数量', 'Quantity')}>{decimal(order.quantity, 4)}<small>{tx('已成交', 'Filled')} {decimal(order.filledQuantity, 4)}</small></td>
     <td data-label="限价 / 止损"><strong>{order.limitPrice === undefined ? '—' : money(order.limitPrice, order.instrument?.currency ?? order.currency ?? currency)}</strong><small>{order.stopPrice === undefined ? '—' : money(order.stopPrice, order.instrument?.currency ?? order.currency ?? currency)}</small></td>
     <td data-label="状态"><strong>{order.status}</strong><small>{order.timeInForce ?? order.strategy ?? '—'}</small></td>
   </tr>)}</tbody></table></div>
 }
 
-const historyLabels: Record<HistoryKind, string> = { orders: '历史订单', transactions: '资金流水', dividends: '分红' }
-const transactionLabels: Record<string, string> = {
-  WITHDRAW: '提现', DEPOSIT: '入金', FEE: '费用', TRANSFER: '转账',
-  INTEREST_ON_FREE_CASH: '闲置现金利息', LENDING_INTEREST: '证券出借利息',
-}
+const historyLabel = (kind: HistoryKind) => ({ orders: tx('历史订单', 'Orders'), transactions: tx('资金流水', 'Cash activity'), dividends: tx('分红', 'Dividends') })[kind]
+const transactionLabel = (type: string) => ({
+  WITHDRAW: tx('提现', 'Withdrawal'), DEPOSIT: tx('入金', 'Deposit'), FEE: tx('费用', 'Fee'), TRANSFER: tx('转账', 'Transfer'),
+  INTEREST_ON_FREE_CASH: tx('闲置现金利息', 'Interest on cash'), LENDING_INTEREST: tx('证券出借利息', 'Share lending interest'),
+} as Record<string, string>)[type] ?? type
 
 function HistoryRows({ kind, items }: { kind: HistoryKind; items: HistoryItem[] }) {
-  if (items.length === 0) return <div className="empty-state"><HistoryIcon /><strong>没有{historyLabels[kind]}</strong><span>Trading 212 暂未返回这一类历史记录。</span></div>
-  if (kind === 'orders') return <div className="table-scroll"><table><thead><tr><th>时间与资产</th><th>方向 / 状态</th><th>数量</th><th>成交价</th><th>净额</th></tr></thead><tbody>{Children.toArray((items as HistoricalOrder[]).map((item, index) => {
+  if (items.length === 0) return <div className="empty-state"><HistoryIcon /><strong>{tx(`没有${historyLabel(kind)}`, `No ${historyLabel(kind).toLowerCase()}`)}</strong><span>{tx('Trading 212 暂未返回这一类历史记录。', 'Trading 212 has not returned any records in this category.')}</span></div>
+  if (kind === 'orders') return <div className="table-scroll"><table><thead><tr><th>{tx('时间与资产', 'Time and asset')}</th><th>{tx('方向 / 状态', 'Side / status')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('成交价', 'Fill price')}</th><th>{tx('净额', 'Net value')}</th></tr></thead><tbody>{Children.toArray((items as HistoricalOrder[]).map((item, index) => {
     const date = item.fill?.filledAt ?? item.order.createdAt
     const currency = item.fill?.walletImpact?.currency ?? item.order.instrument?.currency ?? 'EUR'
-    return <tr key={`order:${item.order.id}:fill:${item.fill?.id ?? index}`}><td data-label="时间与资产"><strong>{item.order.instrument?.name ?? item.order.ticker}</strong><small>{date ? new Date(date).toLocaleString('zh-CN') : '时间未知'} · {item.order.ticker.replace(/_.*/, '')}</small></td><td data-label="方向 / 状态"><span className={`history-side ${item.order.side.toLowerCase()}`}>{item.order.side === 'BUY' ? '买入' : '卖出'}</span><small>{item.order.status}</small></td><td data-label="数量">{decimal(item.fill?.quantity ?? item.order.filledQuantity ?? item.order.quantity, 4)}</td><td data-label="成交价">{item.fill?.price === undefined ? '—' : money(item.fill.price, item.order.instrument?.currency ?? currency)}</td><td data-label="净额">{item.fill?.walletImpact?.netValue === undefined ? '—' : money(item.fill.walletImpact.netValue, currency)}</td></tr>
+    return <tr key={`order:${item.order.id}:fill:${item.fill?.id ?? index}`}><td data-label={tx('时间与资产', 'Time and asset')}><strong>{item.order.instrument?.name ?? item.order.ticker}</strong><small>{date ? new Date(date).toLocaleString(localeCode()) : tx('时间未知', 'Unknown time')} · {item.order.ticker.replace(/_.*/, '')}</small></td><td data-label={tx('方向 / 状态', 'Side / status')}><span className={`history-side ${item.order.side.toLowerCase()}`}>{item.order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')}</span><small>{item.order.status}</small></td><td data-label={tx('数量', 'Quantity')}>{decimal(item.fill?.quantity ?? item.order.filledQuantity ?? item.order.quantity, 4)}</td><td data-label={tx('成交价', 'Fill price')}>{item.fill?.price === undefined ? '—' : money(item.fill.price, item.order.instrument?.currency ?? currency)}</td><td data-label={tx('净额', 'Net value')}>{item.fill?.walletImpact?.netValue === undefined ? '—' : money(item.fill.walletImpact.netValue, currency)}</td></tr>
   }))}</tbody></table></div>
-  if (kind === 'dividends') return <div className="table-scroll"><table><thead><tr><th>日期与资产</th><th>数量</th><th>每股</th><th>到账金额</th></tr></thead><tbody>{Children.toArray((items as Dividend[]).map(item => <tr key={item.reference}><td data-label="日期与资产"><strong>{item.instrument?.name ?? item.ticker}</strong><small>{new Date(item.paidOn).toLocaleDateString('zh-CN')} · {item.ticker.replace(/_.*/, '')}</small></td><td data-label="数量">{decimal(item.quantity, 4)}</td><td data-label="每股">{item.grossAmountPerShare === undefined ? '—' : decimal(item.grossAmountPerShare, 4)}</td><td data-label="到账金额" className="positive">+{money(item.amount, item.currency)}</td></tr>))}</tbody></table></div>
-  return <div className="table-scroll"><table><thead><tr><th>时间与类型</th><th>编号</th><th>金额</th></tr></thead><tbody>{Children.toArray((items as CashTransaction[]).map(item => <tr key={item.reference}><td data-label="时间与类型"><strong>{transactionLabels[item.type] ?? item.type}</strong><small>{new Date(item.dateTime).toLocaleString('zh-CN')}</small></td><td data-label="编号"><span className="history-reference">{item.reference}</span></td><td data-label="金额" className={item.amount >= 0 ? 'positive' : 'negative'}>{item.amount >= 0 ? '+' : ''}{money(item.amount, item.currency)}</td></tr>))}</tbody></table></div>
+  if (kind === 'dividends') return <div className="table-scroll"><table><thead><tr><th>{tx('日期与资产', 'Date and asset')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('每股', 'Per share')}</th><th>{tx('到账金额', 'Amount')}</th></tr></thead><tbody>{Children.toArray((items as Dividend[]).map(item => <tr key={item.reference}><td data-label={tx('日期与资产', 'Date and asset')}><strong>{item.instrument?.name ?? item.ticker}</strong><small>{new Date(item.paidOn).toLocaleDateString(localeCode())} · {item.ticker.replace(/_.*/, '')}</small></td><td data-label={tx('数量', 'Quantity')}>{decimal(item.quantity, 4)}</td><td data-label={tx('每股', 'Per share')}>{item.grossAmountPerShare === undefined ? '—' : decimal(item.grossAmountPerShare, 4)}</td><td data-label={tx('到账金额', 'Amount')} className="positive">+{money(item.amount, item.currency)}</td></tr>))}</tbody></table></div>
+  return <div className="table-scroll"><table><thead><tr><th>{tx('时间与类型', 'Time and type')}</th><th>{tx('编号', 'Reference')}</th><th>{tx('金额', 'Amount')}</th></tr></thead><tbody>{Children.toArray((items as CashTransaction[]).map(item => <tr key={item.reference}><td data-label={tx('时间与类型', 'Time and type')}><strong>{transactionLabel(item.type)}</strong><small>{new Date(item.dateTime).toLocaleString(localeCode())}</small></td><td data-label={tx('编号', 'Reference')}><span className="history-reference">{item.reference}</span></td><td data-label={tx('金额', 'Amount')} className={item.amount >= 0 ? 'positive' : 'negative'}>{item.amount >= 0 ? '+' : ''}{money(item.amount, item.currency)}</td></tr>))}</tbody></table></div>
 }
 
 interface TradePoint {
@@ -234,7 +235,7 @@ function TradeTimeline({ orders }: { orders: HistoricalOrder[] }) {
   const [ticker, setTicker] = useState('')
   const activeTicker = options.some(option => option.ticker === ticker) ? ticker : options[0]?.ticker ?? ''
   const points = allPoints.filter(point => point.ticker === activeTicker)
-  if (allPoints.length === 0) return <section className="trade-timeline"><div className="section-heading"><div><h2>成交价格时间线</h2><p>当前已加载记录没有可绘制的成交时间与价格。</p></div></div></section>
+  if (allPoints.length === 0) return <section className="trade-timeline"><div className="section-heading"><div><h2>{tx('成交价格时间线', 'Fill price timeline')}</h2><p>{tx('当前已加载记录没有可绘制的成交时间与价格。', 'The loaded records contain no fill times and prices to chart.')}</p></div></div></section>
 
   const width = 820
   const height = 270
@@ -256,20 +257,21 @@ function TradeTimeline({ orders }: { orders: HistoricalOrder[] }) {
   const latest = [...points].reverse().slice(0, 5)
   const formatPrice = (value: number) => money(value, currency)
   return <section className="trade-timeline" aria-labelledby="trade-timeline-title">
-    <div className="timeline-header"><div className="section-heading"><h2 id="trade-timeline-title">成交价格时间线</h2><p>{selected?.name ?? tickerLabel(activeTicker)} · 当前已加载 {points.length} 个成交点 · 纵轴聚焦成交价格区间，不从零开始</p></div><label><span>股票</span><select value={activeTicker} onChange={event => setTicker(event.target.value)}>{options.map(option => <option key={option.ticker} value={option.ticker}>{option.name} · {tickerLabel(option.ticker)} ({option.count})</option>)}</select></label></div>
-    <div className="timeline-legend"><span><i className="buy-marker" />买入</span><span><i className="sell-marker" />卖出</span><em>仅显示真实成交点，不是市场 K 线</em></div>
-    {points.length === 1 ? <div className="single-trade"><strong>{formatPrice(points[0]!.price)}</strong><span>{points[0]!.side === 'BUY' ? '买入' : '卖出'} {decimal(points[0]!.quantity, 4)} 股</span><small>{new Date(points[0]!.filledAt).toLocaleString('zh-CN')}</small></div> : <div className="timeline-chart-scroll"><svg className="timeline-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${selected?.name ?? activeTicker} 的成交价格时间线，共 ${points.length} 个真实成交点`}>
+    <div className="timeline-header"><div className="section-heading"><h2 id="trade-timeline-title">{tx('成交价格时间线', 'Fill price timeline')}</h2><p>{tx(`${selected?.name ?? tickerLabel(activeTicker)} · 当前已加载 ${points.length} 个成交点 · 纵轴聚焦成交价格区间，不从零开始`, `${selected?.name ?? tickerLabel(activeTicker)} · ${points.length} loaded fills · Scaled price axis`)}</p></div><label><span>{tx('股票', 'Instrument')}</span><select value={activeTicker} onChange={event => setTicker(event.target.value)}>{options.map(option => <option key={option.ticker} value={option.ticker}>{option.name} · {tickerLabel(option.ticker)} ({option.count})</option>)}</select></label></div>
+    <div className="timeline-legend"><span><i className="buy-marker" />{tx('买入', 'Buy')}</span><span><i className="sell-marker" />{tx('卖出', 'Sell')}</span><em>{tx('仅显示真实成交点，不是市场 K 线', 'Actual fills only, not market candles')}</em></div>
+    {points.length === 1 ? <div className="single-trade"><strong>{formatPrice(points[0]!.price)}</strong><span>{points[0]!.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} {decimal(points[0]!.quantity, 4)} {tx('股', 'shares')}</span><small>{new Date(points[0]!.filledAt).toLocaleString(localeCode())}</small></div> : <div className="timeline-chart-scroll"><svg className="timeline-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={tx(`${selected?.name ?? activeTicker} 的成交价格时间线，共 ${points.length} 个真实成交点`, `${selected?.name ?? activeTicker} fill price timeline with ${points.length} actual fills`)}>
       {yTicks.map((tick, index) => <g key={tick}><line x1={margin.left} x2={width - margin.right} y1={y(tick)} y2={y(tick)} className="timeline-grid" /><text x={margin.left - 10} y={y(tick) + 4} textAnchor="end" className="timeline-axis-label">{formatPrice(tick)}</text>{index === yTicks.length - 1 && <line x1={margin.left} x2={width - margin.right} y1={y(tick)} y2={y(tick)} className="timeline-axis" />}</g>)}
       <line x1={margin.left} x2={margin.left} y1={margin.top} y2={height - margin.bottom} className="timeline-axis" />
-      <text x={margin.left} y={height - 15} textAnchor="start" className="timeline-axis-label">{new Date(minTime).toLocaleDateString('zh-CN')}</text>
-      <text x={width - margin.right} y={height - 15} textAnchor="end" className="timeline-axis-label">{new Date(maxTime).toLocaleDateString('zh-CN')}</text>
+      <text x={margin.left} y={height - 15} textAnchor="start" className="timeline-axis-label">{new Date(minTime).toLocaleDateString(localeCode())}</text>
+      <text x={width - margin.right} y={height - 15} textAnchor="end" className="timeline-axis-label">{new Date(maxTime).toLocaleDateString(localeCode())}</text>
       {points.map(point => <g key={point.key} className="timeline-point"><line x1={x(point.time)} x2={x(point.time)} y1={y(point.price)} y2={height - margin.bottom} className="timeline-stem" />{point.side === 'BUY' ? <circle cx={x(point.time)} cy={y(point.price)} r="6" className="timeline-buy"><title>{`买入 · ${new Date(point.filledAt).toLocaleString('zh-CN')} · ${formatPrice(point.price)} · ${decimal(point.quantity, 4)} 股`}</title></circle> : <polygon points={`${x(point.time)},${y(point.price) - 7} ${x(point.time) + 7},${y(point.price)} ${x(point.time)},${y(point.price) + 7} ${x(point.time) - 7},${y(point.price)}`} className="timeline-sell"><title>{`卖出 · ${new Date(point.filledAt).toLocaleString('zh-CN')} · ${formatPrice(point.price)} · ${decimal(point.quantity, 4)} 股`}</title></polygon>}</g>)}
     </svg></div>}
-    <div className="timeline-events" aria-label="最近成交点">{latest.map(point => <div key={point.key}><i className={point.side === 'BUY' ? 'buy-marker' : 'sell-marker'} /><span><strong>{point.side === 'BUY' ? '买入' : '卖出'} {decimal(point.quantity, 4)} 股</strong><small>{new Date(point.filledAt).toLocaleString('zh-CN')}</small></span><b>{formatPrice(point.price)}</b></div>)}</div>
+    <div className="timeline-events" aria-label={tx('最近成交点', 'Recent fills')}>{latest.map(point => <div key={point.key}><i className={point.side === 'BUY' ? 'buy-marker' : 'sell-marker'} /><span><strong>{point.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} {decimal(point.quantity, 4)} {tx('股', 'shares')}</strong><small>{new Date(point.filledAt).toLocaleString(localeCode())}</small></span><b>{formatPrice(point.price)}</b></div>)}</div>
   </section>
 }
 
-const rangeLabels: Record<MarketRange, string> = { '1m': '1个月', '3m': '3个月', '1y': '1年', '5y': '5年' }
+const marketRanges: MarketRange[] = ['1m', '3m', '1y', '5y']
+const rangeLabel = (range: MarketRange) => ({ '1m': tx('1个月', '1 month'), '3m': tx('3个月', '3 months'), '1y': tx('1年', '1 year'), '5y': tx('5年', '5 years') })[range]
 
 function PriceHistoryChart({ series, orders, name }: { series: MarketSeries; orders: HistoricalOrder[]; name: string }) {
   const chartRef = useRef<HTMLDivElement>(null)
@@ -297,26 +299,29 @@ function PriceHistoryChart({ series, orders, name }: { series: MarketSeries; ord
     const sellData = trades.filter(item => item.side === 'SELL').map(item => ({
       value: [item.time, item.price], quantity: item.quantity, filledAt: item.filledAt,
     }))
+    const closeName = tx('Yahoo 收盘价', 'Yahoo close')
+    const buyName = tx('买入（圆形）', 'Buy (circle)')
+    const sellName = tx('卖出（菱形）', 'Sell (diamond)')
     const option: EChartsCoreOption = {
       animation: typeof window.matchMedia !== 'function' || !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-      aria: { enabled: true, decal: { show: false }, description: `${name} ${rangeLabels[series.range]}每日收盘价，叠加 Trading 212 买入与卖出成交点。` },
+      aria: { enabled: true, decal: { show: false }, description: tx(`${name} ${rangeLabel(series.range)}每日收盘价，叠加 Trading 212 买入与卖出成交点。`, `${name} daily close over ${rangeLabel(series.range)}, with Trading 212 buy and sell markers.`) },
       color: ['#2764d8', '#2764d8', '#b46c19'],
       grid: { left: 72, right: 24, top: 42, bottom: 72, containLabel: false },
-      legend: { top: 0, left: 0, itemWidth: 18, itemHeight: 9, textStyle: { color: '#687481', fontSize: 10 }, data: ['Yahoo 收盘价', '买入（圆形）', '卖出（菱形）'] },
+      legend: { top: 0, left: 0, itemWidth: 18, itemHeight: 9, textStyle: { color: '#687481', fontSize: 10 }, data: [closeName, buyName, sellName] },
       tooltip: {
         trigger: 'axis', renderMode: 'richText', confine: true, axisPointer: { type: 'cross', snap: false },
         formatter: (params: unknown) => {
           const rows = Array.isArray(params) ? params as Array<Record<string, unknown>> : []
           const firstRow = rows[0]
           const axisValue = typeof firstRow?.axisValue === 'number' ? firstRow.axisValue : Number(firstRow?.axisValue)
-          const lines = Number.isFinite(axisValue) ? [new Date(axisValue).toLocaleString('zh-CN')] : []
+          const lines = Number.isFinite(axisValue) ? [new Date(axisValue).toLocaleString(localeCode())] : []
           for (const row of rows) {
             const data = row.data as { value?: unknown[]; quantity?: number; filledAt?: string } | undefined
             const value = Array.isArray(data?.value) ? Number(data.value[1]) : Number(row.value)
             if (!Number.isFinite(value)) continue
             const seriesName = String(row.seriesName ?? '')
             lines.push(`${String(row.marker ?? '')}${seriesName}  ${formatPrice(value)}`)
-            if (data?.quantity !== undefined) lines.push(`数量  ${decimal(data.quantity, 4)} 股${data.filledAt ? ` · ${new Date(data.filledAt).toLocaleTimeString('zh-CN')}` : ''}`)
+            if (data?.quantity !== undefined) lines.push(`${tx('数量', 'Quantity')}  ${decimal(data.quantity, 4)}${tx(' 股', ' shares')}${data.filledAt ? ` · ${new Date(data.filledAt).toLocaleTimeString(localeCode())}` : ''}`)
           }
           return lines.join('\n')
         },
@@ -325,9 +330,9 @@ function PriceHistoryChart({ series, orders, name }: { series: MarketSeries; ord
       yAxis: { type: 'value', scale: true, axisLine: { show: true, lineStyle: { color: '#9ca8b4' } }, axisTick: { show: false }, axisLabel: { color: '#687481', fontSize: 10, formatter: (value: number) => formatPrice(value) }, splitLine: { show: true, lineStyle: { color: '#e8edf2' } } },
       dataZoom: [{ type: 'inside', filterMode: 'none', minSpan: 8 }, { type: 'slider', height: 20, bottom: 18, borderColor: '#dce2e8', fillerColor: 'rgba(39,100,216,.12)', handleStyle: { color: '#2764d8' }, textStyle: { color: '#687481', fontSize: 9 }, brushSelect: false }],
       series: [
-        { name: 'Yahoo 收盘价', type: 'line', data: candles.map(item => [Date.parse(item.time), item.close]), showSymbol: false, sampling: 'lttb', smooth: false, lineStyle: { color: '#2764d8', width: 2.4 }, emphasis: { focus: 'series' }, z: 2 },
-        { name: '买入（圆形）', type: 'scatter', data: buyData, symbol: 'circle', symbolSize: 12, itemStyle: { color: '#2764d8', borderColor: '#fff', borderWidth: 2 }, z: 5 },
-        { name: '卖出（菱形）', type: 'scatter', data: sellData, symbol: 'diamond', symbolSize: 14, itemStyle: { color: '#b46c19', borderColor: '#fff', borderWidth: 2 }, z: 5 },
+        { name: closeName, type: 'line', data: candles.map(item => [Date.parse(item.time), item.close]), showSymbol: false, sampling: 'lttb', smooth: false, lineStyle: { color: '#2764d8', width: 2.4 }, emphasis: { focus: 'series' }, z: 2 },
+        { name: buyName, type: 'scatter', data: buyData, symbol: 'circle', symbolSize: 12, itemStyle: { color: '#2764d8', borderColor: '#fff', borderWidth: 2 }, z: 5 },
+        { name: sellName, type: 'scatter', data: sellData, symbol: 'diamond', symbolSize: 14, itemStyle: { color: '#b46c19', borderColor: '#fff', borderWidth: 2 }, z: 5 },
       ],
     }
     chart.setOption(option)
@@ -336,11 +341,11 @@ function PriceHistoryChart({ series, orders, name }: { series: MarketSeries; ord
     return () => { resize?.disconnect(); chart.dispose() }
   }, [candles, end, name, series.currency, series.range, start, trades])
   return <section className="price-chart-panel" aria-labelledby="price-chart-title">
-    <div className="section-heading"><div><h2 id="price-chart-title">历史价格与买卖点</h2><p>{series.symbol} · 每日收盘价 · {new Date(start).toLocaleDateString('zh-CN')} – {new Date(end).toLocaleDateString('zh-CN')} · 纵轴聚焦价格区间</p></div><strong className={(change ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{money(last, series.currency)} <small>{percent(change)}</small></strong></div>
-    <p className="chart-count">区间内 {trades.length} 个 Trading 212 成交点 · 可拖动底部滑块或双指缩放</p>
-    <div ref={chartRef} className="price-chart" role="img" aria-label={`${name} ${rangeLabels[series.range]}历史价格曲线，包含 ${trades.length} 个买卖成交点`} />
+    <div className="section-heading"><div><h2 id="price-chart-title">{tx('历史价格与买卖点', 'Price history and trade markers')}</h2><p>{series.symbol} · {tx('每日收盘价', 'Daily close')} · {new Date(start).toLocaleDateString(localeCode())} – {new Date(end).toLocaleDateString(localeCode())} · {tx('纵轴聚焦价格区间', 'Scaled price axis')}</p></div><strong className={(change ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{money(last, series.currency)} <small>{percent(change)}</small></strong></div>
+    <p className="chart-count">{tx(`区间内 ${trades.length} 个 Trading 212 成交点 · 可拖动底部滑块或双指缩放`, `${trades.length} Trading 212 trades in range · Drag the slider or pinch to zoom`)}</p>
+    <div ref={chartRef} className="price-chart" role="img" aria-label={tx(`${name} ${rangeLabel(series.range)}历史价格曲线，包含 ${trades.length} 个买卖成交点`, `${name} ${rangeLabel(series.range)} price chart with ${trades.length} trade markers`)} />
     <div className="sr-only" aria-label="成交点明细">{trades.map(trade => <span key={trade.key}>{trade.side === 'BUY' ? '买入' : '卖出'}，{new Date(trade.filledAt).toLocaleString('zh-CN')}，成交价 {money(trade.price, series.currency)}，{decimal(trade.quantity, 4)} 股</span>)}</div>
-    <p className="market-source">价格来源：Yahoo Finance（非官方接口，可能延迟或暂时不可用）；买卖点来源：Trading 212 真实成交记录。Yahoo 只接收公开的 ISIN/股票名称，不会收到你的 API 密钥、持仓数量或账户金额。</p>
+    <p className="market-source">{tx('价格来源：Yahoo Finance（非官方接口，可能延迟或暂时不可用）；买卖点来源：Trading 212 真实成交记录。Yahoo 只接收公开的 ISIN/股票名称，不会收到你的 API 密钥、持仓数量或账户金额。', 'Prices: Yahoo Finance (unofficial endpoint; may be delayed or unavailable). Trade markers: actual Trading 212 fills. Yahoo receives only the public ISIN/name, never your API key, quantities, or account values.')}</p>
   </section>
 }
 
@@ -375,13 +380,13 @@ function InstrumentDetailPage({ position, accountCurrency, onBack }: { position:
   const profit = position.walletImpact?.unrealizedProfitLoss ?? 0
   const cost = position.walletImpact?.totalCost ?? 0
   return <section className="content-page instrument-page">
-    <button className="back-button" type="button" onClick={onBack}><ArrowLeft />返回持仓</button>
-    <div className="instrument-heading"><div><span>{tickerLabel(ticker)} · {position.instrument?.isin ?? 'ISIN 未提供'}</span><h1>{name}</h1><p>{decimal(position.quantity, 4)} 股 · 标的币种 {currency}</p></div><div><span>当前价格</span><strong>{money(position.currentPrice, currency)}</strong><small className={profit >= 0 ? 'tone-positive' : 'tone-negative'}>{signedMoney(profit, accountCurrency)} · {percent(cost ? profit / cost * 100 : undefined)}</small></div></div>
-    <section className="instrument-metrics"><Metric label="平均买入价" value={position.averagePricePaid === undefined ? '—' : money(position.averagePricePaid, currency)} /><Metric label="持仓成本" value={money(cost, accountCurrency)} /><Metric label="当前市值" value={money(position.walletImpact?.currentValue, accountCurrency)} /><Metric label="可交易数量" value={decimal(position.quantityAvailableForTrading, 4)} /></section>
-    <div className="range-switcher" aria-label="价格时间范围">{(Object.keys(rangeLabels) as MarketRange[]).map(value => <button type="button" key={value} className={range === value ? 'active' : ''} aria-pressed={range === value} onClick={() => setRange(value)}>{rangeLabels[value]}</button>)}</div>
+    <button className="back-button" type="button" onClick={onBack}><ArrowLeft />{tx('返回持仓', 'Back to holdings')}</button>
+    <div className="instrument-heading"><div><span>{tickerLabel(ticker)} · {position.instrument?.isin ?? tx('ISIN 未提供', 'ISIN unavailable')}</span><h1>{name}</h1><p>{decimal(position.quantity, 4)} {tx('股', 'shares')} · {tx('标的币种', 'Instrument currency')} {currency}</p></div><div><span>{tx('当前价格', 'Current price')}</span><strong>{money(position.currentPrice, currency)}</strong><small className={profit >= 0 ? 'tone-positive' : 'tone-negative'}>{signedMoney(profit, accountCurrency)} · {percent(cost ? profit / cost * 100 : undefined)}</small></div></div>
+    <section className="instrument-metrics"><Metric label={tx('平均买入价', 'Average paid')} value={position.averagePricePaid === undefined ? '—' : money(position.averagePricePaid, currency)} /><Metric label={tx('持仓成本', 'Position cost')} value={money(cost, accountCurrency)} /><Metric label={tx('当前市值', 'Current value')} value={money(position.walletImpact?.currentValue, accountCurrency)} /><Metric label={tx('可交易数量', 'Tradable quantity')} value={decimal(position.quantityAvailableForTrading, 4)} /></section>
+    <div className="range-switcher" aria-label={tx('价格时间范围', 'Price range')}>{marketRanges.map(value => <button type="button" key={value} className={range === value ? 'active' : ''} aria-pressed={range === value} onClick={() => setRange(value)}>{rangeLabel(value)}</button>)}</div>
     {marketError && <ErrorPanel error={marketError} onRetry={() => void loadMarket(range)} compact />}
-    {marketLoading ? <div className="chart-loading"><LoaderCircle className="spin" />正在读取 Yahoo Finance 行情…</div> : series && <PriceHistoryChart series={series} orders={orders} name={name} />}
-    <section className="instrument-history"><div className="section-heading"><div><h2>这只股票的买卖历史</h2><p>Trading 212 返回的真实成交记录 · 已加载 {orders.length} 笔</p></div></div>{historyError && <ErrorPanel error={historyError} onRetry={() => void loadHistory()} compact />}{historyLoading && orders.length === 0 ? <div className="history-loading"><LoaderCircle className="spin" />正在读取买卖历史…</div> : <HistoryRows kind="orders" items={orders} />}{cursor && <button className="load-more" type="button" disabled={historyLoading} onClick={() => void loadHistory(cursor, true)}>{historyLoading ? '正在加载…' : '加载更多'}</button>}</section>
+    {marketLoading ? <div className="chart-loading"><LoaderCircle className="spin" />{tx('正在读取 Yahoo Finance 行情…', 'Loading Yahoo Finance prices…')}</div> : series && <PriceHistoryChart series={series} orders={orders} name={name} />}
+    <section className="instrument-history"><div className="section-heading"><div><h2>{tx('这只股票的买卖历史', 'Trade history for this instrument')}</h2><p>{tx(`Trading 212 返回的真实成交记录 · 已加载 ${orders.length} 笔`, `Actual Trading 212 fills · ${orders.length} loaded`)}</p></div></div>{historyError && <ErrorPanel error={historyError} onRetry={() => void loadHistory()} compact />}{historyLoading && orders.length === 0 ? <div className="history-loading"><LoaderCircle className="spin" />{tx('正在读取买卖历史…', 'Loading trade history…')}</div> : <HistoryRows kind="orders" items={orders} />}{cursor && <button className="load-more" type="button" disabled={historyLoading} onClick={() => void loadHistory(cursor, true)}>{historyLoading ? tx('正在加载…', 'Loading…') : tx('加载更多', 'Load more')}</button>}</section>
   </section>
 }
 
@@ -400,8 +405,8 @@ function HistorySummary({ kind, items }: { kind: HistoryKind; items: HistoryItem
       const current = byAsset.get(key) ?? { label: item.order.instrument?.name ?? tickerLabel(key), value: 0, count: 0 }
       byAsset.set(key, { ...current, value: current.value + Math.abs(item.fill?.walletImpact?.netValue ?? 0), count: current.count + 1 })
     }
-    const chartRows = [...byAsset].map(([key, item]) => ({ key, label: item.label, detail: `${item.count} 笔`, value: item.value })).sort((a, b) => b.value - a.value).slice(0, 6)
-    return <><section className="history-metrics"><Metric label="已加载记录" value={`${rows.length} 笔`} note="当前分页样本" /><Metric label="买入成交额" value={money(buys, currency)} /><Metric label="卖出成交额" value={money(sells, currency)} /><Metric label="已实现盈亏" value={signedMoney(realized, currency)} tone={realized >= 0 ? 'positive' : 'negative'} note={fees ? `税费 ${money(fees, currency)}` : undefined} /></section><TradeTimeline orders={rows} />{chartRows.length >= 4 && <section className="history-chart"><div className="section-heading"><div><h2>交易活跃资产</h2><p>当前已加载记录 · 按成交净额绝对值排名</p></div></div><BarList rows={chartRows} currency={currency} ariaLabel="当前已加载历史订单的交易活跃资产" /></section>}</>
+    const chartRows = [...byAsset].map(([key, item]) => ({ key, label: item.label, detail: tx(`${item.count} 笔`, `${item.count} fills`), value: item.value })).sort((a, b) => b.value - a.value).slice(0, 6)
+    return <><section className="history-metrics"><Metric label={tx('已加载记录', 'Loaded records')} value={tx(`${rows.length} 笔`, `${rows.length}`)} note={tx('当前分页样本', 'Current loaded sample')} /><Metric label={tx('买入成交额', 'Buy value')} value={money(buys, currency)} /><Metric label={tx('卖出成交额', 'Sell value')} value={money(sells, currency)} /><Metric label={tx('已实现盈亏', 'Realized P/L')} value={signedMoney(realized, currency)} tone={realized >= 0 ? 'positive' : 'negative'} note={fees ? `${tx('税费', 'Fees')} ${money(fees, currency)}` : undefined} /></section><TradeTimeline orders={rows} />{chartRows.length >= 4 && <section className="history-chart"><div className="section-heading"><div><h2>{tx('交易活跃资产', 'Most-traded assets')}</h2><p>{tx('当前已加载记录 · 按成交净额绝对值排名', 'Loaded records · Ranked by absolute net fill value')}</p></div></div><BarList rows={chartRows} currency={currency} ariaLabel={tx('当前已加载历史订单的交易活跃资产', 'Most-traded assets in loaded order history')} /></section>}</>
   }
   if (kind === 'transactions') {
     const rows = items as CashTransaction[]
@@ -412,8 +417,8 @@ function HistorySummary({ kind, items }: { kind: HistoryKind; items: HistoryItem
     const interest = rows.filter(item => item.type.includes('INTEREST')).reduce((sum, item) => sum + item.amount, 0)
     const byType = new Map<string, number>()
     for (const item of rows) byType.set(item.type, (byType.get(item.type) ?? 0) + item.amount)
-    const chartRows = [...byType].map(([key, value]) => ({ key, label: transactionLabels[key] ?? key, value })).sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
-    return <><section className="history-metrics"><Metric label="已加载记录" value={`${rows.length} 笔`} note="当前分页样本" /><Metric label="流入" value={money(inflow, currency)} /><Metric label="流出" value={money(outflow, currency)} /><Metric label="净现金流" value={signedMoney(net, currency)} tone={net >= 0 ? 'positive' : 'negative'} note={interest ? `其中利息 ${signedMoney(interest, currency)}` : undefined} /></section>{chartRows.length >= 4 && <section className="history-chart"><div className="section-heading"><div><h2>资金流水构成</h2><p>当前已加载记录 · 按类型汇总</p></div></div><BarList rows={chartRows} currency={currency} signed ariaLabel="当前已加载资金流水按类型汇总" /></section>}</>
+    const chartRows = [...byType].map(([key, value]) => ({ key, label: transactionLabel(key), value })).sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
+    return <><section className="history-metrics"><Metric label={tx('已加载记录', 'Loaded records')} value={tx(`${rows.length} 笔`, `${rows.length}`)} note={tx('当前分页样本', 'Current loaded sample')} /><Metric label={tx('流入', 'Inflow')} value={money(inflow, currency)} /><Metric label={tx('流出', 'Outflow')} value={money(outflow, currency)} /><Metric label={tx('净现金流', 'Net cash flow')} value={signedMoney(net, currency)} tone={net >= 0 ? 'positive' : 'negative'} note={interest ? `${tx('其中利息', 'Interest')} ${signedMoney(interest, currency)}` : undefined} /></section>{chartRows.length >= 4 && <section className="history-chart"><div className="section-heading"><div><h2>{tx('资金流水构成', 'Cash activity breakdown')}</h2><p>{tx('当前已加载记录 · 按类型汇总', 'Loaded records · Grouped by type')}</p></div></div><BarList rows={chartRows} currency={currency} signed ariaLabel={tx('当前已加载资金流水按类型汇总', 'Loaded cash activity grouped by type')} /></section>}</>
   }
   const rows = items as Dividend[]
   const currency = rows[0]?.currency ?? 'EUR'
@@ -424,10 +429,10 @@ function HistorySummary({ kind, items }: { kind: HistoryKind; items: HistoryItem
     const current = byAsset.get(item.ticker) ?? { label: item.instrument?.name ?? tickerLabel(item.ticker), value: 0, count: 0 }
     byAsset.set(item.ticker, { ...current, value: current.value + item.amount, count: current.count + 1 })
   }
-  const chartRows = [...byAsset].map(([key, item]) => ({ key, label: item.label, detail: `${item.count} 笔`, value: item.value })).sort((a, b) => b.value - a.value).slice(0, 6)
+  const chartRows = [...byAsset].map(([key, item]) => ({ key, label: item.label, detail: tx(`${item.count} 笔`, `${item.count} payments`), value: item.value })).sort((a, b) => b.value - a.value).slice(0, 6)
   const dates = rows.map(item => new Date(item.paidOn).getTime()).filter(Number.isFinite)
-  const range = dates.length ? `${new Date(Math.min(...dates)).toLocaleDateString('zh-CN')} – ${new Date(Math.max(...dates)).toLocaleDateString('zh-CN')}` : undefined
-  return <><section className="history-metrics"><Metric label="已加载记录" value={`${rows.length} 笔`} note="当前分页样本" /><Metric label="到账合计" value={money(total, currency)} /><Metric label="派息资产" value={`${tickers} 个`} /><Metric label="覆盖区间" value={range ?? '—'} /></section>{chartRows.length >= 4 && <section className="history-chart"><div className="section-heading"><div><h2>分红来源</h2><p>当前已加载记录 · 按到账金额排名</p></div></div><BarList rows={chartRows} currency={currency} ariaLabel="当前已加载分红记录按资产汇总" /></section>}</>
+  const range = dates.length ? `${new Date(Math.min(...dates)).toLocaleDateString(localeCode())} – ${new Date(Math.max(...dates)).toLocaleDateString(localeCode())}` : undefined
+  return <><section className="history-metrics"><Metric label={tx('已加载记录', 'Loaded records')} value={tx(`${rows.length} 笔`, `${rows.length}`)} note={tx('当前分页样本', 'Current loaded sample')} /><Metric label={tx('到账合计', 'Total received')} value={money(total, currency)} /><Metric label={tx('派息资产', 'Paying assets')} value={tx(`${tickers} 个`, `${tickers}`)} /><Metric label={tx('覆盖区间', 'Date range')} value={range ?? '—'} /></section>{chartRows.length >= 4 && <section className="history-chart"><div className="section-heading"><div><h2>{tx('分红来源', 'Dividend sources')}</h2><p>{tx('当前已加载记录 · 按到账金额排名', 'Loaded records · Ranked by amount received')}</p></div></div><BarList rows={chartRows} currency={currency} ariaLabel={tx('当前已加载分红记录按资产汇总', 'Loaded dividends grouped by asset')} /></section>}</>
 }
 
 function Metric({ label, value, note, tone }: { label: string; value: string; note?: string; tone?: 'positive' | 'negative' }) {
@@ -459,11 +464,11 @@ function HistoryPage() {
   }
 
   useEffect(() => { setItems([]); setCursor(undefined); setLoadedKind(undefined); void load(kind) }, [kind])
-  return <section className="content-page history-page"><h1>交易历史</h1><p>来自 Trading 212 的只读历史数据。汇总仅覆盖下方已经加载的记录，不代表账户全历史。</p>
-    <div className="history-tabs" role="tablist" aria-label="历史记录类型">{(['orders', 'transactions', 'dividends'] as const).map(value => <button type="button" role="tab" aria-selected={kind === value} className={kind === value ? 'active' : ''} key={value} onClick={() => setKind(value)}>{historyLabels[value]}</button>)}</div>
+  return <section className="content-page history-page"><h1>{tx('交易历史', 'Transaction history')}</h1><p>{tx('来自 Trading 212 的只读历史数据。汇总仅覆盖下方已经加载的记录，不代表账户全历史。', 'Read-only history from Trading 212. Summaries cover only the loaded records below, not your full account history.')}</p>
+    <div className="history-tabs" role="tablist" aria-label={tx('历史记录类型', 'History type')}>{(['orders', 'transactions', 'dividends'] as const).map(value => <button type="button" role="tab" aria-selected={kind === value} className={kind === value ? 'active' : ''} key={value} onClick={() => setKind(value)}>{historyLabel(value)}</button>)}</div>
     {error && <ErrorPanel error={error} onRetry={() => void load(kind)} compact />}
-    {loading && loadedKind !== kind ? <div className="history-loading"><LoaderCircle className="spin" />正在读取{historyLabels[kind]}…</div> : loadedKind === kind && <><HistorySummary kind={kind} items={items} /><HistoryRows kind={kind} items={items} /></>}
-    {cursor && <button className="load-more" type="button" disabled={loading} onClick={() => void load(kind, cursor, true)}>{loading ? '正在加载…' : '加载更多'}</button>}
+    {loading && loadedKind !== kind ? <div className="history-loading"><LoaderCircle className="spin" />{tx('正在读取', 'Loading ')}{historyLabel(kind)}…</div> : loadedKind === kind && <><HistorySummary kind={kind} items={items} /><HistoryRows kind={kind} items={items} /></>}
+    {cursor && <button className="load-more" type="button" disabled={loading} onClick={() => void load(kind, cursor, true)}>{loading ? tx('正在加载…', 'Loading…') : tx('加载更多', 'Load more')}</button>}
   </section>
 }
 
@@ -471,31 +476,44 @@ function OverviewPage({ portfolio, onHoldings, onInstrument, onCopyPrompt, copyS
   const currency = portfolio.account.currency
   const analytics = portfolio.analytics
   return <>
-    <section className="hero-summary"><div><span className="hero-label">账户总价值 · {currency}</span><strong>{money(analytics.totalValue, currency)}</strong><p>{analytics.positionCount} 个持仓 · {portfolio.pendingOrders.length} 个待处理订单 · {analytics.piePositionCount} 个 Pie 内持仓</p></div><div className="hero-return"><span>账户摘要未实现收益</span><strong className={analytics.unrealizedProfitLoss >= 0 ? 'tone-positive' : 'tone-negative'}>{signedMoney(analytics.unrealizedProfitLoss, currency)}</strong><small>{percent(analytics.unrealizedReturnPercent)} · 成本基础 {money(analytics.totalCost, currency)}</small></div></section>
-    <section className="metrics" aria-label="投资组合关键指标"><Metric label="已投资市值" value={money(analytics.investedValue, currency)} note={`占账户 ${plainPercent(analytics.investedWeightPercent)}`} /><Metric label="可用现金" value={money(analytics.availableCash, currency)} note={`占账户 ${plainPercent(analytics.availableCashWeightPercent)}`} /><Metric label="累计已实现盈亏" value={signedMoney(analytics.realizedProfitLoss, currency)} tone={analytics.realizedProfitLoss >= 0 ? 'positive' : 'negative'} /><Metric label="外汇影响" value={signedMoney(analytics.fxImpact, currency)} tone={analytics.fxImpact >= 0 ? 'positive' : 'negative'} /><Metric label="订单预留现金" value={money(analytics.reservedForOrders, currency)} note={portfolio.pendingOrders.length ? `${portfolio.pendingOrders.length} 个订单` : '没有待处理订单'} /></section>
-    <section className="risk-strip" aria-label="组合集中度"><div><BarChart3 /><span><b>最大持仓</b><strong>{plainPercent(analytics.top1WeightPercent)}</strong></span></div><div><Layers3 /><span><b>前三大持仓</b><strong>{plainPercent(analytics.top3WeightPercent)}</strong></span></div><div><CircleDollarSign /><span><b>Pie 内现金</b><strong>{money(analytics.cashInPies, currency)}</strong></span></div>{analytics.top1WeightPercent >= 25 && <div className="risk-callout"><AlertTriangle /><span><b>集中度提示</b><small>单一持仓超过已投资市值的 25%</small></span></div>}</section>
-    <div className="visual-grid"><section className="panel allocation-panel"><header><div><h2>持仓市值构成</h2><p>逐仓快照合计为 100% · 前五项与其他持仓</p></div></header><Allocation portfolio={portfolio} /></section><section className="panel"><header><div><h2>未实现盈亏贡献</h2><p>逐仓快照 · 按绝对影响排序 · 账户币种</p></div></header><ProfitDrivers portfolio={portfolio} /></section><section className="panel"><header><div><h2>标的交易币种暴露</h2><p>逐仓快照 · 不等同于净外汇风险</p></div></header><CurrencyExposureChart portfolio={portfolio} /></section></div>
-    <section className="panel holdings-preview"><header><div><h2>主要持仓</h2><p>点击资产查看真实价格曲线、买卖点和交易历史</p></div><button type="button" onClick={onHoldings}>查看全部 <ArrowRight /></button></header><HoldingTable positions={portfolio.positions} currency={currency} limit={5} onSelect={onInstrument} /></section>
-    <section className="panel pending-panel"><header><div><h2>待处理订单</h2><p>Trading 212 当前仍处于活动状态的订单</p></div></header><PendingOrders orders={portfolio.pendingOrders} currency={currency} /></section>
-    <section className="ask-banner"><div><span>回到任意 dsh 对话直接提问</span><strong>请用我的 Trading 212 数据总结前三大持仓和集中度风险</strong></div><button type="button" onClick={onCopyPrompt}><Clipboard />{copyStatus === 'copied' ? '已复制' : copyStatus === 'failed' ? '复制失败' : '复制问题'}</button></section>
+    <section className="hero-summary"><div><span className="hero-label">{tx('账户总价值', 'Total account value')} · {currency}</span><strong>{money(analytics.totalValue, currency)}</strong><p>{tx(`${analytics.positionCount} 个持仓 · ${portfolio.pendingOrders.length} 个待处理订单 · ${analytics.piePositionCount} 个 Pie 内持仓`, `${analytics.positionCount} holdings · ${portfolio.pendingOrders.length} pending orders · ${analytics.piePositionCount} Pie holdings`)}</p></div><div className="hero-return"><span>{tx('账户摘要未实现收益', 'Unrealized return')}</span><strong className={analytics.unrealizedProfitLoss >= 0 ? 'tone-positive' : 'tone-negative'}>{signedMoney(analytics.unrealizedProfitLoss, currency)}</strong><small>{percent(analytics.unrealizedReturnPercent)} · {tx('成本基础', 'Cost basis')} {money(analytics.totalCost, currency)}</small></div></section>
+    <section className="metrics" aria-label={tx('投资组合关键指标', 'Portfolio metrics')}><Metric label={tx('已投资市值', 'Invested value')} value={money(analytics.investedValue, currency)} note={`${tx('占账户', 'Of account')} ${plainPercent(analytics.investedWeightPercent)}`} /><Metric label={tx('可用现金', 'Available cash')} value={money(analytics.availableCash, currency)} note={`${tx('占账户', 'Of account')} ${plainPercent(analytics.availableCashWeightPercent)}`} /><Metric label={tx('累计已实现盈亏', 'Realized P/L')} value={signedMoney(analytics.realizedProfitLoss, currency)} tone={analytics.realizedProfitLoss >= 0 ? 'positive' : 'negative'} /><Metric label={tx('外汇影响', 'FX impact')} value={signedMoney(analytics.fxImpact, currency)} tone={analytics.fxImpact >= 0 ? 'positive' : 'negative'} /><Metric label={tx('订单预留现金', 'Reserved for orders')} value={money(analytics.reservedForOrders, currency)} note={portfolio.pendingOrders.length ? tx(`${portfolio.pendingOrders.length} 个订单`, `${portfolio.pendingOrders.length} orders`) : tx('没有待处理订单', 'No pending orders')} /></section>
+    <section className="risk-strip" aria-label={tx('组合集中度', 'Portfolio concentration')}><div><BarChart3 /><span><b>{tx('最大持仓', 'Largest holding')}</b><strong>{plainPercent(analytics.top1WeightPercent)}</strong></span></div><div><Layers3 /><span><b>{tx('前三大持仓', 'Top three')}</b><strong>{plainPercent(analytics.top3WeightPercent)}</strong></span></div><div><CircleDollarSign /><span><b>{tx('Pie 内现金', 'Cash in Pies')}</b><strong>{money(analytics.cashInPies, currency)}</strong></span></div>{analytics.top1WeightPercent >= 25 && <div className="risk-callout"><AlertTriangle /><span><b>{tx('集中度提示', 'Concentration alert')}</b><small>{tx('单一持仓超过已投资市值的 25%', 'One holding exceeds 25% of invested value')}</small></span></div>}</section>
+    <div className="visual-grid"><section className="panel allocation-panel"><header><div><h2>{tx('持仓市值构成', 'Holding allocation')}</h2><p>{tx('逐仓快照合计为 100% · 前五项与其他持仓', 'Position snapshot totals 100% · Top five and others')}</p></div></header><Allocation portfolio={portfolio} /></section><section className="panel"><header><div><h2>{tx('未实现盈亏贡献', 'Unrealized P/L contributors')}</h2><p>{tx('逐仓快照 · 按绝对影响排序 · 账户币种', 'Position snapshot · Sorted by absolute impact · Account currency')}</p></div></header><ProfitDrivers portfolio={portfolio} /></section><section className="panel"><header><div><h2>{tx('标的交易币种暴露', 'Instrument currency exposure')}</h2><p>{tx('逐仓快照 · 不等同于净外汇风险', 'Position snapshot · Not the same as net FX risk')}</p></div></header><CurrencyExposureChart portfolio={portfolio} /></section></div>
+    <section className="panel holdings-preview"><header><div><h2>{tx('主要持仓', 'Top holdings')}</h2><p>{tx('点击资产查看真实价格曲线、买卖点和交易历史', 'Select an asset to view its price chart, trade markers, and history')}</p></div><button type="button" onClick={onHoldings}>{tx('查看全部', 'View all')} <ArrowRight /></button></header><HoldingTable positions={portfolio.positions} currency={currency} limit={5} onSelect={onInstrument} /></section>
+    <section className="panel pending-panel"><header><div><h2>{tx('待处理订单', 'Pending orders')}</h2><p>{tx('Trading 212 当前仍处于活动状态的订单', 'Orders currently active on Trading 212')}</p></div></header><PendingOrders orders={portfolio.pendingOrders} currency={currency} /></section>
+    <section className="ask-banner"><div><span>{tx('回到任意 dsh 对话直接提问', 'Ask from any dsh conversation')}</span><strong>{tx('请用我的 Trading 212 数据总结前三大持仓和集中度风险', 'Using my Trading 212 data, summarize my top three holdings and concentration risk.')}</strong></div><button type="button" onClick={onCopyPrompt}><Clipboard />{copyStatus === 'copied' ? tx('已复制', 'Copied') : copyStatus === 'failed' ? tx('复制失败', 'Copy failed') : tx('复制问题', 'Copy question')}</button></section>
   </>
 }
 
 function HelpPage() {
   const entries = [
-    ['invalid-credentials', '凭据被拒绝', '确认 Demo/Live 环境与密钥创建环境一致。Secret 丢失后必须重新创建密钥。'],
-    ['missing-scope', '权限不足', '启用账户、投资组合和订单读取权限；不需要任何交易权限。'],
-    ['history-permission', '历史记录不可用', '在 Trading 212 密钥中启用历史订单、分红和交易记录读取权限，然后在设置中重新连接。'],
-    ['rate-limited', '请求频率受限', '等待错误中显示的时间后刷新。插件会保留同一连接的旧快照。'],
-    ['status-unavailable', '插件状态不可用', '重启 dsh，确认插件安装在 web profile，然后重新打开。'],
-    ['connection-read-only', '连接为只读来源', '在提供凭据的环境变量或外部配置中修改，插件不会覆盖遮蔽值。'],
-    ['client-load-failed', '侧栏入口未加载', '重新安装准确版本的插件并完全重启 dsh。'],
+    ['invalid-credentials', tx('凭据被拒绝', 'Credentials rejected'), tx('确认 Demo/Live 环境与密钥创建环境一致。Secret 丢失后必须重新创建密钥。', 'Make sure Demo/Live matches where the key was created. A lost Secret requires a new key.')],
+    ['missing-scope', tx('权限不足', 'Missing permissions'), tx('启用账户、投资组合和订单读取权限；不需要任何交易权限。', 'Enable read access for account, portfolio, and orders; no trading permission is needed.')],
+    ['history-permission', tx('历史记录不可用', 'History unavailable'), tx('在 Trading 212 密钥中启用历史订单、分红和交易记录读取权限，然后在设置中重新连接。', 'Enable order, dividend, and transaction history on the Trading 212 key, then reconnect in Settings.')],
+    ['rate-limited', tx('请求频率受限', 'Rate limited'), tx('等待错误中显示的时间后刷新。插件会保留同一连接的旧快照。', 'Wait until the time shown in the error, then refresh. The previous snapshot remains available.')],
+    ['status-unavailable', tx('插件状态不可用', 'Plugin status unavailable'), tx('重启 dsh，确认插件安装在 web profile，然后重新打开。', 'Restart dsh, confirm the plugin is installed in the web profile, then reopen it.')],
+    ['connection-read-only', tx('连接为只读来源', 'Read-only credential source'), tx('在提供凭据的环境变量或外部配置中修改，插件不会覆盖遮蔽值。', 'Change the environment or external source that provides the credentials; the plugin will not overwrite it.')],
+    ['client-load-failed', tx('侧栏入口未加载', 'Sidebar entry did not load'), tx('重新安装准确版本的插件并完全重启 dsh。', 'Reinstall the exact plugin version and fully restart dsh.')],
   ]
-  return <section className="content-page help-page"><h1>帮助</h1><p>Trading 212 连接是只读的。模型会看到工具返回的投资组合快照，但诊断信息不会包含凭据、持仓或金额。</p><div className="help-list">{entries.map(([id, title, body]) => <article id={`help-${id}`} key={id}><h2>{title}</h2><p>{body}</p></article>)}</div><h2>在 dsh 中提问</h2><ul><li>总结我最大的三个持仓</li><li>我的组合有哪些货币敞口？</li><li>哪些仓位正在拖累未实现收益？</li></ul></section>
+  return <section className="content-page help-page"><h1>{tx('帮助', 'Help')}</h1><p>{tx('Trading 212 连接是只读的。模型会看到工具返回的投资组合快照，但诊断信息不会包含凭据、持仓或金额。', 'The Trading 212 connection is read-only. The model can use portfolio snapshots returned by tools, while diagnostics exclude credentials, holdings, and values.')}</p><div className="help-list">{entries.map(([id, title, body]) => <article id={`help-${id}`} key={id}><h2>{title}</h2><p>{body}</p></article>)}</div><h2>{tx('在 dsh 中提问', 'Ask in dsh')}</h2><ul><li>{tx('总结我最大的三个持仓', 'Summarize my three largest holdings')}</li><li>{tx('我的组合有哪些货币敞口？', 'What currency exposure does my portfolio have?')}</li><li>{tx('哪些仓位正在拖累未实现收益？', 'Which positions are dragging down unrealized returns?')}</li></ul></section>
 }
 
 function DisconnectDialog({ pending, error, onCancel, onConfirm }: { pending: boolean; error?: ApiError; onCancel: () => void; onConfirm: () => void }) {
-  return <div className="dialog-backdrop"><section className="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="disconnect-title"><Unplug /><h2 id="disconnect-title">断开 Trading 212？</h2><p>这会停用当前连接并清除本次运行中的投资组合缓存。插件不会删除 Trading 212 网站上的密钥。</p>{error && <ErrorPanel error={error} compact />}<div><button type="button" onClick={onCancel} disabled={pending}>取消</button><button className="danger" type="button" onClick={onConfirm} disabled={pending}>{pending ? '正在断开…' : '确认断开'}</button></div></section></div>
+  return <div className="dialog-backdrop"><section className="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="disconnect-title"><Unplug /><h2 id="disconnect-title">{tx('断开 Trading 212？', 'Disconnect Trading 212?')}</h2><p>{tx('这会停用当前连接并清除本次运行中的投资组合缓存。插件不会删除 Trading 212 网站上的密钥。', 'This disables the current connection and clears the in-memory portfolio cache. It does not delete the key on Trading 212.')}</p>{error && <ErrorPanel error={error} compact />}<div><button type="button" onClick={onCancel} disabled={pending}>{tx('取消', 'Cancel')}</button><button className="danger" type="button" onClick={onConfirm} disabled={pending}>{pending ? tx('正在断开…', 'Disconnecting…') : tx('确认断开', 'Disconnect')}</button></div></section></div>
+}
+
+function LanguageSetting() {
+  const language = useSyncExternalStore(languageStore.subscribe, languageStore.getSnapshot)
+  const choices = [
+    ['auto', tx('自动（跟随 dsh）', 'Auto (follow dsh)')],
+    ['zh', '中文'],
+    ['en', 'English'],
+  ] as const
+  return <section className="language-setting" aria-labelledby="language-title">
+    <div><span>{tx('界面', 'Interface')}</span><h2 id="language-title">{tx('语言', 'Language')}</h2><p>{tx(`当前跟随 dsh：${language.host === 'zh' ? '中文' : 'English'}`, `dsh is currently using ${language.host === 'zh' ? 'Chinese' : 'English'}`)}</p></div>
+    <div className="language-options" role="radiogroup" aria-label={tx('界面语言', 'Interface language')}>{choices.map(([value, label]) => <button key={value} type="button" role="radio" aria-checked={language.preference === value} className={language.preference === value ? 'active' : ''} onClick={() => languageStore.setPreference(value)}>{label}</button>)}</div>
+  </section>
 }
 
 function SettingsPage({ status, onConnected, onDisconnected }: { status: ConnectionStatus; onConnected: (status: ConnectionStatus, snapshot: PortfolioSnapshot) => void; onDisconnected: () => void }) {
@@ -509,34 +527,35 @@ function SettingsPage({ status, onConnected, onDisconnected }: { status: Connect
     catch (cause) { setError(cause instanceof ApiError ? cause : undefined) }
     finally { setPending(false) }
   }
-  if (reconnect) return <section className="content-page"><button className="back-button" type="button" onClick={() => setReconnect(false)}>← 返回设置</button><ConnectionForm title="重新连接 Trading 212" onConnected={onConnected} /></section>
-  return <section className="content-page settings-page"><h1>设置</h1><div className="settings-row"><div><span>连接状态</span><strong><i className="status-dot" />已连接</strong></div><div><span>环境</span><strong>{status.environment === 'live' ? 'Live' : 'Demo'}</strong></div><div><span>凭据来源</span><strong>{status.source === 'record' ? 'dsh 凭据记录' : status.source === 'reference' ? '兼容凭据引用' : status.source}</strong></div></div>{status.writable ? <div className="settings-actions"><button type="button" onClick={() => setReconnect(true)}>更换密钥或环境</button><button className="danger-outline" type="button" onClick={() => setConfirm(true)}>断开连接</button></div> : <div className="read-only-note"><ShieldCheck /><span><strong>此连接由只读来源管理</strong><br />请在环境变量或外部凭据配置中修改；插件不会覆盖它。</span></div>}{confirm && <DisconnectDialog pending={pending} error={error} onCancel={() => { if (!pending) { setConfirm(false); setError(undefined) } }} onConfirm={() => void disconnect()} />}</section>
+  if (reconnect) return <section className="content-page"><button className="back-button" type="button" onClick={() => setReconnect(false)}>← {tx('返回设置', 'Back to settings')}</button><ConnectionForm title={tx('重新连接 Trading 212', 'Reconnect Trading 212')} onConnected={onConnected} /></section>
+  return <section className="content-page settings-page"><h1>{tx('设置', 'Settings')}</h1><LanguageSetting /><div className="settings-row"><div><span>{tx('连接状态', 'Connection')}</span><strong><i className="status-dot" />{tx('已连接', 'Connected')}</strong></div><div><span>{tx('环境', 'Environment')}</span><strong>{status.environment === 'live' ? 'Live' : 'Demo'}</strong></div><div><span>{tx('凭据来源', 'Credential source')}</span><strong>{status.source === 'record' ? tx('dsh 凭据记录', 'dsh credential record') : status.source === 'reference' ? tx('兼容凭据引用', 'Credential reference') : status.source}</strong></div></div>{status.writable ? <div className="settings-actions"><button type="button" onClick={() => setReconnect(true)}>{tx('更换密钥或环境', 'Change key or environment')}</button><button className="danger-outline" type="button" onClick={() => setConfirm(true)}>{tx('断开连接', 'Disconnect')}</button></div> : <div className="read-only-note"><ShieldCheck /><span><strong>{tx('此连接由只读来源管理', 'This connection is managed by a read-only source')}</strong><br />{tx('请在环境变量或外部凭据配置中修改；插件不会覆盖它。', 'Change it in the environment or external credential configuration; the plugin will not overwrite it.')}</span></div>}{confirm && <DisconnectDialog pending={pending} error={error} onCancel={() => { if (!pending) { setConfirm(false); setError(undefined) } }} onConfirm={() => void disconnect()} />}</section>
 }
 
 function Workspace({ status, page, selectedTicker, portfolio, loading, error, onNavigate, onInstrument, onRefresh, onConnected, onDisconnected }: { status: ConnectionStatus; page: Page; selectedTicker?: string; portfolio?: PortfolioSnapshot; loading: boolean; error?: ApiError; onNavigate: (page: Page) => void; onInstrument: (position: Position) => void; onRefresh: () => void; onConnected: (status: ConnectionStatus, snapshot: PortfolioSnapshot) => void; onDisconnected: () => void }) {
   const [copyStatus, setCopyStatus] = useState<CopyStatus>('idle')
   const copyPrompt = async () => {
-    try { await copyText('请用我的 Trading 212 数据总结前三大持仓和集中度风险'); setCopyStatus('copied') }
+    try { await copyText(tx('请用我的 Trading 212 数据总结前三大持仓和集中度风险', 'Using my Trading 212 data, summarize my top three holdings and concentration risk.')); setCopyStatus('copied') }
     catch { setCopyStatus('failed') }
   }
   let content: ReactNode
   if (page === 'help') content = <HelpPage />
   else if (page === 'settings') content = <SettingsPage status={status} onConnected={onConnected} onDisconnected={onDisconnected} />
   else if (page === 'history') content = <HistoryPage />
-  else if (loading && portfolio === undefined) content = <div className="page-loading"><LoaderCircle className="spin" /><span>正在读取真实投资组合…</span></div>
+  else if (loading && portfolio === undefined) content = <div className="page-loading"><LoaderCircle className="spin" /><span>{tx('正在读取真实投资组合…', 'Loading your portfolio…')}</span></div>
   else if (portfolio === undefined && error !== undefined) content = <ErrorPanel error={error} status={status} onRetry={onRefresh} />
   else if (portfolio === undefined) content = null
   else if (page === 'instrument') {
     const position = portfolio.positions.find(item => item.instrument?.ticker === selectedTicker)
-    content = position ? <InstrumentDetailPage position={position} accountCurrency={portfolio.account.currency} onBack={() => onNavigate('holdings')} /> : <section className="content-page"><button className="back-button" type="button" onClick={() => onNavigate('holdings')}><ArrowLeft />返回持仓</button><div className="empty-state"><AlertTriangle /><strong>找不到这项持仓</strong><span>刷新后该持仓可能已经变化。</span></div></section>
+    content = position ? <InstrumentDetailPage position={position} accountCurrency={portfolio.account.currency} onBack={() => onNavigate('holdings')} /> : <section className="content-page"><button className="back-button" type="button" onClick={() => onNavigate('holdings')}><ArrowLeft />{tx('返回持仓', 'Back to holdings')}</button><div className="empty-state"><AlertTriangle /><strong>{tx('找不到这项持仓', 'Holding not found')}</strong><span>{tx('刷新后该持仓可能已经变化。', 'It may have changed since the last refresh.')}</span></div></section>
   }
-  else if (page === 'holdings') content = <section className="content-page"><h1>持仓</h1><p>{portfolio.positions.length} 个持仓 · 点击任意资产查看价格曲线和买卖历史</p>{error && <ErrorPanel error={error} status={status} onRetry={onRefresh} compact />}<HoldingTable positions={portfolio.positions} currency={portfolio.account.currency} onSelect={onInstrument} /></section>
-  else content = <>{error && <ErrorPanel error={error} status={status} onRetry={onRefresh} compact />}<OverviewPage portfolio={portfolio} onHoldings={() => onNavigate('holdings')} onInstrument={onInstrument} onCopyPrompt={() => void copyPrompt()} copyStatus={copyStatus} />{copyStatus !== 'idle' && <div className={`toast ${copyStatus === 'failed' ? 'failed' : ''}`} role="status">{copyStatus === 'copied' ? '问题已复制，可粘贴到 dsh 对话' : '系统剪贴板不可用，请手动选择问题文字'}</div>}</>
-  const title = page === 'overview' ? 'Trading 212 投资组合' : page === 'holdings' ? '全部持仓' : page === 'instrument' ? '个股详情' : page === 'history' ? '交易历史' : page === 'settings' ? '连接设置' : '帮助与支持'
-  return <main className="workspace"><header className="workspace-header"><div><h1>{title}</h1>{portfolio && <p><i className="status-dot" />{portfolio.stale ? `旧数据：${portfolio.staleReason}` : `更新于 ${new Date(portfolio.fetchedAt).toLocaleString('zh-CN')}`} · {status.environment === 'live' ? 'Live' : 'Demo'}</p>}</div>{(page === 'overview' || page === 'holdings') && <button className="refresh-button" type="button" onClick={onRefresh} disabled={loading}><RefreshCw className={loading ? 'spin' : ''} />刷新</button>}</header>{content}<footer className="legal">持仓和成交来自 Trading 212；个股历史价格来自 Yahoo Finance。仅供参考，不构成投资建议。</footer></main>
+  else if (page === 'holdings') content = <section className="content-page"><h1>{tx('持仓', 'Holdings')}</h1><p>{tx(`${portfolio.positions.length} 个持仓 · 点击任意资产查看价格曲线和买卖历史`, `${portfolio.positions.length} holdings · Select an asset to view its price chart and trade history`)}</p>{error && <ErrorPanel error={error} status={status} onRetry={onRefresh} compact />}<HoldingTable positions={portfolio.positions} currency={portfolio.account.currency} onSelect={onInstrument} /></section>
+  else content = <>{error && <ErrorPanel error={error} status={status} onRetry={onRefresh} compact />}<OverviewPage portfolio={portfolio} onHoldings={() => onNavigate('holdings')} onInstrument={onInstrument} onCopyPrompt={() => void copyPrompt()} copyStatus={copyStatus} />{copyStatus !== 'idle' && <div className={`toast ${copyStatus === 'failed' ? 'failed' : ''}`} role="status">{copyStatus === 'copied' ? tx('问题已复制，可粘贴到 dsh 对话', 'Question copied. Paste it into a dsh conversation.') : tx('系统剪贴板不可用，请手动选择问题文字', 'Clipboard unavailable. Select the question manually.')}</div>}</>
+  const title = page === 'overview' ? tx('Trading 212 投资组合', 'Trading 212 portfolio') : page === 'holdings' ? tx('全部持仓', 'All holdings') : page === 'instrument' ? tx('个股详情', 'Instrument details') : page === 'history' ? tx('交易历史', 'Trade history') : page === 'settings' ? tx('连接设置', 'Connection settings') : tx('帮助与支持', 'Help and support')
+  return <main className="workspace"><header className="workspace-header"><div><h1>{title}</h1>{portfolio && <p><i className="status-dot" />{portfolio.stale ? `${tx('旧数据：', 'Stale data: ')}${portfolio.staleReason}` : `${tx('更新于 ', 'Updated ')}${new Date(portfolio.fetchedAt).toLocaleString(localeCode())}`} · {status.environment === 'live' ? 'Live' : 'Demo'}</p>}</div>{(page === 'overview' || page === 'holdings') && <button className="refresh-button" type="button" onClick={onRefresh} disabled={loading}><RefreshCw className={loading ? 'spin' : ''} />{tx('刷新', 'Refresh')}</button>}</header>{content}<footer className="legal">{tx('持仓和成交来自 Trading 212；个股历史价格来自 Yahoo Finance。仅供参考，不构成投资建议。', 'Holdings and trades come from Trading 212; historical prices come from Yahoo Finance. For information only, not investment advice.')}</footer></main>
 }
 
 export function App() {
+  useSyncExternalStore(languageStore.subscribe, languageStore.getSnapshot)
   const [boot, setBoot] = useState<BootState>({ kind: 'loading' })
   const [page, setPage] = useState<Page>('overview')
   const [selectedTicker, setSelectedTicker] = useState<string>()
@@ -564,7 +583,7 @@ export function App() {
 
   const connected = boot.kind === 'ready' && boot.status.connected
   const activePage = useMemo<Page>(() => connected ? page : page === 'help' ? 'help' : 'setup', [connected, page])
-  if (boot.kind === 'loading') return <div className="loading-screen"><Brand /><LoaderCircle className="spin" /><span>正在读取连接状态…</span></div>
+  if (boot.kind === 'loading') return <div className="loading-screen"><Brand /><LoaderCircle className="spin" /><span>{tx('正在读取连接状态…', 'Checking connection…')}</span></div>
   if (boot.kind === 'error') return <div className="fatal-screen"><Brand /><ErrorPanel error={boot.error} onRetry={() => void bootstrap()} /></div>
 
   const onConnected = (status: ConnectionStatus, snapshot: PortfolioSnapshot) => { setBoot({ kind: 'ready', status }); setPortfolio(snapshot); setPortfolioError(undefined); setPage('overview') }

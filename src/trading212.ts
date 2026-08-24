@@ -380,7 +380,7 @@ export class Trading212Client {
     private readonly credentials: Trading212Credentials,
     private readonly timeoutMs = 15_000,
     private readonly fetchImpl: typeof fetch = fetch,
-    private readonly userAgent = 'dsh-trading212/0.6.3',
+    private readonly userAgent = 'dsh-trading212/0.7.0',
   ) {}
 
   private get baseUrl(): string {
