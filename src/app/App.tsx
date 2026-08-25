@@ -106,7 +106,7 @@ function SetupPage({ onConnected }: { onConnected: (status: ConnectionStatus, sn
   return <main className="setup-page"><ConnectionForm onConnected={onConnected} /><aside className="setup-guide"><h2>{tx('创建密钥时请选择', 'Select these key permissions')}</h2><ol><li>{tx('账户摘要读取权限', 'Read account summary')}</li><li>{tx('投资组合读取权限', 'Read portfolio')}</li><li>{tx('订单读取权限', 'Read orders')}</li><li>{tx('历史数据读取权限', 'Read history')}</li></ol><p>{tx('不要授予下单、修改或取消订单权限。如果启用了 IP 限制，请允许当前运行 dsh 的设备。', 'Do not grant permissions to place, modify, or cancel orders. If IP restrictions are enabled, allow the device running dsh.')}</p></aside></main>
 }
 
-const palette = ['#10b981', '#2563eb', '#8b5cf6', '#ec4899', '#f59e0b', '#06b6d4', '#64748b']
+const palette = ['#0f766e', '#2563eb', '#4f46e5', '#0891b2', '#d97706', '#64748b', '#94a3b8']
 
 function Allocation({ portfolio }: { portfolio: PortfolioSnapshot }) {
   const currency = portfolio.account.currency
