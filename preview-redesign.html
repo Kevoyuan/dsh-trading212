@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>dsh · Trading 212 — Redesign Preview</title>
+<style>
+/* ==========================================================================
+   Quick CSS Snippet — DESIGN.md §9.2 (consumed verbatim as :root tokens)
+   ========================================================================== */
+:root {
+  /* 字体 */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+               "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+               "Noto Sans CJK SC", "Segoe UI", sans-serif;
+  --font-mono: "SF Mono", "Geist Mono", "JetBrains Mono", "Roboto Mono", ui-monospace, monospace;
+
+  /* 品牌强调 */
+  --primary: #00a6ff; --primary-bright: #33b8ff; --primary-deep: #0084cc;
+  --primary-subtle: rgba(0,166,255,0.12); --primary-glow: rgba(0,166,255,0.35);
+  --primary-glow-subtle: rgba(0,166,255,0.15);
+
+  /* 语义金融色 */
+  --positive: #00b074; --positive-bright: #00d084; --positive-bg: rgba(0,208,132,0.12);
+  --positive-surface: #0a1812; --positive-border: rgba(0,208,132,0.28);
+  --negative: #ff3b30; --negative-bright: #ff4d4f; --negative-bg: rgba(255,59,48,0.12);
+  --negative-surface: #1e0d0e; --negative-border: rgba(255,77,79,0.28);
+  --info: #38bdf8; --info-bg: rgba(56,189,248,0.12);
+  --warning: #ffb020; --warning-bg: rgba(255,176,32,0.12);
+  --danger: #ff3b30; --danger-border: rgba(255,77,79,0.4);
+
+  /* 背景层级 */
+  --canvas-app: #000000; --canvas-subtle: #05070a; --panel: #0b0f14;
+  --panel-subtle: #10151c; --panel-hover: #161e27; --panel-active: #1a232e;
+  --panel-elevated: #18222d; --sidebar: #050709; --sidebar-hover: #0d1217; --sidebar-active: #131a22;
+
+  /* 文字 */
+  --ink: #ffffff; --ink-secondary: #cdd6df; --muted: #8291a0;
+  --muted-light: #52606e; --muted-faint: #343d46;
+
+  /* 边框 / 发丝线 */
+  --rule: rgba(255,255,255,0.08); --rule-strong: rgba(255,255,255,0.14);
+  --rule-subtle: rgba(255,255,255,0.04);
+
+  /* 圆角 */
+  --radius-xs: 4px; --radius-sm: 8px; --radius-md: 12px;
+  --radius-lg: 18px; --radius-xl: 24px; --radius-full: 9999px;
+
+  /* 阴影（带顶高光 bezel） */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.6);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.1);
+  --shadow-lg: 0 16px 36px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.12);
+
+  /* 克制发光（仅交互瞬间） */
+  --glow-primary-sm: 0 0 0 1px rgba(0,166,255,0.35), 0 0 12px rgba(0,166,255,0.18);
+  --glow-primary-md: 0 0 0 1px rgba(0,166,255,0.45), 0 0 20px rgba(0,166,255,0.22);
+  --glow-positive-sm: 0 0 6px rgba(0,208,132,0.25);
+  --glow-negative-sm: 0 0 6px rgba(255,77,79,0.25);
+
+  /* 间距（4px 基准） */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+
+  /* Cockpit 布局 */
+  --cockpit-left-width: 380px; --cockpit-right: 1fr; --cockpit-column-gap: 0;
+  --cockpit-topbar-height: 56px; --cockpit-height: calc(100vh - 56px);
+
+  /* 动效 */
+  --transition-fast: 0.15s cubic-bezier(0.16,1,0.3,1);
+  --transition-normal: 0.22s cubic-bezier(0.16,1,0.3,1);
+  --transition-spring: 0.35s cubic-bezier(0.32,0.72,0,1);
+}
+
+/* ==========================================================================
+   Base & Reset
+   ========================================================================== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  min-height: 100%;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background-color: var(--canvas-app);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* 金融数字等宽：所有金额/数量/百分比默认 tabular-nums（DESIGN.md §3.4） */
+  font-variant-numeric: tabular-nums;
+}
+/* body 保留两处 radial 环境光作为唯一背景光（DESIGN.md §2.8 规则 5，非 AI-slop） */
+body {
+  background-image:
+    radial-gradient(ellipse 60% 40% at 20% -10%, rgba(0,166,255,0.06), transparent 70%),
+    radial-gradient(ellipse 50% 30% at 80% 10%, rgba(0,208,132,0.04), transparent 60%);
+  background-attachment: fixed;
+}
+button, input, select, textarea { font-family: inherit; color: inherit; }
+button { cursor: pointer; border: 0; background: transparent; user-select: none; touch-action: manipulation; }
+button:active { transform: scale(0.985); }
+svg { display: block; }
+
+.tone-positive { color: var(--positive-bright) !important; }
+.tone-negative { color: var(--negative-bright) !important; }
+
+/* ==========================================================================
+   Top Navigation Bar (Trading 212 Native Glass Header) — § styling mirror
+   ========================================================================== */
+.t212-native-topbar {
+  height: 56px;
+  background: rgba(4,6,8,0.82);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05), 0 4px 16px rgba(0,0,0,0.5);
+}
+.topbar-left-zone { display: flex; align-items: center; gap: 14px; }
+
+/* INVEST 品牌胶囊 */
+.t212-invest-brand-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: var(--radius-full);
+  background: linear-gradient(180deg,#121820 0%,#0d1217 100%);
+  border: 1px solid var(--rule-strong);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  transition: all var(--transition-fast);
+}
+.t212-invest-brand-pill:hover { background: linear-gradient(180deg,#18222d 0%,#121820 100%); border-color: var(--primary-glow); box-shadow: 0 0 12px var(--primary-glow-subtle), inset 0 1px 0 rgba(255,255,255,0.15); }
+.invest-triangle-glyph { color: var(--primary); font-size: 10px; filter: drop-shadow(0 0 4px var(--primary-glow)); }
+.invest-title-text { font-weight: 800; font-size: 12.5px; letter-spacing: 0.09em; color: #fff; }
+.invest-env-badge {
+  font-size: 9.5px; font-weight: 750; padding: 2px 6px; border-radius: 4px;
+  background: var(--warning-bg); color: var(--warning);
+  letter-spacing: 0.04em; border: 1px solid rgba(255,176,32,0.3);
+}
+.invest-chevron-icon { color: var(--muted); transition: transform var(--transition-fast); }
+.t212-invest-brand-pill:hover .invest-chevron-icon { color: #fff; }
+
+/* Center Nav Tabs (pill 轨道) */
+.topbar-center-nav {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(18,24,32,0.5); padding: 3px;
+  border-radius: var(--radius-full); border: 1px solid var(--rule-subtle);
+}
+.topbar-nav-tab {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 16px; border-radius: var(--radius-full);
+  font-size: 13px; font-weight: 600; color: var(--muted);
+  background: transparent; transition: all var(--transition-fast); position: relative;
+}
+.topbar-nav-tab:hover { color: #fff; background: rgba(255,255,255,0.06); }
+.topbar-nav-tab.active {
+  color: #fff; background: #19222d;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 0 1px rgba(255,255,255,0.08);
+}
+.topbar-nav-tab.active svg { color: var(--primary); }
+
+/* Right Zone Tools */
+.topbar-right-zone { display: flex; align-items: center; gap: 10px; }
+.topbar-search-slot {
+  display: flex; align-items: center; gap: 8px;
+  background: #0d1217; border: 1px solid var(--rule); border-radius: var(--radius-full);
+  padding: 6px 14px; width: 180px;
+  transition: width var(--transition-normal), border-color var(--transition-fast), background var(--transition-fast);
+}
+.topbar-search-slot:focus-within { width: 240px; border-color: var(--primary); background: #121820; box-shadow: 0 0 12px var(--primary-glow-subtle); }
+.search-glyph-icon { color: var(--muted); flex-shrink: 0; }
+.topbar-search-field { background: transparent; border: 0; outline: none; color: #fff; font-size: 12.5px; width: 100%; }
+.topbar-search-field::placeholder { color: var(--muted-light); }
+.topbar-tool-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); background: #0e1318; border: 1px solid var(--rule);
+  transition: all var(--transition-fast);
+}
+.topbar-tool-btn:hover { color: #fff; background: #17202a; border-color: var(--rule-strong); }
+
+/* ==========================================================================
+   Cockpit Two-Column Layout — §5.2
+   ========================================================================== */
+.t212-cockpit-layout {
+  display: grid;
+  grid-template-columns: var(--cockpit-left-width) var(--cockpit-right);
+  height: var(--cockpit-height);
+  min-height: 0;
+  background: #000;
+  overflow: hidden;
+}
+.cockpit-left-pane {
+  background: var(--canvas-subtle);
+  border-right: 1px solid var(--rule);
+  padding: 20px 18px 96px;
+  display: flex; flex-direction: column; gap: 18px;
+  position: relative; overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+.cockpit-left-pane::-webkit-scrollbar { width: 5px; }
+.cockpit-left-pane::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: var(--radius-full); }
+.cockpit-left-pane::-webkit-scrollbar-track { background: transparent; }
+
+/* 1. Account Value Card — §4.2 卡片 (Double-Bezel Hardware Architecture) */
+.cockpit-account-card {
+  padding: 18px;
+  background: linear-gradient(180deg,#0c1016 0%,#070a0e 100%);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+  position: relative; overflow: hidden;
+}
+.cockpit-account-card::before {
+  content: ""; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,166,255,0.4), transparent);
+}
+.account-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.account-label { display: block; font-size: 10.5px; font-weight: 750; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.icon-btn-ghost { color: var(--muted); padding: 5px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+.icon-btn-ghost:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.account-hero-val {
+  font-size: 34px; font-weight: 800; letter-spacing: -1.0px; color: #fff;
+  font-variant-numeric: tabular-nums; display: block; line-height: 1.1;
+  margin: 6px 0 12px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+.account-sub-metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--rule-subtle); }
+.sub-metric-block span { display: block; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+.sub-metric-block strong { font-size: 13px; font-weight: 750; font-variant-numeric: tabular-nums; }
+
+.mini-chart-strip { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.sparkline-svg { width: 100%; height: 42px; overflow: visible; }
+.mini-range-pills { display: flex; justify-content: space-between; gap: 2px; background: rgba(0,0,0,0.4); padding: 3px; border-radius: var(--radius-full); }
+.mini-pill-btn { padding: 3px 7px; border-radius: var(--radius-full); font-size: 10px; font-weight: 700; color: var(--muted); background: transparent; transition: all var(--transition-fast); font-variant-numeric: tabular-nums; }
+.mini-pill-btn:hover { color: var(--ink); background: rgba(255,255,255,0.06); }
+.mini-pill-btn.active { background: #1e2734; color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+
+/* 2. Main Pot (Cash) Card */
+.cockpit-main-pot-card {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  background: linear-gradient(180deg,#0d1218 0%,#090d12 100%);
+  border: 1px solid var(--rule); border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.pot-info { display: flex; flex-direction: column; gap: 2px; }
+.pot-label { font-size: 10px; font-weight: 750; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.pot-val { font-size: 17px; font-weight: 750; color: #fff; font-variant-numeric: tabular-nums; }
+.pot-sub { font-size: 10.5px; color: var(--muted-light); }
+.t212-deposit-pill-btn {
+  padding: 7px 18px; border-radius: var(--radius-full); background: var(--primary);
+  color: #04121d; font-size: 12px; font-weight: 800; letter-spacing: 0.02em;
+  transition: all var(--transition-fast); box-shadow: 0 2px 8px rgba(0,166,255,0.35);
+}
+.t212-deposit-pill-btn:hover { background: var(--primary-bright); box-shadow: 0 0 14px var(--primary-glow); }
+
+/* 4. Investments Stream Section */
+.cockpit-investments-section { display: flex; flex-direction: column; gap: 8px; }
+.investments-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; padding: 4px 0; }
+.invest-head-title { display: flex; align-items: baseline; gap: 8px; }
+.invest-head-title h3 { font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.invest-sum-val { font-size: 12px; font-weight: 750; color: #fff; font-variant-numeric: tabular-nums; }
+.collapse-arrow { font-size: 12px; color: var(--muted); transition: transform var(--transition-fast); }
+.collapse-arrow.collapsed { transform: rotate(180deg); }
+.investments-list-stream { display: flex; flex-direction: column; gap: 4px; }
+
+.pos-stream-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+  border-radius: var(--radius-md); transition: all var(--transition-fast);
+  text-align: left; border: 1px solid transparent; background: transparent;
+}
+.pos-stream-item:hover { background: #0e1319; border-color: var(--rule); }
+.pos-stream-item.selected { background: linear-gradient(90deg,#131b24 0%,#0d1218 100%); border-color: rgba(0,166,255,0.45); box-shadow: 0 2px 10px rgba(0,0,0,0.4), 0 0 12px var(--primary-glow-subtle); }
+.pos-stream-ident { flex: 1; min-width: 0; }
+.pos-stream-ident strong { display: block; font-size: 13px; font-weight: 650; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pos-stream-ident small { display: block; font-size: 11px; color: var(--muted); }
+.pos-stream-num-col { text-align: right; flex-shrink: 0; }
+.pos-stream-num-col strong { display: block; font-size: 13px; font-weight: 750; color: #fff; font-variant-numeric: tabular-nums; }
+.pos-stream-num-col span { display: block; font-size: 11px; font-weight: 650; font-variant-numeric: tabular-nums; }
+
+/* 7. Pane Footer */
+.cockpit-pane-footer { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 8px; }
+.footer-action-pills-row { display: flex; gap: 8px; width: 100%; }
+.t212-pill-action {
+  flex: 1; padding: 8px 12px; background: #0f141a; border: 1px solid var(--rule);
+  border-radius: var(--radius-full); font-size: 12px; font-weight: 650; color: var(--ink-secondary);
+  text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all var(--transition-fast);
+}
+.t212-pill-action:hover { background: #182029; color: #fff; border-color: var(--rule-strong); }
+.t212-legal-disclaimer { font-size: 10px; color: var(--muted-light); line-height: 1.4; text-align: center; padding: 0 4px; }
+
+/* ==========================================================================
+   Ticker Ring Logo
+   ========================================================================== */
+.ticker-ring-logo { position: relative; width: 34px; height: 34px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+.ring-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-track { fill: transparent; stroke: rgba(255,255,255,0.08); stroke-width: 2.4; }
+.ring-progress { fill: transparent; stroke: var(--primary); stroke-width: 2.4; stroke-linecap: round; filter: drop-shadow(0 0 2px var(--primary-glow)); }
+.ticker-avatar { font-size: 10.5px; font-weight: 800; color: #fff; background: #171f28; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15); }
+
+/* ==========================================================================
+   Right Column Main Cockpit
+   ========================================================================== */
+.cockpit-main-pane {
+  padding: 28px 36px 96px; display: flex; flex-direction: column; gap: 32px;
+  background: #000; overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+.cockpit-main-pane::-webkit-scrollbar { width: 6px; }
+.cockpit-main-pane::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: var(--radius-full); }
+.cockpit-main-pane::-webkit-scrollbar-track { background: transparent; }
+
+.cockpit-instrument-container { display: flex; flex-direction: column; gap: 22px; }
+.cockpit-inst-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding-bottom: 4px; }
+.inst-profile { display: flex; align-items: center; gap: 16px; }
+.inst-tag-row { margin-bottom: 3px; }
+.inst-ticker-tag { font-size: 11.5px; font-weight: 750; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.inst-title { font-size: 26px; font-weight: 800; letter-spacing: -0.6px; color: #fff; line-height: 1.15; }
+.inst-price-box { text-align: right; }
+.inst-price-main { font-size: 36px; font-weight: 800; letter-spacing: -0.8px; display: block; line-height: 1.1; font-variant-numeric: tabular-nums; color: #fff; }
+.inst-price-sub { display: block; font-size: 13.5px; font-weight: 700; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.inst-actions { display: flex; gap: 12px; }
+
+/* Buy / Sell 胶囊（只读语义，§4.1） */
+.t212-action-pill { padding: 10px 32px; border-radius: var(--radius-full); font-size: 13.5px; font-weight: 750; letter-spacing: 0.02em; cursor: pointer; transition: all var(--transition-fast); }
+.t212-action-pill.sell { background: linear-gradient(180deg,#1c242e 0%,#141a22 100%); color: #fff; border: 1px solid var(--rule-strong); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+.t212-action-pill.sell:hover { background: linear-gradient(180deg,#242e3b 0%,#1a222c 100%); border-color: rgba(255,255,255,0.25); }
+.t212-action-pill.buy { background: var(--primary); color: #04121d; font-weight: 800; box-shadow: 0 2px 8px rgba(0,166,255,0.35); }
+.t212-action-pill.buy:hover { background: var(--primary-bright); box-shadow: var(--glow-primary-md); }
+
+/* === 分段控件 range-switcher — DESIGN.md §4.8 ===
+   行内分段控件：position: relative; z-index: 10，位于图表工具栏正常流内，
+   绝不 absolute 覆盖图表画布（遮挡根因已修复）。滑行 thumb 用 spring 缓动。 */
+.range-switcher {
+  display: inline-flex; align-items: center; gap: 2px;
+  height: 32px; padding: 3px; align-self: flex-start;
+  background: var(--panel-subtle);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  position: relative; z-index: 10;
+}
+.range-thumb {
+  position: absolute; top: 3px; bottom: 3px; left: 3px;
+  border-radius: 6px; background: var(--panel-elevated);
+  border: 1px solid var(--rule-strong);
+  transition: transform var(--transition-spring), width var(--transition-spring);
+  z-index: 0; pointer-events: none;
+}
+.range-switcher button {
+  position: relative; z-index: 1; flex: 0 0 auto; min-width: 40px; height: 26px;
+  padding: 0 12px; border: 0; background: transparent; font-size: 12px; font-weight: 650;
+  color: var(--muted); transition: color var(--transition-fast); font-variant-numeric: tabular-nums;
+}
+.range-switcher button:hover { color: var(--ink-secondary); background: rgba(255,255,255,0.04); }
+.range-switcher button.active { color: var(--ink); }
+.range-switcher:focus-within { border-color: var(--primary); box-shadow: var(--glow-primary-sm); }
+
+/* Chart panel */
+.cockpit-chart-wrap {
+  position: relative; z-index: 1;
+  background: linear-gradient(180deg,#0a0e14 0%,#06090c 100%);
+  border: 1px solid var(--rule-strong); border-radius: var(--radius-xl);
+  padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.section-heading h2 { font-size: 15px; font-weight: 750; letter-spacing: -0.2px; color: #fff; }
+.section-heading p { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+.section-heading strong { font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.chart-count { font-size: 11px; color: var(--muted-light); margin: 4px 0 12px; }
+.price-chart { width: 100%; height: 330px; display: block; }
+.chart-legend { display: flex; align-items: center; gap: 16px; margin-bottom: 6px; }
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+.legend-dot.close { background: var(--primary); }
+.legend-dot.buy { background: var(--positive-bright); }
+.legend-dot.sell { background: var(--warning); }
+.market-source { font-size: 10.5px; color: var(--muted-light); line-height: 1.5; margin-top: 14px; }
+
+/* Your Investment 5-Row — §4.2 卡片 */
+.your-investment-cockpit {
+  background: linear-gradient(180deg,#0c1016 0%,#070a0e 100%);
+  border: 1px solid var(--rule-strong); border-radius: var(--radius-xl);
+  padding: 22px 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.cockpit-section-title { font-size: 14.5px; font-weight: 750; letter-spacing: -0.2px; color: #fff; margin-bottom: 18px; }
+.inv-metrics-list { display: flex; flex-direction: column; gap: 14px; }
+.inv-metric-row { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--rule-subtle); font-size: 13px; }
+.inv-metric-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.inv-metric-row span { font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.inv-metric-row strong { font-size: 14px; font-weight: 750; color: #fff; font-variant-numeric: tabular-nums; }
+
+/* AutoInvest Card */
+.autoinvest-card {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 24px; background: linear-gradient(90deg,#0c1016 0%,#070a0e 100%);
+  border: 1px solid var(--rule-strong); border-radius: var(--radius-lg);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.autoinvest-card strong { display: block; font-size: 14px; font-weight: 750; color: #fff; }
+.autoinvest-card p { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+.t212-pill-btn-sm { padding: 8px 22px; background: linear-gradient(180deg,#1c2633 0%,#131a23 100%); border: 1px solid var(--rule-strong); border-radius: var(--radius-full); font-size: 12.5px; font-weight: 750; color: #fff; transition: all var(--transition-fast); }
+.t212-pill-btn-sm:hover { background: linear-gradient(180deg,#253344 0%,#1a2430 100%); border-color: var(--primary-glow); }
+
+/* Global legal footer */
+.legal { font-size: 10.5px; color: var(--muted-light); text-align: center; padding: 16px 24px 28px; border-top: 1px solid var(--rule); }
+
+/* ==========================================================================
+   Responsive — §8（窄屏双栏退化为单栏堆叠）
+   ========================================================================== */
+@media (max-width: 768px) {
+  .topbar-center-nav { display: none; }
+  .t212-cockpit-layout { grid-template-columns: 1fr; height: auto; overflow: visible; }
+  .cockpit-left-pane { border-right: 0; border-bottom: 1px solid var(--rule); overflow: visible; }
+  .cockpit-main-pane { overflow: visible; }
+  .cockpit-inst-head { flex-direction: column; align-items: flex-start; }
+  .inst-price-box { text-align: left; }
+  .inst-actions { width: 100%; }
+  .t212-action-pill { flex: 1; text-align: center; }
+}
+@media (max-width: 480px) {
+  .topbar-search-slot { width: 120px; }
+  .topbar-search-slot:focus-within { width: 160px; }
+  .cockpit-main-pane { padding: 20px 18px 64px; }
+}
+</style>
+</head>
+<body>
+<div class="t212-native-app-root">
+
+  <!-- ===================== TopNavBar ===================== -->
+  <header class="t212-native-topbar">
+    <div class="topbar-left-zone">
+      <button type="button" class="t212-invest-brand-pill" title="Account settings">
+        <span class="invest-triangle-glyph">▲</span>
+        <span class="invest-title-text">INVEST</span>
+        <span class="invest-env-badge">DEMO</span>
+        <svg class="invest-chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+
+    <nav class="topbar-center-nav" aria-label="Trading 212 navigation">
+      <button type="button" class="topbar-nav-tab active" aria-current="page">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        <span>Overview</span>
+      </button>
+      <button type="button" class="topbar-nav-tab">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        <span>Holdings</span>
+      </button>
+      <button type="button" class="topbar-nav-tab">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+        <span>History</span>
+      </button>
+      <button type="button" class="topbar-nav-tab">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        <span>Settings</span>
+      </button>
+      <button type="button" class="topbar-nav-tab">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        <span>Help</span>
+      </button>
+    </nav>
+
+    <div class="topbar-right-zone">
+      <div class="topbar-search-slot">
+        <svg class="search-glyph-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="topbar-search-field" placeholder="Search symbols…" />
+      </div>
+      <button type="button" class="topbar-tool-btn" id="eyeBtn" aria-label="Hide amounts" title="Hide amounts">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" id="eyeIcon"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+      <button type="button" class="topbar-tool-btn" aria-label="Refresh" title="Refresh">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.2-2.5L3 16"/><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.2 2.5L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================== Cockpit Layout ===================== -->
+  <div class="t212-cockpit-layout">
+
+    <!-- ============ LEFT PANE ============ -->
+    <aside class="cockpit-left-pane">
+
+      <!-- 1. Account Value Card -->
+      <section class="cockpit-account-card">
+        <div class="account-card-header">
+          <span class="account-label">Portfolio value</span>
+          <button class="icon-btn-ghost" aria-label="Options">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+          </button>
+        </div>
+        <span class="account-hero-val js-balance">€12,438.50</span>
+        <div class="account-sub-metrics-grid">
+          <div class="sub-metric-block">
+            <span>Today</span>
+            <strong class="tone-positive">+€84.20 · +0.68%</strong>
+          </div>
+          <div class="sub-metric-block">
+            <span>Total return</span>
+            <strong class="tone-positive">+€1,243.18 · +11.1%</strong>
+          </div>
+        </div>
+        <div class="mini-chart-strip">
+          <svg class="sparkline-svg" viewBox="0 0 300 42" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(0,208,132,0.22)"/>
+                <stop offset="100%" stop-color="rgba(0,208,132,0)"/>
+              </linearGradient>
+            </defs>
+            <path d="M0 32 L20 30 L40 34 L60 26 L80 28 L100 20 L120 24 L140 16 L160 18 L180 12 L200 15 L220 9 L240 11 L260 6 L280 8 L300 4 L300 42 L0 42 Z" fill="url(#sparkFill)"/>
+            <path d="M0 32 L20 30 L40 34 L60 26 L80 28 L100 20 L120 24 L140 16 L160 18 L180 12 L200 15 L220 9 L240 11 L260 6 L280 8 L300 4" fill="none" stroke="var(--positive-bright)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+          <div class="mini-range-pills">
+            <button class="mini-pill-btn">1D</button>
+            <button class="mini-pill-btn">1W</button>
+            <button class="mini-pill-btn active">1M</button>
+            <button class="mini-pill-btn">3M</button>
+            <button class="mini-pill-btn">1Y</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Cash Pot Card -->
+      <section class="cockpit-main-pot-card">
+        <div class="pot-info">
+          <span class="pot-label">Available cash</span>
+          <strong class="pot-val js-balance">€1,205.00</strong>
+          <span class="pot-sub">In Pies €0.00</span>
+        </div>
+        <button class="t212-deposit-pill-btn" type="button">Deposit</button>
+      </section>
+
+      <!-- 4. Investments Stream -->
+      <section class="cockpit-investments-section">
+        <div class="investments-header">
+          <div class="invest-head-title">
+            <h3>Investments</h3>
+            <span class="invest-sum-val js-balance">€11,233.50</span>
+          </div>
+          <span class="collapse-arrow">⌃</span>
+        </div>
+
+        <div class="investments-list-stream">
+          <!-- AAPL (selected) -->
+          <button type="button" class="pos-stream-item selected">
+            <span class="ticker-ring-logo">
+              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true">
+                <circle cx="17" cy="17" r="14" class="ring-track"/>
+                <circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:0"/>
+              </svg>
+              <span class="ticker-avatar" style="background:linear-gradient(135deg,#0a3a66 0%,#06203a 100%);border:1px solid rgba(56,150,255,0.3)">AP</span>
+            </span>
+            <div class="pos-stream-ident">
+              <strong>Apple Inc.</strong>
+              <small>14.0000 AAPL</small>
+            </div>
+            <div class="pos-stream-num-col">
+              <strong class="js-balance">€2,847.30</strong>
+              <span class="tone-positive">+€423.18 · +17.4%</span>
+            </div>
+          </button>
+
+          <!-- NVDA -->
+          <button type="button" class="pos-stream-item">
+            <span class="ticker-ring-logo">
+              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true">
+                <circle cx="17" cy="17" r="14" class="ring-track"/>
+                <circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:23.35"/>
+              </svg>
+              <span class="ticker-avatar" style="background:linear-gradient(135deg,#0a5234 0%,#062a1c 100%);border:1px solid rgba(0,208,132,0.3)">NV</span>
+            </span>
+            <div class="pos-stream-ident">
+              <strong>NVIDIA Corp.</strong>
+              <small>9.5000 NVDA</small>
+            </div>
+            <div class="pos-stream-num-col">
+              <strong class="js-balance">€3,184.10</strong>
+              <span class="tone-positive">+€712.45 · +28.8%</span>
+            </div>
+          </button>
+
+          <!-- MSFT -->
+          <button type="button" class="pos-stream-item">
+            <span class="ticker-ring-logo">
+              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true">
+                <circle cx="17" cy="17" r="14" class="ring-track"/>
+                <circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:30.79"/>
+              </svg>
+              <span class="ticker-avatar" style="background:linear-gradient(135deg,#3a2a66 0%,#1f1640 100%);border:1px solid rgba(150,120,255,0.3)">MS</span>
+            </span>
+            <div class="pos-stream-ident">
+              <strong>Microsoft Corp.</strong>
+              <small>7.2500 MSFT</small>
+            </div>
+            <div class="pos-stream-num-col">
+              <strong class="js-balance">€2,690.40</strong>
+              <span class="tone-positive">+€198.22 · +7.9%</span>
+            </div>
+          </button>
+
+          <!-- TSLA -->
+          <button type="button" class="pos-stream-item">
+            <span class="ticker-ring-logo">
+              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true">
+                <circle cx="17" cy="17" r="14" class="ring-track"/>
+                <circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:36.55"/>
+              </svg>
+              <span class="ticker-avatar" style="background:linear-gradient(135deg,#662020 0%,#3a1010 100%);border:1px solid rgba(255,90,90,0.3)">TS</span>
+            </span>
+            <div class="pos-stream-ident">
+              <strong>Tesla Inc.</strong>
+              <small>5.0000 TSLA</small>
+            </div>
+            <div class="pos-stream-num-col">
+              <strong class="js-balance">€1,511.70</strong>
+              <span class="tone-negative">−€90.79 · −5.7%</span>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <!-- 7. Pane Footer -->
+      <div class="cockpit-pane-footer">
+        <div class="footer-action-pills-row">
+          <button class="t212-pill-action" type="button">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+            History
+          </button>
+          <button class="t212-pill-action" type="button">Reorder sections</button>
+        </div>
+        <p class="t212-legal-disclaimer">Investment services are provided by Trading 212 EU GmbH, authorised and regulated by BaFin.</p>
+      </div>
+    </aside>
+
+    <!-- ============ RIGHT PANE ============ -->
+    <main class="cockpit-main-pane">
+      <div class="cockpit-instrument-container">
+
+        <!-- Instrument header -->
+        <div class="cockpit-inst-head">
+          <div class="inst-profile">
+            <span class="ticker-ring-logo" style="width:48px;height:48px">
+              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true" style="width:48px;height:48px">
+                <circle cx="17" cy="17" r="14" class="ring-track"/>
+                <circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:0"/>
+              </svg>
+              <span class="ticker-avatar" style="width:34px;height:34px;font-size:13px;background:linear-gradient(135deg,#0a3a66 0%,#06203a 100%);border:1px solid rgba(56,150,255,0.3)">AP</span>
+            </span>
+            <div>
+              <div class="inst-tag-row">
+                <span class="inst-ticker-tag">AAPL · USD</span>
+              </div>
+              <h2 class="inst-title">Apple Inc.</h2>
+            </div>
+          </div>
+          <div class="inst-price-box">
+            <strong class="inst-price-main">$189.43</strong>
+            <span class="inst-price-sub tone-positive">↗ +$1,205.40 (+4.30%)</span>
+          </div>
+          <div class="inst-actions">
+            <button class="t212-action-pill sell" type="button" title="Read-only">Sell</button>
+            <button class="t212-action-pill buy" type="button" title="Read-only">Buy</button>
+          </div>
+        </div>
+
+        <!-- Range Switcher (§4.8) — default active 1Y -->
+        <div class="range-switcher" role="radiogroup" aria-label="Price range">
+          <span class="range-thumb" aria-hidden="true"></span>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1">1M</button>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1">3M</button>
+          <button type="button" role="radio" aria-checked="true" class="active" tabindex="0">1Y</button>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1">5Y</button>
+        </div>
+
+        <!-- Price Chart -->
+        <div class="cockpit-chart-wrap">
+          <div class="section-heading">
+            <div>
+              <h2>Price history and trade markers</h2>
+              <p>AAPL · Daily close · Jan 2024 – Dec 2024 · Scaled price axis</p>
+            </div>
+            <strong class="tone-positive">$189.43 <small>+4.30%</small></strong>
+          </div>
+          <div class="chart-legend">
+            <span><i class="legend-dot close"></i> Close</span>
+            <span><i class="legend-dot buy"></i> Buy</span>
+            <span><i class="legend-dot sell"></i> Sell</span>
+          </div>
+          <p class="chart-count">3 Trading 212 trades in range · Drag the slider or pinch to zoom</p>
+          <svg id="priceChart" class="price-chart" viewBox="0 0 820 330" preserveAspectRatio="none" role="img" aria-label="AAPL 1Y price chart with 3 trade markers">
+            <defs>
+              <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(0,166,255,0.24)"/>
+                <stop offset="70%" stop-color="rgba(0,166,255,0.04)"/>
+                <stop offset="100%" stop-color="rgba(0,166,255,0)"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        <!-- Your Investment 5-Row -->
+        <section class="your-investment-cockpit" aria-label="Your investment">
+          <h3 class="cockpit-section-title">Your investment</h3>
+          <div class="inv-metrics-list">
+            <div class="inv-metric-row">
+              <span>Value</span>
+              <strong class="js-balance">€2,847.30</strong>
+            </div>
+            <div class="inv-metric-row">
+              <span>Return</span>
+              <strong class="tone-positive">+€423.18 (+17.4%)</strong>
+            </div>
+            <div class="inv-metric-row">
+              <span>Shares</span>
+              <strong>14.0000</strong>
+            </div>
+            <div class="inv-metric-row">
+              <span>Average price</span>
+              <strong>$176.20</strong>
+            </div>
+            <div class="inv-metric-row">
+              <span>Cost</span>
+              <strong class="js-balance">€2,424.12</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- AutoInvest Card -->
+        <div class="autoinvest-card">
+          <div>
+            <strong>AutoInvest</strong>
+            <p>Set up recurring investments starting from €1</p>
+          </div>
+          <button class="t212-pill-btn-sm" type="button">Start</button>
+        </div>
+
+      </div>
+
+      <footer class="legal">Holdings and trades come from Trading 212; historical prices come from Yahoo Finance. For information only, not investment advice.</footer>
+    </main>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   1) Range Switcher — 滑块跟随选中项滑动（§4.8 spring 缓动）
+   ========================================================================== */
+(function initRangeSwitcher() {
+  const root = document.querySelector('.range-switcher');
+  if (!root) return;
+  const thumb = root.querySelector('.range-thumb');
+  const buttons = Array.from(root.querySelectorAll('button'));
+
+  function moveTo(btn) {
+    thumb.style.transform = 'translateX(' + (btn.offsetLeft - 3) + 'px)';
+    thumb.style.width = btn.offsetWidth + 'px';
+  }
+
+  buttons.forEach(function (btn, i) {
+    btn.addEventListener('click', function () {
+      buttons.forEach(function (b) {
+        b.classList.remove('active');
+        b.setAttribute('aria-checked', 'false');
+        b.tabIndex = -1;
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-checked', 'true');
+      btn.tabIndex = 0;
+      moveTo(btn);
+    });
+    btn.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const dir = e.key === 'ArrowRight' ? 1 : -1;
+        const next = buttons[(i + dir + buttons.length) % buttons.length];
+        next.click();
+        next.focus();
+      }
+    });
+  });
+
+  function sync() {
+    const active = root.querySelector('button.active');
+    if (active) moveTo(active);
+  }
+  sync();
+  window.addEventListener('resize', sync);
+})();
+
+/* ==========================================================================
+   2) Price Chart — 纯 SVG 折线 + 渐变填充 + 买卖点 marker（模拟 ECharts）
+   ========================================================================== */
+(function buildChart() {
+  const svg = document.getElementById('priceChart');
+  if (!svg) return;
+
+  const W = 820, H = 330;
+  const margin = { top: 18, right: 64, bottom: 28, left: 12 };
+  const innerW = W - margin.left - margin.right;
+  const innerH = H - margin.top - margin.bottom;
+
+  // Deterministic uptrend-with-volatility series (AAPL-like, 56 points)
+  const data = [];
+  for (let i = 0; i < 56; i++) {
+    const base = 168 + i * 0.39;
+    const wave = Math.sin(i * 0.45) * 2.4 + Math.sin(i * 0.17) * 1.6;
+    data.push(base + wave);
+  }
+
+  const min = Math.min.apply(null, data);
+  const max = Math.max.apply(null, data);
+  const pad = (max - min) * 0.12;
+  const yMin = min - pad, yMax = max + pad;
+
+  const xs = function (i) { return margin.left + (i / (data.length - 1)) * innerW; };
+  const ys = function (v) { return margin.top + ((yMax - v) / (yMax - yMin)) * innerH; };
+
+  // Build line + area paths
+  let line = '', area = '';
+  data.forEach(function (v, i) {
+    const x = xs(i).toFixed(1), y = ys(v).toFixed(1);
+    line += (i ? 'L' : 'M') + x + ' ' + y + ' ';
+  });
+  area = 'M' + xs(0).toFixed(1) + ' ' + (margin.top + innerH).toFixed(1) + ' ' +
+         data.map(function (v, i) { return 'L' + xs(i).toFixed(1) + ' ' + ys(v).toFixed(1); }).join(' ') +
+         ' L' + xs(data.length - 1).toFixed(1) + ' ' + (margin.top + innerH).toFixed(1) + ' Z';
+
+  const ns = 'http://www.w3.org/2000/svg';
+  let html = '';
+
+  // Grid lines + y-axis labels (5 ticks)
+  const ticks = 5;
+  for (let t = 0; t < ticks; t++) {
+    const val = yMin + (yMax - yMin) * (t / (ticks - 1));
+    const y = ys(val).toFixed(1);
+    const isLast = t === ticks - 1;
+    html += '<line x1="' + margin.left + '" y1="' + y + '" x2="' + (W - margin.right) + '" y2="' + y +
+            '" stroke="rgba(255,255,255,0.04)" stroke-width="1" vector-effect="non-scaling-stroke"/>';
+    html += '<text x="' + (W - margin.right + 8) + '" y="' + (parseFloat(y) + 4) + '" fill="#52606e" font-size="11" text-anchor="start" font-family="var(--font-sans)">$' + val.toFixed(2) + '</text>';
+    if (isLast) {
+      html += '<line x1="' + margin.left + '" y1="' + y + '" x2="' + (W - margin.right) + '" y2="' + y +
+              '" stroke="rgba(255,255,255,0.08)" stroke-width="1" vector-effect="non-scaling-stroke"/>';
+    }
+  }
+  // Left vertical axis baseline
+  html += '<line x1="' + margin.left + '" y1="' + margin.top + '" x2="' + margin.left + '" y2="' + (margin.top + innerH) +
+          '" stroke="rgba(255,255,255,0.06)" stroke-width="1" vector-effect="non-scaling-stroke"/>';
+
+  // x-axis date labels
+  html += '<text x="' + margin.left + '" y="' + (H - 8) + '" fill="#52606e" font-size="10.5" text-anchor="start">Jan \'24</text>';
+  html += '<text x="' + (W - margin.right) + '" y="' + (H - 8) + '" fill="#52606e" font-size="10.5" text-anchor="end">Dec \'24</text>';
+
+  // Area + line
+  html += '<path d="' + area + '" fill="url(#areaFill)"/>';
+  html += '<path d="' + line + '" fill="none" stroke="#00a6ff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" style="filter:drop-shadow(0 0 6px rgba(0,166,255,0.35))"/>';
+
+  // Dashed markLine at last close
+  const lastX = xs(data.length - 1).toFixed(1);
+  const lastY = ys(data[data.length - 1]).toFixed(1);
+  html += '<line x1="' + margin.left + '" y1="' + lastY + '" x2="' + (W - margin.right) + '" y2="' + lastY +
+          '" stroke="rgba(0,166,255,0.55)" stroke-width="1.2" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/>';
+  html += '<rect x="' + (W - margin.right - 64) + '" y="' + (parseFloat(lastY) - 11) + '" width="60" height="18" rx="4" fill="#0e141c" stroke="rgba(0,166,255,0.3)" stroke-width="1"/>';
+  html += '<text x="' + (W - margin.right - 34) + '" y="' + (parseFloat(lastY) + 2) + '" fill="#00a6ff" font-size="11" text-anchor="middle" font-weight="700">$189.43</text>';
+
+  // Trade markers (buy = green circle, sell = orange diamond)
+  const buys = [9, 23, 40];
+  const sells = [15, 31, 49];
+  buys.forEach(function (i) {
+    const x = xs(i).toFixed(1), y = ys(data[i]).toFixed(1);
+    html += '<circle cx="' + x + '" cy="' + y + '" r="6" fill="#00d084" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke" style="filter:drop-shadow(0 0 6px rgba(0,208,132,0.6))"/>';
+  });
+  sells.forEach(function (i) {
+    const x = xs(i), y = ys(data[i]);
+    const d = parseFloat(x), e = parseFloat(y);
+    html += '<polygon points="' + d + ',' + (e - 7) + ' ' + (d + 7) + ',' + e + ' ' + d + ',' + (e + 7) + ' ' + (d - 7) + ',' + e +
+            '" fill="#ffb020" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke" style="filter:drop-shadow(0 0 6px rgba(255,176,32,0.6))"/>';
+  });
+
+  svg.innerHTML += html;
+})();
+
+/* ==========================================================================
+   3) Eye toggle — 隐藏 / 显示金额（只读语义演示）
+   ========================================================================== */
+(function initEye() {
+  const btn = document.getElementById('eyeBtn');
+  const icon = document.getElementById('eyeIcon');
+  if (!btn) return;
+  const balances = Array.from(document.querySelectorAll('.js-balance'));
+  let hidden = false;
+
+  balances.forEach(function (el) { el.dataset.value = el.textContent; });
+
+  const eyeOpen = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
+  const eyeOff = '<path d="M10.7 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3 3.9"/><path d="M6.6 6.6A17.6 17.6 0 0 0 2 12s3.5 7 10 7a10.9 10.9 0 0 0 4.2-.8"/><line x1="2" y1="2" x2="22" y2="22"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>';
+
+  btn.addEventListener('click', function () {
+    hidden = !hidden;
+    balances.forEach(function (el) { el.textContent = hidden ? '••••••' : el.dataset.value; });
+    icon.innerHTML = hidden ? eyeOff : eyeOpen;
+    btn.setAttribute('aria-label', hidden ? 'Show amounts' : 'Hide amounts');
+    btn.setAttribute('title', hidden ? 'Show amounts' : 'Hide amounts');
+  });
+})();
+</script>
+</body>
+</html>
