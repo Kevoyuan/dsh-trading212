@@ -693,7 +693,7 @@ function Metric({ label, value, note, tone }: { label: string; value: string; no
   return <div className="metric-card"><span>{label}</span><strong className={tone === 'positive' ? 'tone-positive' : tone === 'negative' ? 'tone-negative' : ''}>{value}</strong>{note && <small>{note}</small>}</div>
 }
 
-function CockpitInstrumentView({ position, accountCurrency, onSelect }: { position: Position; accountCurrency: string; onSelect?: (position: Position) => void }) {
+function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, onSelect }: { position: Position; accountCurrency: string; portfolioTotal?: number; onSelect?: (position: Position) => void }) {
   const ticker = position.instrument?.ticker ?? ''
   const name = position.instrument?.name ?? tickerLabel(ticker)
   const currency = position.instrument?.currency ?? accountCurrency
@@ -727,7 +727,7 @@ function CockpitInstrumentView({ position, accountCurrency, onSelect }: { positi
       {/* 标的头部 */}
       <div className="cockpit-inst-head">
         <div className="inst-profile">
-          <TickerRingLogo ticker={ticker} weightPercent={position.walletImpact?.currentValue ? 100 : 0} />
+          <TickerRingLogo ticker={ticker} weightPercent={portfolioTotal ? ((position.walletImpact?.currentValue ?? 0) / portfolioTotal) * 100 : undefined} />
           <div>
             <div className="inst-tag-row">
               <span className="inst-ticker-tag">{tickerLabel(ticker)} · {position.instrument?.currency ?? 'USD'}</span>
@@ -1168,7 +1168,7 @@ function OverviewPage({
       {/* 右侧深度 Cockpit 详情主屏 Right Main */}
       <main className="cockpit-main-pane">
         {activePosition ? (
-          <CockpitInstrumentView position={activePosition} accountCurrency={currency} onSelect={onInstrument} />
+          <CockpitInstrumentView position={activePosition} accountCurrency={currency} portfolioTotal={analytics.totalValue} onSelect={onInstrument} />
         ) : (
           <div className="empty-inline">{tx('目前没有持仓', 'No holdings yet')}</div>
         )}
