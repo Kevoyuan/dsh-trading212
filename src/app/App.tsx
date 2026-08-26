@@ -742,8 +742,8 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, onSe
           </span>
         </div>
         <div className="inst-actions">
-          <button className="t212-action-pill sell" type="button" title={tx('只读连接', 'Read-only')}>Sell</button>
-          <button className="t212-action-pill buy" type="button" title={tx('只读连接', 'Read-only')}>Buy</button>
+          <button className="t212-action-pill sell" type="button" disabled title={tx('只读连接，无法交易', 'Read-only · trading disabled')}>{tx('卖出', 'Sell')}</button>
+          <button className="t212-action-pill buy" type="button" disabled title={tx('只读连接，无法交易', 'Read-only · trading disabled')}>{tx('买入', 'Buy')}</button>
         </div>
       </div>
 

@@ -1261,6 +1261,20 @@ a:hover {
   box-shadow: var(--glow-primary-md);
 }
 
+.t212-action-pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  box-shadow: none;
+}
+.t212-action-pill.sell:disabled:hover {
+  background: linear-gradient(180deg, #1c242e 0%, #141a22 100%);
+  border-color: var(--rule-strong);
+}
+.t212-action-pill.buy:disabled:hover {
+  background: var(--primary);
+  box-shadow: none;
+}
+
 /* Instrument 详情页买卖胶囊（只读语义，DESIGN.md §4.1） */
 .pill-btn {
   display: inline-flex;
