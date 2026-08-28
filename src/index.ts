@@ -141,8 +141,8 @@ function parseTicker(value: unknown, required = false): string | undefined {
 }
 
 function parseMarketRange(value: unknown): MarketRange {
-  if (value === '1m' || value === '3m' || value === '1y' || value === '5y') return value
-  throw new AppError('INVALID_REQUEST', '行情时间范围无效', 400, 'range 不是 1m、3m、1y 或 5y', '选择有效的时间范围')
+  if (value === '1d' || value === '1w' || value === '1m' || value === '3m' || value === '1y' || value === '5y') return value
+  throw new AppError('INVALID_REQUEST', '行情时间范围无效', 400, 'range 不是 1d、1w、1m、3m、1y 或 5y', '选择有效的时间范围')
 }
 
 export function apply(ctx: Context, config: Config): void {

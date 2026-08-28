@@ -1,6 +1,6 @@
 {
   "name": "dsh-trading212",
-  "version": "0.8.5",
+  "version": "0.8.8",
   "description": "Read-only Trading 212 portfolio workspace for dsh",
   "keywords": [
     "dsh-plugin",

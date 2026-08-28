@@ -28,4 +28,25 @@ describe('MarketDataService', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ chart: { result: [] } }), { status: 200 }))
     await expect(new MarketDataService(fetchImpl, 1000).series(instrument, '1y')).rejects.toMatchObject({ code: 'UPSTREAM_INVALID_RESPONSE' })
   })
+
+  it('uses intraday candles for the one-day and one-week ranges', async () => {
+    const chart = { chart: { result: [{ meta: { symbol: 'AAPL', currency: 'USD' }, timestamp: [1_700_000_000, 1_700_000_300], indicators: { quote: [{ close: [220, 221] }] } }] } }
+    const fetchImpl = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ quotes: [{ symbol: 'AAPL', quoteType: 'EQUITY' }] }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(chart), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(chart), { status: 200 }))
+    const service = new MarketDataService(fetchImpl, 1000)
+
+    expect(await service.series(instrument, '1d')).toMatchObject({ range: '1d', interval: '1m' })
+    expect(await service.series(instrument, '1w')).toMatchObject({ range: '1w', interval: '5m' })
+
+    const dayUrl = new URL(String(fetchImpl.mock.calls[1]?.[0]))
+    expect(dayUrl.searchParams.get('range')).toBe('1d')
+    expect(dayUrl.searchParams.get('interval')).toBe('1m')
+    expect(dayUrl.searchParams.get('includePrePost')).toBe('true')
+    const weekUrl = new URL(String(fetchImpl.mock.calls[2]?.[0]))
+    expect(weekUrl.searchParams.get('range')).toBe('5d')
+    expect(weekUrl.searchParams.get('interval')).toBe('5m')
+    expect(weekUrl.searchParams.get('includePrePost')).toBe('true')
+  })
 })

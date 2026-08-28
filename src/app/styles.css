@@ -1803,7 +1803,8 @@ button:active:not(:disabled) { transform: none; }
   .cockpit-inst-head { grid-template-columns: 1fr; gap: 12px; padding: 20px 18px 16px; }
   .inst-price-box { text-align: left; }
   .inst-actions { grid-column: auto; justify-content: flex-start; }
-  .range-switcher { align-self: flex-start; margin: 12px 0 8px 16px; }
+  .range-switcher { align-self: flex-start; max-width: calc(100% - 32px); margin: 12px 0 8px 16px; overflow-x: auto; }
+  .range-switcher button { padding-inline: 8px; font-size: 10.5px; }
   .account-sub-metrics-grid { grid-template-columns: 1fr 1fr; }
   .price-chart-panel { padding-inline: 12px; }
 }
@@ -1994,4 +1995,20 @@ button:active:not(:disabled) { transform: none; }
   .t212-cockpit-layout { grid-template-columns: 1fr; }
   .cockpit-overview-holdings .table-scroll { overflow-x: auto; }
   .holdings-table-compact { min-width: 680px; }
+}
+@media (max-width: 680px) {
+  .cockpit-inst-head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .inst-price-box {
+    align-items: flex-start;
+    min-width: 0;
+    text-align: left;
+  }
+  .inst-price-main { font-size: 32px; }
+  .inst-actions {
+    grid-column: 1;
+    justify-content: flex-start;
+  }
 }

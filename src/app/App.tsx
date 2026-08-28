@@ -588,8 +588,19 @@ function TradeTimeline({ orders }: { orders: HistoricalOrder[] }) {
   </section>
 }
 
-const marketRanges: MarketRange[] = ['1m', '3m', '1y', '5y']
-const rangeLabel = (range: MarketRange) => ({ '1m': tx('1个月', '1 month'), '3m': tx('3个月', '3 months'), '1y': tx('1年', '1 year'), '5y': tx('5年', '5 years') })[range]
+const marketRanges: MarketRange[] = ['1d', '1w', '1m', '3m', '1y', '5y']
+const rangeLabel = (range: MarketRange) => ({
+  '1d': tx('1天', '1 day'),
+  '1w': tx('1周', '1 week'),
+  '1m': tx('1个月', '1 month'),
+  '3m': tx('3个月', '3 months'),
+  '1y': tx('1年', '1 year'),
+  '5y': tx('5年', '5 years'),
+})[range]
+
+const intervalLabel = (series: MarketSeries) => series.interval === '1d'
+  ? tx('每日收盘价', 'Daily close')
+  : tx(`${series.interval === '1m' ? '1分钟' : '5分钟'}价格 · 含盘前盘后`, `${series.interval === '1m' ? '1-minute' : '5-minute'} prices · Extended hours`)
 
 /* RangeSwitcher — 行内分段控件（DESIGN.md §4.8）。
    滑块经 translateX + 匹配宽度滑入（spring 缓动），绝不 absolute 覆盖图表画布。
@@ -699,7 +710,7 @@ function PriceHistoryChart({ series, orders, name, compact = false }: { series: 
           data: candles.map(item => [Date.parse(item.time), item.close]),
           showSymbol: false,
           sampling: 'lttb',
-          smooth: 0.12,
+          smooth: false,
           lineStyle: { color: '#1677ff', width: 2 },
           markLine: {
             symbol: ['none', 'none'],
@@ -717,7 +728,7 @@ function PriceHistoryChart({ series, orders, name, compact = false }: { series: 
     return () => { resize?.disconnect(); chart.dispose() }
   }, [candles, compact, end, name, series.currency, series.range, start, trades])
   return <section className="price-chart-panel" aria-labelledby="price-chart-title">
-    {!compact && <div className="section-heading"><div><h2 id="price-chart-title">{tx('历史价格与买卖点', 'Price history and trade markers')}</h2><p>{series.symbol} · {tx('每日收盘价', 'Daily close')} · {new Date(start).toLocaleDateString(localeCode())} – {new Date(end).toLocaleDateString(localeCode())} · {tx('纵轴聚焦价格区间', 'Scaled price axis')}</p></div><strong className={(change ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{money(last, series.currency)} <small>{percent(change)}</small></strong></div>}
+    {!compact && <div className="section-heading"><div><h2 id="price-chart-title">{tx('历史价格与买卖点', 'Price history and trade markers')}</h2><p>{series.symbol} · {intervalLabel(series)} · {new Date(start).toLocaleDateString(localeCode())} – {new Date(end).toLocaleDateString(localeCode())} · {tx('纵轴聚焦价格区间', 'Scaled price axis')}</p></div><strong className={(change ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{money(last, series.currency)} <small>{percent(change)}</small></strong></div>}
     {!compact && <p className="chart-count">{tx(`区间内 ${trades.length} 个 Trading 212 成交点 · 可拖动底部滑块或双指缩放`, `${trades.length} Trading 212 trades in range · Drag the slider or pinch to zoom`)}</p>}
     <div ref={chartRef} className="price-chart" role="img" aria-label={compact ? tx(`${name} ${rangeLabel(series.range)}历史价格曲线`, `${name} price chart`) : tx(`${name} ${rangeLabel(series.range)}历史价格曲线，包含 ${trades.length} 个买卖成交点`, `${name} ${rangeLabel(series.range)} price chart with ${trades.length} trade markers`)} />
     <div className="sr-only" aria-label="成交点明细">{trades.map(trade => <span key={trade.key}>{trade.side === 'BUY' ? '买入' : '卖出'}，{new Date(trade.filledAt).toLocaleString('zh-CN')}，成交价 {money(trade.price, series.currency)}，{decimal(trade.quantity, 4)} 股</span>)}</div>

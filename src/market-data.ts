@@ -1,7 +1,8 @@
 import { AppError } from './errors.ts'
 import type { Position } from './trading212.ts'
 
-export type MarketRange = '1m' | '3m' | '1y' | '5y'
+export type MarketRange = '1d' | '1w' | '1m' | '3m' | '1y' | '5y'
+export type MarketInterval = '1m' | '5m' | '1d'
 
 export interface PriceCandle {
   time: string
@@ -18,7 +19,7 @@ export interface MarketSeries {
   exchange?: string
   currency: string
   range: MarketRange
-  interval: '1d'
+  interval: MarketInterval
   fetchedAt: string
   regularMarketPrice?: number
   previousClose?: number
@@ -32,7 +33,7 @@ function object(value: unknown): Record<string, unknown> | undefined {
   return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : undefined
 }
 
-function parseSeries(value: unknown, range: MarketRange): MarketSeries {
+function parseSeries(value: unknown, range: MarketRange, interval: MarketInterval): MarketSeries {
   const root = object(value)
   const chart = object(root?.chart)
   const result = Array.isArray(chart?.result) ? object(chart.result[0]) : undefined
@@ -64,7 +65,7 @@ function parseSeries(value: unknown, range: MarketRange): MarketSeries {
     throw new AppError('UPSTREAM_INVALID_RESPONSE', 'Yahoo Finance 行情数据不足', 502, '行情没有有效代码、币种或足够的价格点', '切换时间范围或稍后重试')
   }
   return {
-    source: 'Yahoo Finance', symbol, exchange: text(meta.exchangeName), currency, range, interval: '1d',
+    source: 'Yahoo Finance', symbol, exchange: text(meta.exchangeName), currency, range, interval,
     fetchedAt: new Date().toISOString(), regularMarketPrice: finite(meta.regularMarketPrice), previousClose: finite(meta.chartPreviousClose), candles,
   }
 }
@@ -116,18 +117,26 @@ export class MarketDataService {
     const cacheKey = `${symbol}:${range}`
     const cached = this.seriesCache.get(cacheKey)
     if (cached !== undefined && cached.expiresAt > Date.now()) return cached.value
-    const end = new Date()
-    end.setUTCDate(end.getUTCDate() + 1)
-    const start = new Date(end)
-    if (range === '1m') start.setUTCMonth(start.getUTCMonth() - 1)
-    else if (range === '3m') start.setUTCMonth(start.getUTCMonth() - 3)
-    else if (range === '1y') start.setUTCFullYear(start.getUTCFullYear() - 1)
-    else start.setUTCFullYear(start.getUTCFullYear() - 5)
+    const interval: MarketInterval = range === '1d' ? '1m' : range === '1w' ? '5m' : '1d'
     const query = new URLSearchParams({
-      period1: String(Math.floor(start.getTime() / 1000)), period2: String(Math.floor(end.getTime() / 1000)),
-      interval: '1d', includePrePost: 'false', events: 'div,splits',
+      interval,
+      includePrePost: range === '1d' || range === '1w' ? 'true' : 'false',
+      events: 'div,splits',
     })
-    const value = parseSeries(await this.request(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?${query}`, signal), range)
+    if (range === '1d' || range === '1w') {
+      query.set('range', range === '1d' ? '1d' : '5d')
+    } else {
+      const end = new Date()
+      end.setUTCDate(end.getUTCDate() + 1)
+      const start = new Date(end)
+      if (range === '1m') start.setUTCMonth(start.getUTCMonth() - 1)
+      else if (range === '3m') start.setUTCMonth(start.getUTCMonth() - 3)
+      else if (range === '1y') start.setUTCFullYear(start.getUTCFullYear() - 1)
+      else start.setUTCFullYear(start.getUTCFullYear() - 5)
+      query.set('period1', String(Math.floor(start.getTime() / 1000)))
+      query.set('period2', String(Math.floor(end.getTime() / 1000)))
+    }
+    const value = parseSeries(await this.request(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?${query}`, signal), range, interval)
     this.seriesCache.set(cacheKey, { expiresAt: Date.now() + this.ttlMs, value })
     return value
   }
