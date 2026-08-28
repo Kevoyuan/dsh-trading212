@@ -1993,6 +1993,8 @@ button:active:not(:disabled) { transform: none; }
 }
 @media (max-width: 900px) {
   .t212-cockpit-layout { grid-template-columns: 1fr; }
+  .cockpit-main-pane { order: 1; }
+  .cockpit-left-pane { order: 2; }
   .cockpit-overview-holdings .table-scroll { overflow-x: auto; }
   .holdings-table-compact { min-width: 680px; }
 }

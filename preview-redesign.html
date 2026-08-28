@@ -1682,13 +1682,26 @@ button:active:not(:disabled) { transform: none; }
 .ring-svg { display: none; }
 .ticker-avatar {
   inset: 0;
-  border: 1px solid var(--rule);
-  border-radius: 50%;
-  background: #eef3f7;
-  color: #30485f;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #28577f;
   font-family: var(--font-sans);
   font-size: 10px;
   font-weight: 700;
+}
+.ticker-avatar:not(.fallback) { background: transparent; }
+.ticker-avatar.fallback {
+  border: 1px solid #d7e2ec;
+  border-radius: 6px;
+  background: #edf4fa;
+}
+.ticker-avatar img {
+  width: 100%;
+  height: 100%;
+  padding: 2px;
+  object-fit: contain;
+  border-radius: 0;
 }
 
 .cockpit-instrument-container { gap: 0; overflow: hidden; }
@@ -1798,9 +1811,216 @@ button:active:not(:disabled) { transform: none; }
   .cockpit-inst-head { grid-template-columns: 1fr; gap: 12px; padding: 20px 18px 16px; }
   .inst-price-box { text-align: left; }
   .inst-actions { grid-column: auto; justify-content: flex-start; }
-  .range-switcher { align-self: flex-start; margin: 12px 0 8px 16px; }
+  .range-switcher { align-self: flex-start; max-width: calc(100% - 32px); margin: 12px 0 8px 16px; overflow-x: auto; }
+  .range-switcher button { padding-inline: 8px; font-size: 10.5px; }
   .account-sub-metrics-grid { grid-template-columns: 1fr 1fr; }
   .price-chart-panel { padding-inline: 12px; }
+}
+
+/* ========================================================================
+   Overview density correction — allocation list + non-scrolling ledger
+   ======================================================================== */
+.cockpit-treemap-section .pane-section-header {
+  padding: 16px 16px 10px;
+  border-bottom: 0;
+}
+.cockpit-treemap-section .dynamic-treemap-container {
+  aspect-ratio: 1.72;
+  padding: 0 12px 8px;
+}
+.cockpit-treemap-section .treemap-rect-slot { padding: 2px; }
+.cockpit-treemap-section .treemap-tile {
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 9px 10px;
+  border: 1px solid #dce8e2;
+  border-radius: 5px;
+  background: #f3faf6;
+  box-shadow: none;
+}
+.cockpit-treemap-section .treemap-tile.gain {
+  border: 1px solid #d7eadf;
+  background: #f0faf5;
+}
+.cockpit-treemap-section .treemap-tile.loss {
+  border: 1px solid #f0dcda;
+  background: #fff5f4;
+}
+.cockpit-treemap-section .treemap-tile.neutral {
+  border: 1px solid #dce5eb;
+  background: #f5f8fa;
+}
+.cockpit-treemap-section .treemap-tile.selected {
+  z-index: 2;
+  border-color: #5b9cf4;
+  box-shadow: inset 0 0 0 1px #5b9cf4;
+  transform: none;
+}
+.cockpit-treemap-section .treemap-tile:hover {
+  border-color: #9fc4f6;
+  box-shadow: none;
+  transform: none;
+}
+.cockpit-treemap-section .treemap-tile.compact { padding: 7px; }
+.cockpit-treemap-section .tile-ticker {
+  color: #183047;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+.cockpit-treemap-section .tile-percent {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 650;
+}
+.cockpit-treemap-section .cockpit-see-all-btn { margin: 0 14px 12px; }
+.allocation-list { padding: 0 14px 14px; }
+.allocation-list-track {
+  display: flex;
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  gap: 2px;
+  margin: 2px 0 13px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: #eef3f8;
+}
+.allocation-list-track i { display: block; height: 100%; }
+.allocation-list-head,
+.allocation-list-rows > button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 48px 78px;
+  align-items: center;
+  gap: 8px;
+}
+.allocation-list-head {
+  padding: 0 7px 6px;
+  color: var(--muted);
+  font-size: 9.5px;
+}
+.allocation-list-head span:nth-child(n+2) { text-align: right; }
+.allocation-list-rows { border-top: 1px solid var(--rule); }
+.allocation-list-rows > button {
+  width: 100%;
+  min-height: 40px;
+  padding: 7px;
+  border-bottom: 1px solid var(--rule-soft);
+  color: var(--ink-2);
+  text-align: left;
+}
+.allocation-list-rows > button:hover { background: var(--panel-soft); }
+.allocation-list-rows > button.selected {
+  background: var(--panel-active);
+  box-shadow: inset 2px 0 0 var(--primary);
+}
+.allocation-list-asset {
+  display: grid;
+  grid-template-columns: 7px 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.allocation-list-asset > i { width: 7px; height: 7px; border-radius: 2px; }
+.allocation-list-asset > b { color: var(--ink); font-size: 11px; font-weight: 650; }
+.allocation-list-asset > small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.allocation-list-rows strong,
+.allocation-list-rows em {
+  color: var(--ink-2);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 580;
+  text-align: right;
+}
+.allocation-list-all {
+  margin: 11px 7px 0;
+  color: var(--primary-deep);
+  font-size: 11.5px;
+  font-weight: 620;
+}
+.allocation-list-all:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.cockpit-overview-holdings { min-width: 0; }
+.cockpit-overview-holdings .cockpit-holdings-preview {
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+.cockpit-overview-holdings .section-heading {
+  align-items: end;
+  padding: 15px 16px 10px;
+}
+.cockpit-overview-holdings .table-scroll { overflow-x: hidden; padding: 0; }
+.holdings-table-compact {
+  width: 100%;
+  table-layout: fixed;
+  font-size: 11.5px;
+}
+.holdings-table-compact th,
+.holdings-table-compact td { padding: 10px 9px; }
+.holdings-table-compact th { font-family: var(--font-sans); font-size: 9.5px; letter-spacing: .02em; text-transform: none; }
+.holdings-table-compact th:nth-child(1) { width: 34%; }
+.holdings-table-compact th:nth-child(2) { width: 13%; }
+.holdings-table-compact th:nth-child(3) { width: 20%; }
+.holdings-table-compact th:nth-child(4) { width: 17%; }
+.holdings-table-compact th:nth-child(5) { width: 16%; }
+.holdings-table-compact td { overflow: hidden; text-overflow: ellipsis; }
+.holdings-table-compact .asset-cell { gap: 9px; }
+.holdings-table-compact .ticker-ring-logo { width: 32px; height: 32px; flex: 0 0 32px; }
+.holdings-table-compact .asset-link { min-width: 0; }
+.holdings-table-compact .asset-link strong,
+.holdings-table-compact .asset-link small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.holdings-table-compact .asset-link strong { font-size: 12px; }
+.holdings-table-compact td small { font-family: var(--font-sans); font-size: 9.5px; }
+.holdings-table-compact tbody tr.is-selected {
+  background: var(--panel-active);
+  box-shadow: inset 2px 0 0 var(--primary);
+}
+
+@media (max-width: 1280px) {
+  :root { --topbar-gutter: 16px; }
+  .t212-cockpit-layout { grid-template-columns: 300px minmax(0, 1fr); gap: 16px; }
+  .cockpit-inst-head { grid-template-columns: minmax(190px, 1fr) auto; gap: 14px; }
+  .inst-actions { grid-column: 1 / -1; justify-content: flex-end; }
+  .cockpit-overview-holdings .section-heading p { display: none; }
+}
+@media (max-width: 1080px) {
+  :root { --topbar-gutter: 14px; }
+  .t212-cockpit-layout { grid-template-columns: 285px minmax(0, 1fr); gap: 14px; }
+  .holdings-table-compact th,
+  .holdings-table-compact td { padding-inline: 7px; }
+  .holdings-table-compact .ticker-ring-logo { width: 28px; height: 28px; flex-basis: 28px; }
+}
+@media (max-width: 900px) {
+  .t212-cockpit-layout { grid-template-columns: 1fr; }
+  .cockpit-main-pane { order: 1; }
+  .cockpit-left-pane { order: 2; }
+  .cockpit-overview-holdings .table-scroll { overflow-x: auto; }
+  .holdings-table-compact { min-width: 680px; }
+}
+@media (max-width: 680px) {
+  .cockpit-inst-head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .inst-price-box {
+    align-items: flex-start;
+    min-width: 0;
+    text-align: left;
+  }
+  .inst-price-main { font-size: 32px; }
+  .inst-actions {
+    grid-column: 1;
+    justify-content: flex-start;
+  }
 }
 
 </style>
