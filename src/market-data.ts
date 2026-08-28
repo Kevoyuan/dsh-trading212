@@ -73,8 +73,15 @@ function parseSeries(value: unknown, range: MarketRange, interval: MarketInterva
 export class MarketDataService {
   private readonly symbolCache = new Map<string, string>()
   private readonly seriesCache = new Map<string, { expiresAt: number; value: MarketSeries }>()
+  private readonly fetchImpl: typeof fetch
+  private readonly timeoutMs: number
+  private readonly ttlMs: number
 
-  constructor(private readonly fetchImpl: typeof fetch = fetch, private readonly timeoutMs = 10_000, private readonly ttlMs = 15 * 60_000) {}
+  constructor(fetchImpl: typeof fetch = fetch, timeoutMs = 10_000, ttlMs = 15 * 60_000) {
+    this.fetchImpl = fetchImpl
+    this.timeoutMs = timeoutMs
+    this.ttlMs = ttlMs
+  }
 
   private async request(url: string, signal?: AbortSignal): Promise<unknown> {
     const controller = new AbortController()

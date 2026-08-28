@@ -5,7 +5,9 @@ const root = resolve(import.meta.dirname, '..')
 const source = resolve(root, 'src/index.ts')
 const output = resolve(root, 'cordis.local.patch.yml')
 
-const patch = `- insert:
+const patch = `- id: trading212
+  disabled: true
+- insert:
     - id: trading212-local
       name: ${JSON.stringify(source)}
       inject:

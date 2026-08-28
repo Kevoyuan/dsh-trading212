@@ -22,12 +22,19 @@ export function canonicalLogoTicker(ticker: string): string | undefined {
 export class LogoService {
   private readonly cache = new Map<string, { asset?: LogoAsset; expiresAt: number }>()
   private readonly inflight = new Map<string, Promise<LogoAsset | undefined>>()
+  private readonly fetchImpl: typeof fetch
+  private readonly timeoutMs: number
+  private readonly cacheTtlMs: number
 
   constructor(
-    private readonly fetchImpl: typeof fetch,
-    private readonly timeoutMs: number,
-    private readonly cacheTtlMs = DEFAULT_CACHE_TTL_MS,
-  ) {}
+    fetchImpl: typeof fetch,
+    timeoutMs: number,
+    cacheTtlMs = DEFAULT_CACHE_TTL_MS,
+  ) {
+    this.fetchImpl = fetchImpl
+    this.timeoutMs = timeoutMs
+    this.cacheTtlMs = cacheTtlMs
+  }
 
   async get(ticker: string, signal?: AbortSignal): Promise<LogoAsset | undefined> {
     const symbol = canonicalLogoTicker(ticker)

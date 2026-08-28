@@ -4,17 +4,30 @@ import type { MarketRange, MarketSeries } from '../market-data.ts'
 import type { HistoryKind, HistoryPage, PortfolioSnapshot, TradingEnvironment } from '../trading212.ts'
 
 export class ApiError extends Error {
+  readonly code: ErrorCode
+  readonly causeText: string
+  readonly action: string
+  readonly helpPath: string
+  readonly requestId: string
+  readonly retryAt?: string
+
   constructor(
-    readonly code: ErrorCode,
+    code: ErrorCode,
     message: string,
-    readonly causeText: string,
-    readonly action: string,
-    readonly helpPath: string,
-    readonly requestId: string,
-    readonly retryAt?: string,
+    causeText: string,
+    action: string,
+    helpPath: string,
+    requestId: string,
+    retryAt?: string,
   ) {
     super(message)
     this.name = 'ApiError'
+    this.code = code
+    this.causeText = causeText
+    this.action = action
+    this.helpPath = helpPath
+    this.requestId = requestId
+    this.retryAt = retryAt
   }
 }
 

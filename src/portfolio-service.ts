@@ -86,16 +86,25 @@ function credentialsOf(record: ConnectedRecord): Trading212Credentials {
 
 export class PortfolioService {
   private readonly generationSecret = randomBytes(32)
+  private readonly provider: CredentialProvider
+  private readonly timeoutMs: number
+  private readonly cacheTtlMs: number
+  private readonly clientFactory: ClientFactory
   private cache?: { generation: string; expiresAt: number; value: PortfolioSnapshot }
   private inFlight?: { generation: string; promise: Promise<PortfolioSnapshot> }
   private cooldownUntil = 0
 
   constructor(
-    private readonly provider: CredentialProvider,
-    private readonly timeoutMs: number,
-    private readonly cacheTtlMs: number,
-    private readonly clientFactory: ClientFactory = (credentials, timeout) => new Trading212Client(credentials, timeout),
-  ) {}
+    provider: CredentialProvider,
+    timeoutMs: number,
+    cacheTtlMs: number,
+    clientFactory: ClientFactory = (credentials, timeout) => new Trading212Client(credentials, timeout),
+  ) {
+    this.provider = provider
+    this.timeoutMs = timeoutMs
+    this.cacheTtlMs = cacheTtlMs
+    this.clientFactory = clientFactory
+  }
 
   invalidate(): void {
     this.cache = undefined

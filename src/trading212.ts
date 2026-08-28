@@ -152,9 +152,14 @@ export interface HistoryPage {
 }
 
 export class Trading212Error extends Error {
-  constructor(message: string, readonly status: number, readonly retryAfter?: string) {
+  readonly status: number
+  readonly retryAfter?: string
+
+  constructor(message: string, status: number, retryAfter?: string) {
     super(message)
     this.name = 'Trading212Error'
+    this.status = status
+    this.retryAfter = retryAfter
   }
 }
 
@@ -376,12 +381,22 @@ export function parseHistoryPage(value: unknown, kind: HistoryKind): HistoryPage
 }
 
 export class Trading212Client {
+  private readonly credentials: Trading212Credentials
+  private readonly timeoutMs: number
+  private readonly fetchImpl: typeof fetch
+  private readonly userAgent: string
+
   constructor(
-    private readonly credentials: Trading212Credentials,
-    private readonly timeoutMs = 15_000,
-    private readonly fetchImpl: typeof fetch = fetch,
-    private readonly userAgent = 'dsh-trading212/0.8.0',
-  ) {}
+    credentials: Trading212Credentials,
+    timeoutMs = 15_000,
+    fetchImpl: typeof fetch = fetch,
+    userAgent = 'dsh-trading212/0.8.0',
+  ) {
+    this.credentials = credentials
+    this.timeoutMs = timeoutMs
+    this.fetchImpl = fetchImpl
+    this.userAgent = userAgent
+  }
 
   private get baseUrl(): string {
     return this.credentials.environment === 'live' ? 'https://live.trading212.com/api/v0' : 'https://demo.trading212.com/api/v0'

@@ -20,16 +20,27 @@ export interface ErrorEnvelope {
 }
 
 export class AppError extends Error {
+  readonly code: ErrorCode
+  readonly status: number
+  readonly causeText: string
+  readonly action: string
+  readonly retryAt?: string
+
   constructor(
-    readonly code: ErrorCode,
+    code: ErrorCode,
     message: string,
-    readonly status: number,
-    readonly causeText: string,
-    readonly action: string,
-    readonly retryAt?: string,
+    status: number,
+    causeText: string,
+    action: string,
+    retryAt?: string,
   ) {
     super(message)
     this.name = 'AppError'
+    this.code = code
+    this.status = status
+    this.causeText = causeText
+    this.action = action
+    this.retryAt = retryAt
   }
 }
 
