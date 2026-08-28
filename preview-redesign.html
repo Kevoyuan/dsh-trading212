@@ -2275,6 +2275,8 @@ button:active:not(:disabled) { transform: none; }
         <!-- Range switcher -->
         <div class="range-switcher" role="radiogroup" aria-label="价格时间范围" id="rangeSwitcher">
           <span class="range-thumb" id="rangeThumb" aria-hidden="true"></span>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1">1天</button>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1">1周</button>
           <button type="button" role="radio" aria-checked="false" tabindex="-1">1个月</button>
           <button type="button" role="radio" aria-checked="false" tabindex="-1">3个月</button>
           <button type="button" role="radio" aria-checked="true" class="active" tabindex="0">1年</button>
@@ -2287,7 +2289,7 @@ button:active:not(:disabled) { transform: none; }
             <div class="section-heading">
               <div>
                 <h2>历史价格与买卖点</h2>
-                <p>AAPL · 每日收盘价 · 2025-08 – 2026-08 · 纵轴聚焦价格区间</p>
+                <p>AAPL · 每日收盘价 · 2025-08 至 2026-08 · 纵轴聚焦价格区间</p>
               </div>
               <strong class="tone-positive">$198.17 <small>+4.30%</small></strong>
             </div>
@@ -2296,22 +2298,29 @@ button:active:not(:disabled) { transform: none; }
               <span><i class="legend-dot buy"></i> 买入</span>
               <span><i class="legend-dot sell"></i> 卖出</span>
             </div>
-            <p class="chart-count">区间内 14 个 Trading 212 成交点 · 可拖动底部滑块或双指缩放</p>
-            <svg class="price-chart" viewBox="0 0 820 250" preserveAspectRatio="none" role="img" aria-label="AAPL 1年历史价格曲线，包含 14 个买卖成交点">
+            <p class="chart-count">区间内 3 个 Trading 212 成交点 · 可拖动底部滑块或双指缩放</p>
+            <svg class="price-chart" viewBox="0 0 820 250" preserveAspectRatio="none" role="img" aria-label="AAPL 1年历史价格曲线，包含 3 个买卖成交点">
               <g class="timeline-grid">
-                <line x1="72" y1="50" x2="820" y2="50"/>
-                <line x1="72" y1="100" x2="820" y2="100"/>
-                <line x1="72" y1="150" x2="820" y2="150"/>
-                <line x1="72" y1="200" x2="820" y2="200"/>
+                <line x1="72" y1="50" x2="790" y2="50"/>
+                <line x1="72" y1="100" x2="790" y2="100"/>
+                <line x1="72" y1="150" x2="790" y2="150"/>
+                <line x1="72" y1="200" x2="790" y2="200"/>
               </g>
-              <path d="M72 212 L130 200 L190 208 L250 186 L310 196 L370 168 L430 178 L490 150 L550 158 L610 128 L670 136 L730 106 L790 116 L820 100" fill="none" stroke="#1677ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-              <line x1="72" y1="12" x2="820" y2="12" stroke="rgba(112,129,150,0.35)" stroke-dasharray="5 5"/>
+              <path d="M72 212 L128 200 L184 208 L240 186 L296 196 L352 168 L408 178 L464 150 L520 158 L576 128 L632 136 L688 106 L744 116 L790 100" fill="none" stroke="#1677ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <line x1="72" y1="12" x2="790" y2="12" stroke="rgba(112,129,150,0.35)" stroke-dasharray="5 5"/>
               <line x1="72" y1="10" x2="72" y2="240" stroke="rgba(112,129,150,0.14)"/>
-              <rect x="304" y="190" width="12" height="12" fill="#18a957" stroke="#ffffff" stroke-width="2"/>
-              <rect x="604" y="122" width="12" height="12" fill="#18a957" stroke="#ffffff" stroke-width="2"/>
-              <polygon points="430,170 438,184 422,184" fill="#d88a15" stroke="#ffffff" stroke-width="2"/>
+              <rect x="290" y="190" width="12" height="12" fill="#18a957" stroke="#ffffff" stroke-width="2"/>
+              <rect x="570" y="122" width="12" height="12" fill="#18a957" stroke="#ffffff" stroke-width="2"/>
+              <polygon points="408,170 416,184 400,184" fill="#d88a15" stroke="#ffffff" stroke-width="2"/>
+              <text x="808" y="54" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$205</text>
+              <text x="808" y="104" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$190</text>
+              <text x="808" y="154" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$175</text>
+              <text x="808" y="204" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$160</text>
               <text x="72" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace">2025-08</text>
-              <text x="820" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">2026-08</text>
+              <text x="250" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="middle">2025-11</text>
+              <text x="430" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="middle">2026-02</text>
+              <text x="610" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="middle">2026-05</text>
+              <text x="790" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">2026-08</text>
             </svg>
           </section>
         </div>
