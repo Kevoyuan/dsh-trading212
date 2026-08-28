@@ -2003,6 +2003,23 @@ button:active:not(:disabled) { transform: none; }
   .t212-cockpit-layout { grid-template-columns: 1fr; }
   .cockpit-main-pane { order: 1; }
   .cockpit-left-pane { order: 2; }
+  .topbar-center-nav {
+    height: 44px;
+    gap: 2px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .topbar-center-nav::-webkit-scrollbar { display: none; }
+  .topbar-nav-tab {
+    flex: 0 0 auto;
+    min-width: 52px;
+    height: 44px;
+    gap: 4px;
+    padding-inline: 4px;
+    white-space: nowrap;
+  }
+  .topbar-nav-tab span { white-space: nowrap; }
   .cockpit-overview-holdings .table-scroll { overflow-x: auto; }
   .holdings-table-compact { min-width: 680px; }
 }
@@ -2021,6 +2038,19 @@ button:active:not(:disabled) { transform: none; }
     grid-column: 1;
     justify-content: flex-start;
   }
+  .topbar-tool-btn,
+  .icon-btn-ghost,
+  .t212-deposit-pill-btn,
+  .ai-prompt-card-chip,
+  .cockpit-see-all-btn,
+  .t212-pill-action,
+  .range-switcher button,
+  .ask-banner button {
+    min-height: 44px;
+  }
+  .topbar-tool-btn,
+  .icon-btn-ghost { min-width: 44px; }
+  .range-switcher button { padding-inline: 10px; }
 }
 
 </style>
