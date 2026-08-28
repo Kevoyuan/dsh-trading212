@@ -9,6 +9,7 @@ import { defineTool, type JsonValue } from '@deepseek-ai/dsh-tools'
 import Schema from '@deepseek-ai/schemastery'
 import { AppError, normalizeError, toErrorEnvelope } from './errors.ts'
 import { MarketDataService, type MarketRange } from './market-data.ts'
+import { LogoService } from './logo-service.ts'
 import { PortfolioService } from './portfolio-service.ts'
 import type { HistoryKind, TradingEnvironment } from './trading212.ts'
 
@@ -18,11 +19,13 @@ export const inject = ['tools', 'credentials', 'webServer']
 export interface Config {
   requestTimeoutMs: number
   cacheTtlMs: number
+  marketCacheTtlMs: number
 }
 
 export const Config: Schema<Config> = Schema.object({
   requestTimeoutMs: Schema.number().min(1000).max(60_000).default(15_000),
   cacheTtlMs: Schema.number().min(1000).max(60_000).default(5_000),
+  marketCacheTtlMs: Schema.number().min(5_000).max(86_400_000).default(15 * 60_000),
 })
 
 const UI_ROOT = fileURLToPath(new URL('../lib/ui', import.meta.url))
@@ -144,7 +147,8 @@ function parseMarketRange(value: unknown): MarketRange {
 
 export function apply(ctx: Context, config: Config): void {
   const service = new PortfolioService(ctx.credentials, config.requestTimeoutMs, config.cacheTtlMs)
-  const marketData = new MarketDataService(fetch, Math.min(config.requestTimeoutMs, 15_000))
+  const marketData = new MarketDataService(fetch, config.requestTimeoutMs, config.marketCacheTtlMs)
+  const logos = new LogoService(fetch, Math.min(config.requestTimeoutMs, 5_000))
 
   ctx.tools.register(defineTool({
     name: 'trading212_portfolio',
@@ -221,6 +225,25 @@ export function apply(ctx: Context, config: Config): void {
           const instrument = snapshot.positions.find(position => position.instrument?.ticker === ticker)?.instrument
           if (instrument === undefined) throw new AppError('NOT_FOUND', '当前持仓中找不到该股票', 404, `持仓快照不包含 ${ticker}`, '返回持仓列表后重新选择')
           json(res, 200, await marketData.series(instrument, parseMarketRange(url.searchParams.get('range')), controller.signal))
+          return
+        }
+        if (path === '/api/trading212/logo') {
+          if (req.method !== 'GET') return methodNotAllowed(res, 'GET')
+          const unknown = [...url.searchParams.keys()].filter(key => key !== 'ticker')
+          if (unknown.length > 0) throw new AppError('INVALID_REQUEST', '包含不支持的查询参数', 400, `未知参数：${unknown.join(', ')}`, '移除未知参数后重试')
+          const ticker = parseTicker(url.searchParams.get('ticker'), true)!
+          const asset = await logos.get(ticker, controller.signal)
+          if (asset === undefined) {
+            res.writeHead(404, { 'cache-control': 'public, max-age=3600', 'x-content-type-options': 'nosniff' }).end()
+            return
+          }
+          res.writeHead(200, {
+            'cache-control': 'public, max-age=86400, stale-while-revalidate=604800',
+            'content-length': String(asset.body.byteLength),
+            'content-type': asset.contentType,
+            'x-content-type-options': 'nosniff',
+          })
+          res.end(asset.body)
           return
         }
         if (path === '/api/trading212/connect') {

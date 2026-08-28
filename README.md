@@ -35,7 +35,7 @@ A read-only Trading 212 portfolio workspace for **dsh**. Configure your API cred
 dsh plugin --profile web add --save-exact dsh-trading212@latest
 ```
 
-Fully quit and reopen dsh. Use the `dsh / T212` switcher in the lower-left sidebar to open the dashboard.
+Fully quit and reopen dsh. A native `T212` tab appears next to `Chat` / `Trajectory` in the session header — click it to open the dashboard inside the chat panel.
 
 Alternatively, download the `.tgz` package from [GitHub Releases](https://github.com/Kevoyuan/dsh-trading212/releases) and install it locally:
 
@@ -95,13 +95,23 @@ pnpm test
 pnpm pack --pack-destination dist
 ```
 
+This repository follows the Harness plugin contract: `src/index.ts` exports `name`, `inject`, a same-name `Config` schema, and `apply(ctx, config)`; tools are registered with `ctx.tools.register(defineTool(...))`; `cordis.patch.yml` is the bundle patch used for publishing.
+
+For a local Harness Web run directly from source:
+
+```bash
+pnpm harness:dev
+```
+
+The command generates the ignored `cordis.local.patch.yml`, points its `name` at the repository's absolute `src/index.ts` path, and starts `pnpm dsh web --patch ./cordis.local.patch.yml`, matching Harness's local-plugin patch convention. Git installs run `prepare` to build `lib/`; the published bundle patch and package metadata are declared through `dsh.bundle` in `package.json`.
+
 Main directories:
 
 - `src/index.ts`: dsh host, HTTP API, and read-only tools
 - `src/portfolio-service.ts`: credential persistence, caching, and request coordination
 - `src/trading212.ts`: Trading 212 client and response validation
 - `src/market-data.ts`: Yahoo Finance historical market data
-- `src/client/index.tsx`: dsh sidebar switcher and dashboard overlay
+- `src/client/index.tsx`: native `T212` conversation-view tab hosting the dashboard
 - `src/app/`: setup, portfolio, history, and instrument UI
 
 ## Contributing

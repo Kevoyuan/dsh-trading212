@@ -1,6 +1,6 @@
 {
   "name": "dsh-trading212",
-  "version": "0.7.0",
+  "version": "0.8.5",
   "description": "Read-only Trading 212 portfolio workspace for dsh",
   "keywords": [
     "dsh-plugin",
@@ -53,7 +53,8 @@
         "@deepseek-ai/dsh-client-ui-layout",
         "@deepseek-ai/dsh-client-ui-sidebar",
         "@deepseek-ai/dsh-client-ui-slots",
-        "@deepseek-ai/dsh-client-locale"
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-conversation"
       ]
     }
   },
@@ -64,11 +65,14 @@
     "pretest": "pnpm build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "prepack": "pnpm build"
+    "prepack": "pnpm build",
+    "prepare": "pnpm build",
+    "harness:patch": "node scripts/make-local-patch.mjs",
+    "harness:dev": "pnpm harness:patch && pnpm dsh web --patch ./cordis.local.patch.yml"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-client-runtime": ">=0.1.0-rc.5 <0.2.0-0",
     "@deepseek-ai/dsh-client-locale": ">=0.1.0-rc.5 <0.2.0-0",
+    "@deepseek-ai/dsh-client-runtime": ">=0.1.0-rc.5 <0.2.0-0",
     "@deepseek-ai/dsh-client-ui-layout": ">=0.1.0-rc.5 <0.2.0-0",
     "@deepseek-ai/dsh-client-ui-sidebar": ">=0.1.0-rc.5 <0.2.0-0",
     "@deepseek-ai/dsh-client-ui-slots": ">=0.1.0-rc.5 <0.2.0-0",
@@ -110,6 +114,7 @@
     "@deepseek-ai/cordis": "^4.0.1",
     "@deepseek-ai/dsh-client-locale": "0.1.1-rc.2",
     "@deepseek-ai/dsh-client-runtime": "0.1.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-conversation": "0.1.1-rc.2",
     "@deepseek-ai/dsh-client-ui-layout": "0.1.1-rc.2",
     "@deepseek-ai/dsh-client-ui-sidebar": "0.1.1-rc.2",
     "@deepseek-ai/dsh-client-ui-slots": "0.1.1-rc.2",

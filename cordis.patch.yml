@@ -8,3 +8,4 @@
       config:
         requestTimeoutMs: 15000
         cacheTtlMs: 5000
+        marketCacheTtlMs: 900000

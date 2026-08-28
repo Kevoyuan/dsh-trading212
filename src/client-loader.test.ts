@@ -3,13 +3,16 @@ import vm from 'node:vm'
 import { describe, expect, it, vi } from 'vitest'
 
 describe('official dsh client module loader entry', () => {
-  it('keeps the workspace draggable and the iframe viewport-sized', async () => {
+  it('renders the dashboard as a panel-sized iframe tab instead of a modal overlay', async () => {
     const source = await readFile(new URL('../lib/client.js', import.meta.url), 'utf8')
 
-    expect(source).toContain('role: "region"')
-    expect(source).not.toContain('"aria-modal": "true"')
-    expect(source).toContain('.t212-overlay iframe{bottom:auto;height:calc(100% - 32px)}')
-    expect(source).toContain('@media(max-width:768px){.t212-overlay iframe{height:calc(100% - 44px)}}')
+    expect(source).toContain('.t212-view-frame')
+    expect(source).toContain('.t212-view-frame iframe')
+    expect(source).toContain('data-conversation-composer-overlay')
+    expect(source).toContain('data-composer-seat')
+    expect(source).not.toContain('.t212-overlay')
+    expect(source).not.toContain('sidebar.footer.action')
+    expect(source).not.toContain('shell.overlay')
   })
 
   it('registers an exact id and returns the client exports from its factory', async () => {
@@ -39,6 +42,6 @@ describe('official dsh client module loader entry', () => {
         register: (entry: { name: string }) => { registered.push(entry.name) },
       },
     })
-    expect(registered).toEqual(['sidebar.footer.action', 'shell.overlay'])
+    expect(registered).toEqual(['conversation.view'])
   })
 })

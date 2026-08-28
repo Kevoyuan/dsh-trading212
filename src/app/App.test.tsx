@@ -28,7 +28,7 @@ vi.mock('./api.ts', async importOriginal => {
   return { ...original, api: { status: mocks.status, portfolio: mocks.portfolio, history: mocks.history, market: mocks.market, connect: mocks.connect, disconnect: mocks.disconnect }, diagnosticText: mocks.diagnosticText }
 })
 
-import { App } from './App.tsx'
+import { App, tickerLabel } from './App.tsx'
 import { languageStore } from './i18n.ts'
 
 describe('Trading 212 UI interactions', () => {
@@ -37,6 +37,12 @@ describe('Trading 212 UI interactions', () => {
     { order: { id: 2, ticker: 'AAPL_US_EQ', side: 'SELL', status: 'FILLED', type: 'MARKET', instrument: { name: 'Apple', currency: 'USD' } }, fill: { id: 12, filledAt: '2026-08-20T10:00:00Z', price: 225, quantity: 0.5, walletImpact: { currency: 'EUR', netValue: 102, realisedProfitLoss: 7 } } },
   ] } : { kind, items: [] }); mocks.disconnect.mockResolvedValue({ connected: false }) })
   afterEach(cleanup)
+
+  it('shows current public tickers while retaining Trading 212 instrument keys internally', () => {
+    expect(tickerLabel('YNDX_US_EQ')).toBe('NBIS')
+    expect(tickerLabel('SNDK1_US_EQ')).toBe('SNDK')
+    expect(tickerLabel('MDB_US_EQ')).toBe('MDB')
+  })
 
   it('connects with the selected environment and every primary navigation button changes view', async () => {
     const user = userEvent.setup()
@@ -49,12 +55,9 @@ describe('Trading 212 UI interactions', () => {
     await user.type(screen.getByLabelText('API Secret'), 'secret-12345678')
     await user.click(screen.getByRole('button', { name: '测试并保存' }))
     await screen.findByText('账户总价值 · EUR')
-    expect(screen.getByText('未实现盈亏贡献')).toBeTruthy()
-    expect(screen.getByText('标的交易币种暴露')).toBeTruthy()
+    expect(screen.getByRole('heading', { name: '资产配置' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: '主要持仓' })).toBeTruthy()
     expect(mocks.connect).toHaveBeenCalledWith({ apiKey: 'key-12345678', apiSecret: 'secret-12345678', environment: 'live' })
-
-    await user.click(screen.getByRole('button', { name: '复制问题' }))
-    expect(await screen.findByRole('button', { name: '已复制' })).toBeTruthy()
 
     await user.click(screen.getByRole('button', { name: '持仓' }))
     expect(await screen.findByRole('heading', { name: '持仓' })).toBeTruthy()
@@ -106,7 +109,7 @@ describe('Trading 212 UI interactions', () => {
     render(<App />)
     const user = userEvent.setup()
     await screen.findByText('账户总价值 · EUR')
-    await user.click(screen.getByRole('button', { name: /Apple.*查看价格与买卖点/ }))
+    await user.click(screen.getByRole('button', { name: /Apple.*AAPL.*USD/ }))
     expect(await screen.findByRole('heading', { name: 'Apple' })).toBeTruthy()
     expect(await screen.findByRole('img', { name: /Apple 1年历史价格曲线，包含 2 个买卖成交点/ })).toBeTruthy()
     const points = screen.getByLabelText('成交点明细')
@@ -115,7 +118,7 @@ describe('Trading 212 UI interactions', () => {
     expect(screen.getByText(/价格来源：Yahoo Finance/)).toBeTruthy()
     expect(mocks.history).toHaveBeenCalledWith('orders', undefined, 'AAPL_US_EQ')
     expect(mocks.market).toHaveBeenCalledWith('AAPL_US_EQ', '1y')
-    await user.click(screen.getByRole('button', { name: '3个月' }))
+    await user.click(screen.getByRole('radio', { name: '3个月' }))
     await waitFor(() => expect(mocks.market).toHaveBeenCalledWith('AAPL_US_EQ', '3m'))
     await user.click(screen.getByRole('button', { name: /返回持仓/ }))
     expect(await screen.findByRole('heading', { name: '持仓' })).toBeTruthy()

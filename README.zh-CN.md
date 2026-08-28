@@ -36,7 +36,7 @@
 dsh plugin --profile web add --save-exact dsh-trading212@latest
 ```
 
-然后完全退出并重新打开 dsh。侧边栏左下会出现 `dsh / T212` 切换器，点击 `T212` 即可打开 dashboard。
+然后完全退出并重新打开 dsh。会话头部会出现原生 `T212` 选项卡（紧挨着「对话 / 轨迹」），点击即可在对话面板内打开 dashboard。
 
 也可以从 [GitHub Releases](https://github.com/Kevoyuan/dsh-trading212/releases) 下载 `.tgz`，然后安装本地文件：
 
@@ -97,13 +97,23 @@ pnpm pack --pack-destination dist
 dsh plugin --profile web add --save-exact ./dist/dsh-trading212-<version>.tgz
 ```
 
+本仓库遵循 Harness 插件约定：`src/index.ts` 导出 `name`、`inject`、同名 `Config` Schema 和 `apply(ctx, config)`；Tool 通过 `ctx.tools.register(defineTool(...))` 注册；`cordis.patch.yml` 是发布 bundle 使用的 patch。
+
+如果要直接从源码启动 Harness Web 开发环境，运行：
+
+```bash
+pnpm harness:dev
+```
+
+该命令会生成被 `.gitignore` 忽略的 `cordis.local.patch.yml`。它将 `name` 指向当前仓库的绝对 `src/index.ts` 路径，再执行 `pnpm dsh web --patch ./cordis.local.patch.yml`，符合 Harness 对本地插件 patch 的要求。Git 安装则由 `prepare` 自动构建 `lib/`；发布 bundle 的 patch 和包清单由 `package.json` 中的 `dsh.bundle` 声明。
+
 代码结构：
 
 - `src/index.ts`：dsh host、HTTP API 与只读 tools
 - `src/portfolio-service.ts`：凭据持久化、缓存与请求协调
 - `src/trading212.ts`：Trading 212 API 客户端与响应校验
 - `src/market-data.ts`：Yahoo Finance 历史价格数据
-- `src/client/index.tsx`：dsh 侧边栏 switcher 与 dashboard overlay
+- `src/client/index.tsx`：原生 `T212` conversation.view 选项卡（iframe 承载 dashboard）
 - `src/app/`：连接、组合、历史和个股详情 UI
 
 ## 贡献

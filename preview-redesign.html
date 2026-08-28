@@ -1,910 +1,2180 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>dsh · Trading 212 — Redesign Preview</title>
+<meta name="color-scheme" content="light" />
+<title>dsh × Trading 212 — Portfolio preview</title>
 <style>
 /* ==========================================================================
-   Quick CSS Snippet — DESIGN.md §9.2 (consumed verbatim as :root tokens)
+   dsh × Trading 212 — "Carbon Ledger" design system (v3)
+   精密仪器终端 · 碳素账本 × 信号黄 · 印刷式硬边缘
+   --------------------------------------------------------------------------
+   立场：拒绝玻璃拟态、拒绝紫蓝渐变、拒绝荧光辉光、拒绝胶囊滥用。
+   语言：暖碳黑画布 + 工程图纸网格 / 纸白墨色 / 单一信号黄 accent /
+         1px 发丝实线 / 2px 直角边缘 / 印刷式偏移硬阴影 / 等宽数字。
    ========================================================================== */
+
+/* ---------- 1. Design tokens ---------- */
 :root {
-  /* 字体 */
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-               "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+  color-scheme: dark;
+
+  /* Fonts — 编辑感三层栈：无 Inter / Roboto / Arial / Open Sans / Helvetica */
+  --font-sans: "Avenir Next", -apple-system, BlinkMacSystemFont, "SF Pro Text",
+               "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
                "Noto Sans CJK SC", "Segoe UI", sans-serif;
-  --font-mono: "SF Mono", "Geist Mono", "JetBrains Mono", "Roboto Mono", ui-monospace, monospace;
+  --font-serif: "New York", ui-serif, Georgia, "Songti SC", "Noto Serif SC", "STSong", serif;
+  --font-mono: "SF Mono", "IBM Plex Mono", "JetBrains Mono", "Menlo", ui-monospace, monospace;
 
-  /* 品牌强调 */
-  --primary: #00a6ff; --primary-bright: #33b8ff; --primary-deep: #0084cc;
-  --primary-subtle: rgba(0,166,255,0.12); --primary-glow: rgba(0,166,255,0.35);
-  --primary-glow-subtle: rgba(0,166,255,0.15);
+  /* Canvas — 暖碳黑（带 3% 绿调的黑，拒绝冷蓝黑、拒绝纯黑） */
+  --canvas-void: #0c0d0a;
+  --canvas-0: #101110;
+  --canvas-1: #151613;
+  --canvas-2: #1a1b17;
 
-  /* 语义金融色 */
-  --positive: #00b074; --positive-bright: #00d084; --positive-bg: rgba(0,208,132,0.12);
-  --positive-surface: #0a1812; --positive-border: rgba(0,208,132,0.28);
-  --negative: #ff3b30; --negative-bright: #ff4d4f; --negative-bg: rgba(255,59,48,0.12);
-  --negative-surface: #1e0d0e; --negative-border: rgba(255,77,79,0.28);
-  --info: #38bdf8; --info-bg: rgba(56,189,248,0.12);
-  --warning: #ffb020; --warning-bg: rgba(255,176,32,0.12);
-  --danger: #ff3b30; --danger-border: rgba(255,77,79,0.4);
+  /* Surfaces — 实色面板（无玻璃、无透明度堆叠） */
+  --shell: #0d0e0b;                                       /* 卡片外壳（比画布深半阶） */
+  --shell-border: #2a2b24;                                /* 外壳 1px 实线 */
+  --panel-hi: #1b1c17;                                    /* 面板 */
+  --panel-lo: #161713;
+  --panel-soft: rgba(242, 239, 230, 0.035);
+  --panel-hover: rgba(242, 239, 230, 0.06);
+  --panel-active: rgba(255, 214, 10, 0.07);
 
-  /* 背景层级 */
-  --canvas-app: #000000; --canvas-subtle: #05070a; --panel: #0b0f14;
-  --panel-subtle: #10151c; --panel-hover: #161e27; --panel-active: #1a232e;
-  --panel-elevated: #18222d; --sidebar: #050709; --sidebar-hover: #0d1217; --sidebar-active: #131a22;
+  /* Ink ramp — 纸白暖墨 */
+  --ink: #f2efe6;
+  --ink-2: #c8c5b8;
+  --muted: #8f8e81;
+  --muted-2: #63624f;
+  --muted-3: #403f35;
 
-  /* 文字 */
-  --ink: #ffffff; --ink-secondary: #cdd6df; --muted: #8291a0;
-  --muted-light: #52606e; --muted-faint: #343d46;
+  /* Hairlines — 实色优先，透明线仅用于 hover 微调 */
+  --rule: #2a2b24;
+  --rule-strong: #3a3b30;
+  --rule-soft: #1f201a;
 
-  /* 边框 / 发丝线 */
-  --rule: rgba(255,255,255,0.08); --rule-strong: rgba(255,255,255,0.14);
-  --rule-subtle: rgba(255,255,255,0.04);
+  /* Brand accent — Signal Yellow 信号黄（仪器刻度色，唯一 accent） */
+  --primary: #ffd60a;
+  --primary-bright: #ffe14d;
+  --primary-deep: #c9a800;
+  --primary-tint: rgba(255, 214, 10, 0.10);
+  --primary-tint-strong: rgba(255, 214, 10, 0.18);
+  --primary-ink: #191500;
 
-  /* 圆角 */
-  --radius-xs: 4px; --radius-sm: 8px; --radius-md: 12px;
-  --radius-lg: 18px; --radius-xl: 24px; --radius-full: 9999px;
+  /* Semantic finance（国际惯例：绿涨红跌，暖调色相） */
+  --positive: #3fcf8e;
+  --positive-bright: #63e0a9;
+  --positive-tint: rgba(63, 207, 142, 0.10);
+  --negative: #ff5e5b;
+  --negative-bright: #ff8580;
+  --negative-tint: rgba(255, 94, 91, 0.10);
+  --warning: #ffae33;
+  --info: #8fb8d8;
 
-  /* 阴影（带顶高光 bezel） */
-  --shadow-xs: 0 1px 2px rgba(0,0,0,0.6);
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08);
-  --shadow-md: 0 8px 24px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.1);
-  --shadow-lg: 0 16px 36px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.12);
+  /* Radii — 硬朗阶梯（只有小元件允许全圆） */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-full: 999px;
 
-  /* 克制发光（仅交互瞬间） */
-  --glow-primary-sm: 0 0 0 1px rgba(0,166,255,0.35), 0 0 12px rgba(0,166,255,0.18);
-  --glow-primary-md: 0 0 0 1px rgba(0,166,255,0.45), 0 0 20px rgba(0,166,255,0.22);
-  --glow-positive-sm: 0 0 6px rgba(0,208,132,0.25);
-  --glow-negative-sm: 0 0 6px rgba(255,77,79,0.25);
+  /* Depth — 印刷式偏移硬阴影（offset solid），禁用柔光大投影 */
+  --shadow-hard-sm: 2px 2px 0 rgba(0, 0, 0, 0.55);
+  --shadow-hard: 3px 3px 0 rgba(0, 0, 0, 0.6);
+  --shadow-hard-lg: 5px 5px 0 rgba(0, 0, 0, 0.65);
+  --shadow-pop: 8px 8px 0 rgba(0, 0, 0, 0.55);
+  /* 兼容别名（float/card 已被硬阴影体系取代） */
+  --shadow-float: var(--shadow-hard-lg);
+  --shadow-card: var(--shadow-hard-sm);
 
-  /* 间距（4px 基准） */
-  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
-  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  /* Motion — 短促、机械、有阻尼 */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-io: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 0.14s;
+  --dur-mid: 0.26s;
+  --dur-slow: 0.55s;
 
-  /* Cockpit 布局 */
-  --cockpit-left-width: 380px; --cockpit-right: 1fr; --cockpit-column-gap: 0;
-  --cockpit-topbar-height: 56px; --cockpit-height: calc(100vh - 56px);
+  /* 兼容别名：发光体系已废弃，全部归零 */
+  --glow-cyan: none;
+  --glow-positive: none;
+  --glow-negative: none;
 
-  /* 动效 */
-  --transition-fast: 0.15s cubic-bezier(0.16,1,0.3,1);
-  --transition-normal: 0.22s cubic-bezier(0.16,1,0.3,1);
-  --transition-spring: 0.35s cubic-bezier(0.32,0.72,0,1);
+  /* Layout */
+  --content-max: 1460px;
+  --topbar-gutter: 18px;
 }
 
-/* ==========================================================================
-   Base & Reset
-   ========================================================================== */
+/* ---------- 2. Base & scaffold ---------- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-  min-height: 100%;
+html, body { min-height: 100%; }
+html { font-size: 14px; }
+body {
   font-family: var(--font-sans);
+  font-size: 14px;
   color: var(--ink);
-  background-color: var(--canvas-app);
+  background-color: var(--canvas-0);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  /* 金融数字等宽：所有金额/数量/百分比默认 tabular-nums（DESIGN.md §3.4） */
   font-variant-numeric: tabular-nums;
-}
-/* body 保留两处 radial 环境光作为唯一背景光（DESIGN.md §2.8 规则 5，非 AI-slop） */
-body {
+  overflow-x: hidden;
+  /* 工程图纸网格 —— 固定、低对比，仪器底纸 */
   background-image:
-    radial-gradient(ellipse 60% 40% at 20% -10%, rgba(0,166,255,0.06), transparent 70%),
-    radial-gradient(ellipse 50% 30% at 80% 10%, rgba(0,208,132,0.04), transparent 60%);
+    linear-gradient(rgba(242, 239, 230, 0.024) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(242, 239, 230, 0.024) 1px, transparent 1px);
+  background-size: 52px 52px;
   background-attachment: fixed;
 }
+/* 顶部信号黄 keyline —— 品牌识别线 */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--primary);
+  z-index: 300;
+  pointer-events: none;
+}
+::selection { background: var(--primary); color: var(--primary-ink); }
+:focus-visible { outline: 1px dashed var(--primary); outline-offset: 3px; }
+
 button, input, select, textarea { font-family: inherit; color: inherit; }
-button { cursor: pointer; border: 0; background: transparent; user-select: none; touch-action: manipulation; }
-button:active { transform: scale(0.985); }
+button {
+  cursor: pointer; border: 0; background: transparent; user-select: none; touch-action: manipulation;
+  transition: transform var(--dur-fast) var(--ease-io), background-color var(--dur-mid) var(--ease-out),
+              border-color var(--dur-mid) var(--ease-out), color var(--dur-mid) var(--ease-out),
+              opacity var(--dur-mid) var(--ease-out), box-shadow var(--dur-fast) var(--ease-io), filter var(--dur-mid) var(--ease-out);
+}
+button:active:not(:disabled) { transform: translate(1px, 1px); }
+button:disabled { cursor: not-allowed; }
 svg { display: block; }
+input, select, textarea { background: transparent; border: 0; outline: 0; }
+input::placeholder { color: var(--muted-2); }
+table { border-collapse: collapse; width: 100%; }
 
-.tone-positive { color: var(--positive-bright) !important; }
-.tone-negative { color: var(--negative-bright) !important; }
+* { scrollbar-width: thin; scrollbar-color: var(--muted-3) transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: var(--muted-3); border-radius: 0; border: 2px solid transparent; background-clip: padding-box; }
+*::-webkit-scrollbar-track { background: transparent; }
 
-/* ==========================================================================
-   Top Navigation Bar (Trading 212 Native Glass Header) — § styling mirror
-   ========================================================================== */
+/* ---------- 3. Motion choreography ---------- */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.spin { animation: spin 0.9s linear infinite; }
+
+.reveal { animation: rise-in var(--dur-slow) var(--ease-io) both; }
+.reveal-1 { animation-delay: 0.05s; }
+.reveal-2 { animation-delay: 0.1s; }
+.reveal-3 { animation-delay: 0.15s; }
+.reveal-4 { animation-delay: 0.2s; }
+.reveal-5 { animation-delay: 0.25s; }
+.reveal-6 { animation-delay: 0.3s; }
+
+/* 仪器刻度标签 —— 黄色小方 tick 前缀，统一用于所有 section 微标签 */
+.account-label::before, .pot-label::before, .ai-strip-title::before,
+.cockpit-section-title::before, .pane-section-header h3::before,
+.invest-head-title h3::before {
+  content: "";
+  display: inline-block;
+  width: 6px; height: 6px;
+  margin-right: 8px;
+  background: var(--primary);
+  transform: translateY(-1px);
+}
+
+/* ---------- 4. Brand, boot screens, shell ---------- */
+.t212-native-app-root { min-height: 100dvh; display: flex; flex-direction: column; }
+.app-shell { flex: 1; display: flex; flex-direction: column; }
+.workspace { width: 100%; max-width: var(--content-max); margin: 0 auto; padding: 0 var(--topbar-gutter) 0; }
+
+.brand { display: inline-flex; align-items: baseline; gap: 7px; font-weight: 800; letter-spacing: -0.045em; font-size: 19px; color: var(--ink); }
+.brand i { width: 7px; height: 7px; border-radius: 0; background: var(--primary); }
+
+.loading-screen, .fatal-screen {
+  min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+  color: var(--muted); animation: fade-in 0.5s var(--ease-out) both;
+}
+.loading-screen .spin { color: var(--primary); }
+.page-loading { min-height: 300px; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--muted); }
+.page-loading .spin, .chart-loading .spin, .chart-loading-box .spin, .history-loading .spin { color: var(--primary); }
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ---------- 5. Topbar — 实色仪器横条（非浮动玻璃岛） ---------- */
 .t212-native-topbar {
-  height: 56px;
-  background: rgba(4,6,8,0.82);
-  border-bottom: 1px solid var(--rule);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.05), 0 4px 16px rgba(0,0,0,0.5);
+  width: 100%;
+  margin: 0 auto 18px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 max(var(--topbar-gutter), calc((100% - var(--content-max)) / 2 + var(--topbar-gutter)));
+  border-radius: 0;
+  background: var(--shell);
+  border: 0;
+  border-bottom: 1px solid var(--shell-border);
+  box-shadow: none;
+  animation: rise-in var(--dur-slow) var(--ease-io) both;
 }
-.topbar-left-zone { display: flex; align-items: center; gap: 14px; }
+.topbar-left-zone, .topbar-right-zone { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
-/* INVEST 品牌胶囊 */
 .t212-invest-brand-pill {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 6px 14px; border-radius: var(--radius-full);
-  background: linear-gradient(180deg,#121820 0%,#0d1217 100%);
+  height: 36px; padding: 0 10px 0 12px;
+  border-radius: var(--radius-xs);
   border: 1px solid var(--rule-strong);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
-  transition: all var(--transition-fast);
+  background: var(--panel-hi);
+  box-shadow: var(--shadow-hard-sm);
+  font-weight: 750; font-size: 12px; letter-spacing: 0.06em; color: var(--ink);
 }
-.t212-invest-brand-pill:hover { background: linear-gradient(180deg,#18222d 0%,#121820 100%); border-color: var(--primary-glow); box-shadow: 0 0 12px var(--primary-glow-subtle), inset 0 1px 0 rgba(255,255,255,0.15); }
-.invest-triangle-glyph { color: var(--primary); font-size: 10px; filter: drop-shadow(0 0 4px var(--primary-glow)); }
-.invest-title-text { font-weight: 800; font-size: 12.5px; letter-spacing: 0.09em; color: #fff; }
+.t212-invest-brand-pill:hover { border-color: var(--primary); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard); }
+.t212-invest-brand-pill:active { transform: translate(1px, 1px); box-shadow: none; }
+.invest-triangle-glyph { font-size: 9px; color: var(--primary); transform: translateY(-1px); }
 .invest-env-badge {
-  font-size: 9.5px; font-weight: 750; padding: 2px 6px; border-radius: 4px;
-  background: var(--warning-bg); color: var(--warning);
-  letter-spacing: 0.04em; border: 1px solid rgba(255,176,32,0.3);
+  display: inline-flex; align-items: center; height: 20px; padding: 0 7px;
+  border-radius: var(--radius-xs);
+  font-size: 9.5px; font-weight: 800; letter-spacing: 0.14em;
+  background: var(--primary); color: var(--primary-ink);
+  border: 0;
 }
-.invest-chevron-icon { color: var(--muted); transition: transform var(--transition-fast); }
-.t212-invest-brand-pill:hover .invest-chevron-icon { color: #fff; }
+.invest-chevron-icon { color: var(--muted); margin-left: 2px; }
 
-/* Center Nav Tabs (pill 轨道) */
-.topbar-center-nav {
-  display: flex; align-items: center; gap: 4px;
-  background: rgba(18,24,32,0.5); padding: 3px;
-  border-radius: var(--radius-full); border: 1px solid var(--rule-subtle);
-}
+.topbar-center-nav { display: flex; align-items: center; gap: 0; padding: 0; border-radius: var(--radius-xs); background: var(--panel-hi); border: 1px solid var(--rule-strong); box-shadow: var(--shadow-hard-sm); overflow: hidden; }
 .topbar-nav-tab {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 7px 16px; border-radius: var(--radius-full);
-  font-size: 13px; font-weight: 600; color: var(--muted);
-  background: transparent; transition: all var(--transition-fast); position: relative;
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 36px; padding: 0 16px;
+  border-radius: 0;
+  border-right: 1px solid var(--rule);
+  font-size: 12.5px; font-weight: 600; letter-spacing: 0.02em;
+  color: var(--muted);
 }
-.topbar-nav-tab:hover { color: #fff; background: rgba(255,255,255,0.06); }
+.topbar-nav-tab:last-child { border-right: 0; }
+.topbar-nav-tab:hover { color: var(--ink); background: var(--panel-hover); }
 .topbar-nav-tab.active {
-  color: #fff; background: #19222d;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 0 1px rgba(255,255,255,0.08);
+  color: var(--primary-ink);
+  background: var(--primary);
+  box-shadow: none;
+  font-weight: 750;
 }
-.topbar-nav-tab.active svg { color: var(--primary); }
 
-/* Right Zone Tools */
-.topbar-right-zone { display: flex; align-items: center; gap: 10px; }
 .topbar-search-slot {
   display: flex; align-items: center; gap: 8px;
-  background: #0d1217; border: 1px solid var(--rule); border-radius: var(--radius-full);
-  padding: 6px 14px; width: 180px;
-  transition: width var(--transition-normal), border-color var(--transition-fast), background var(--transition-fast);
+  height: 36px; padding: 0 12px;
+  width: 190px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule-strong);
+  background: var(--panel-hi);
+  transition: border-color var(--dur-mid) var(--ease-out), width var(--dur-mid) var(--ease-spring), box-shadow var(--dur-fast) var(--ease-io);
 }
-.topbar-search-slot:focus-within { width: 240px; border-color: var(--primary); background: #121820; box-shadow: 0 0 12px var(--primary-glow-subtle); }
-.search-glyph-icon { color: var(--muted); flex-shrink: 0; }
-.topbar-search-field { background: transparent; border: 0; outline: none; color: #fff; font-size: 12.5px; width: 100%; }
-.topbar-search-field::placeholder { color: var(--muted-light); }
-.topbar-tool-btn {
-  width: 34px; height: 34px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--muted); background: #0e1318; border: 1px solid var(--rule);
-  transition: all var(--transition-fast);
-}
-.topbar-tool-btn:hover { color: #fff; background: #17202a; border-color: var(--rule-strong); }
+.topbar-search-slot:focus-within { border-color: var(--primary); width: 236px; box-shadow: var(--shadow-hard-sm); background: var(--panel-lo); }
+.search-glyph-icon { color: var(--muted-2); flex-shrink: 0; }
+.topbar-search-field { flex: 1; min-width: 0; font-size: 12.5px; color: var(--ink); font-family: var(--font-mono); }
+.clear-search-btn { color: var(--muted-2); font-size: 16px; line-height: 1; border-radius: 0; width: 20px; height: 20px; }
+.clear-search-btn:hover { color: var(--ink); background: var(--panel-hover); }
 
-/* ==========================================================================
-   Cockpit Two-Column Layout — §5.2
-   ========================================================================== */
+.topbar-tool-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule-strong);
+  background: var(--panel-hi);
+  color: var(--muted);
+}
+.topbar-tool-btn:hover { color: var(--primary-ink); border-color: var(--primary); background: var(--primary); }
+.topbar-tool-btn:disabled { opacity: 0.5; }
+.topbar-tool-btn:disabled:hover { color: var(--muted); border-color: var(--rule-strong); background: var(--panel-hi); }
+
+/* ---------- 6. Cockpit bento layout ---------- */
 .t212-cockpit-layout {
   display: grid;
-  grid-template-columns: var(--cockpit-left-width) var(--cockpit-right);
-  height: var(--cockpit-height);
-  min-height: 0;
-  background: #000;
-  overflow: hidden;
+  grid-template-columns: minmax(330px, 396px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 2px var(--topbar-gutter) 12px;
 }
-.cockpit-left-pane {
-  background: var(--canvas-subtle);
-  border-right: 1px solid var(--rule);
-  padding: 20px 18px 96px;
-  display: flex; flex-direction: column; gap: 18px;
-  position: relative; overflow-y: auto; overflow-x: hidden;
-  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.12) transparent;
-}
-.cockpit-left-pane::-webkit-scrollbar { width: 5px; }
-.cockpit-left-pane::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: var(--radius-full); }
-.cockpit-left-pane::-webkit-scrollbar-track { background: transparent; }
 
-/* 1. Account Value Card — §4.2 卡片 (Double-Bezel Hardware Architecture) */
-.cockpit-account-card {
-  padding: 18px;
-  background: linear-gradient(180deg,#0c1016 0%,#070a0e 100%);
-  border: 1px solid var(--rule-strong);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
-  position: relative; overflow: hidden;
+/* ---------- 7. Panel system — 实色外壳 + 实色内芯（双层细边框，无玻璃） ---------- */
+.cockpit-account-card, .cockpit-main-pot-card, .cockpit-treemap-section, .cockpit-investments-section,
+.cockpit-pending-section, .cockpit-ai-prompt-strip,
+.cockpit-chart-wrap, .your-investment-cockpit, .autoinvest-card,
+.cockpit-ai-analysis-card, .sub-panel, .cockpit-holdings-preview,
+.cockpit-instrument-container, .connection-card, .setup-guide {
+  position: relative;
+  background: var(--shell);
+  border: 1px solid var(--shell-border);
+  border-radius: var(--radius-xs);
+  padding: 5px;
+  box-shadow: var(--shadow-hard-sm);
 }
-.cockpit-account-card::before {
-  content: ""; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0,166,255,0.4), transparent);
+.cockpit-account-card::before, .cockpit-main-pot-card::before, .cockpit-treemap-section::before,
+.cockpit-investments-section::before, .cockpit-pending-section::before, .cockpit-ai-prompt-strip::before,
+.cockpit-chart-wrap::before, .your-investment-cockpit::before, .autoinvest-card::before,
+.cockpit-ai-analysis-card::before, .sub-panel::before, .cockpit-holdings-preview::before,
+.cockpit-instrument-container::before, .connection-card::before, .setup-guide::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  z-index: 0;
+  border-radius: 0;
+  background: var(--panel-lo);
+  border: 1px solid var(--rule-soft);
+  box-shadow: none;
+  pointer-events: none;
 }
-.account-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-.account-label { display: block; font-size: 10.5px; font-weight: 750; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-.icon-btn-ghost { color: var(--muted); padding: 5px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
-.icon-btn-ghost:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.cockpit-account-card > *, .cockpit-main-pot-card > *, .cockpit-treemap-section > *, .cockpit-investments-section > *,
+.cockpit-pending-section > *, .cockpit-ai-prompt-strip > *,
+.cockpit-chart-wrap > *, .your-investment-cockpit > *, .autoinvest-card > *,
+.cockpit-ai-analysis-card > *, .sub-panel > *, .cockpit-holdings-preview > *,
+.cockpit-instrument-container > *, .connection-card > *, .setup-guide > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- 8. Left pane ---------- */
+.cockpit-left-pane { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.cockpit-left-pane > * { animation: rise-in 0.6s var(--ease-io) both; }
+.cockpit-left-pane > *:nth-child(1) { animation-delay: 0.04s; }
+.cockpit-left-pane > *:nth-child(2) { animation-delay: 0.08s; }
+.cockpit-left-pane > *:nth-child(3) { animation-delay: 0.12s; }
+.cockpit-left-pane > *:nth-child(4) { animation-delay: 0.16s; }
+.cockpit-left-pane > *:nth-child(5) { animation-delay: 0.2s; }
+.cockpit-left-pane > *:nth-child(6) { animation-delay: 0.24s; }
+.cockpit-left-pane > *:nth-child(7) { animation-delay: 0.28s; }
+
+/* Account hero — 顶部刻度尺 + 衬线大数字 */
+.account-card-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 4px 16px; }
+.account-label {
+  display: inline-flex; align-items: center;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-2);
+  font-family: var(--font-mono);
+}
+.icon-btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: var(--radius-xs); color: var(--muted-2);
+  border: 1px solid transparent;
+}
+.icon-btn-ghost:hover { color: var(--ink); background: var(--panel-hover); border-color: var(--rule); }
+
 .account-hero-val {
-  font-size: 34px; font-weight: 800; letter-spacing: -1.0px; color: #fff;
-  font-variant-numeric: tabular-nums; display: block; line-height: 1.1;
-  margin: 6px 0 12px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  display: block;
+  padding: 4px 16px 0;
+  font-family: var(--font-serif);
+  font-size: clamp(40px, 4.6vw, 54px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+  color: var(--ink);
+  /* 顶部仪器刻度尺 */
+  background-image: repeating-linear-gradient(90deg, var(--muted-3) 0 1px, transparent 1px 8px);
+  background-size: 100% 5px;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  padding-top: 12px;
 }
-.account-sub-metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--rule-subtle); }
-.sub-metric-block span { display: block; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
-.sub-metric-block strong { font-size: 13px; font-weight: 750; font-variant-numeric: tabular-nums; }
-
-.mini-chart-strip { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-.sparkline-svg { width: 100%; height: 42px; overflow: visible; }
-.mini-range-pills { display: flex; justify-content: space-between; gap: 2px; background: rgba(0,0,0,0.4); padding: 3px; border-radius: var(--radius-full); }
-.mini-pill-btn { padding: 3px 7px; border-radius: var(--radius-full); font-size: 10px; font-weight: 700; color: var(--muted); background: transparent; transition: all var(--transition-fast); font-variant-numeric: tabular-nums; }
-.mini-pill-btn:hover { color: var(--ink); background: rgba(255,255,255,0.06); }
-.mini-pill-btn.active { background: #1e2734; color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
-
-/* 2. Main Pot (Cash) Card */
-.cockpit-main-pot-card {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 16px;
-  background: linear-gradient(180deg,#0d1218 0%,#090d12 100%);
-  border: 1px solid var(--rule); border-radius: var(--radius-md);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+.account-sub-metrics-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  padding: 12px 14px 14px;
 }
-.pot-info { display: flex; flex-direction: column; gap: 2px; }
-.pot-label { font-size: 10px; font-weight: 750; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-.pot-val { font-size: 17px; font-weight: 750; color: #fff; font-variant-numeric: tabular-nums; }
-.pot-sub { font-size: 10.5px; color: var(--muted-light); }
+.sub-metric-block {
+  padding: 12px 14px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule);
+  background: var(--panel-hi);
+  box-shadow: none;
+  display: flex; flex-direction: column; gap: 5px;
+  transition: transform var(--dur-fast) var(--ease-io), box-shadow var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out), background-color var(--dur-mid) var(--ease-out);
+}
+.sub-metric-block:hover { background: var(--panel-lo); border-color: var(--rule-strong); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard-sm); }
+.sub-metric-block span { font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-2); font-family: var(--font-mono); }
+.sub-metric-block strong { font-size: 14.5px; font-weight: 650; letter-spacing: -0.01em; font-family: var(--font-mono); }
+
+/* Main pot */
+.cockpit-main-pot-card { display: flex; align-items: stretch; }
+.pot-info { flex: 1; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pot-label { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-2); font-family: var(--font-mono); }
+.pot-val { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); font-family: var(--font-mono); }
+.pot-sub { font-size: 11.5px; color: var(--muted); }
 .t212-deposit-pill-btn {
-  padding: 7px 18px; border-radius: var(--radius-full); background: var(--primary);
-  color: #04121d; font-size: 12px; font-weight: 800; letter-spacing: 0.02em;
-  transition: all var(--transition-fast); box-shadow: 0 2px 8px rgba(0,166,255,0.35);
+  display: inline-flex; align-items: center; justify-content: center;
+  align-self: center;
+  height: 38px; padding: 0 20px; margin: 8px 14px 8px 4px;
+  border-radius: var(--radius-xs);
+  font-size: 12.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--primary-ink);
+  background: var(--primary);
+  box-shadow: var(--shadow-hard);
 }
-.t212-deposit-pill-btn:hover { background: var(--primary-bright); box-shadow: 0 0 14px var(--primary-glow); }
+.t212-deposit-pill-btn:hover { filter: none; background: var(--primary-bright); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard-lg); }
+.t212-deposit-pill-btn:active { transform: translate(2px, 2px); box-shadow: none; }
 
-/* 4. Investments Stream Section */
-.cockpit-investments-section { display: flex; flex-direction: column; gap: 8px; }
-.investments-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; padding: 4px 0; }
-.invest-head-title { display: flex; align-items: baseline; gap: 8px; }
-.invest-head-title h3 { font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-.invest-sum-val { font-size: 12px; font-weight: 750; color: #fff; font-variant-numeric: tabular-nums; }
-.collapse-arrow { font-size: 12px; color: var(--muted); transition: transform var(--transition-fast); }
+/* AI prompt strip */
+.ai-strip-title { display: inline-flex; align-items: center; padding: 12px 14px 0 16px; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-2); font-family: var(--font-mono); }
+.ai-prompt-scroller { display: flex; gap: 8px; padding: 10px 8px 12px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.ai-prompt-scroller::-webkit-scrollbar { display: none; }
+.ai-sparkle-badge {
+  flex-shrink: 0; align-self: center;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: var(--radius-xs);
+  background: var(--primary); border: 0;
+  box-shadow: var(--shadow-hard-sm);
+}
+.sparkle-glyph { color: var(--primary-ink); font-size: 12px; }
+.ai-prompt-card-chip {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center;
+  max-width: 240px;
+  padding: 8px 12px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule);
+  background: var(--panel-hi);
+  font-size: 12px; color: var(--ink-2);
+  box-shadow: none;
+  transition: transform var(--dur-fast) var(--ease-io), box-shadow var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out), background-color var(--dur-mid) var(--ease-out), color var(--dur-mid) var(--ease-out);
+}
+.ai-prompt-card-chip:hover { border-color: var(--primary); background: var(--panel-active); color: var(--ink); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard-sm); }
+.ai-prompt-card-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Investments stream */
+.cockpit-investments-section { min-width: 0; }
+.investments-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; cursor: pointer;
+  border-radius: 0;
+}
+.investments-header:hover { background: var(--panel-soft); }
+.invest-head-title { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.invest-head-title h3 { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-2); font-family: var(--font-mono); }
+.invest-sum-val { font-size: 13.5px; font-weight: 650; color: var(--ink-2); font-family: var(--font-mono); }
+.collapse-arrow { display: inline-flex; width: 26px; height: 26px; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--muted-2); font-size: 13px; transition: transform var(--dur-mid) var(--ease-spring), color var(--dur-mid) var(--ease-out), background-color var(--dur-mid) var(--ease-out); }
+.collapse-arrow:hover { color: var(--ink); background: var(--panel-hover); }
 .collapse-arrow.collapsed { transform: rotate(180deg); }
-.investments-list-stream { display: flex; flex-direction: column; gap: 4px; }
+
+.investments-list-stream { display: flex; flex-direction: column; padding: 6px; }
+.create-pie-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 12px; margin: 4px 6px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  border: 1px dashed var(--rule-strong);
+  transition: transform var(--dur-fast) var(--ease-io), box-shadow var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out), background-color var(--dur-mid) var(--ease-out);
+}
+.create-pie-row:hover { border-color: var(--primary); border-style: solid; background: var(--panel-active); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard-sm); }
+.create-pie-icon-box {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: var(--radius-xs);
+  background: var(--primary); color: var(--primary-ink);
+  border: 0;
+  font-size: 17px; font-weight: 600;
+  transition: transform var(--dur-mid) var(--ease-spring);
+}
+.create-pie-row:hover .create-pie-icon-box { transform: rotate(90deg); }
+.create-pie-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.create-pie-meta strong { font-size: 13.5px; font-weight: 650; color: var(--ink); }
+.create-pie-meta small { font-size: 11.5px; color: var(--muted); }
+.create-pie-chevron { color: var(--muted-2); font-size: 18px; font-weight: 300; }
 
 .pos-stream-item {
-  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
-  border-radius: var(--radius-md); transition: all var(--transition-fast);
-  text-align: left; border: 1px solid transparent; background: transparent;
+  display: flex; align-items: center; gap: 12px;
+  width: 100%;
+  padding: 10px 12px; margin: 3px 0;
+  border-radius: 0;
+  border: 1px solid transparent;
+  border-left: 2px solid transparent;
 }
-.pos-stream-item:hover { background: #0e1319; border-color: var(--rule); }
-.pos-stream-item.selected { background: linear-gradient(90deg,#131b24 0%,#0d1218 100%); border-color: rgba(0,166,255,0.45); box-shadow: 0 2px 10px rgba(0,0,0,0.4), 0 0 12px var(--primary-glow-subtle); }
-.pos-stream-ident { flex: 1; min-width: 0; }
-.pos-stream-ident strong { display: block; font-size: 13px; font-weight: 650; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pos-stream-ident small { display: block; font-size: 11px; color: var(--muted); }
-.pos-stream-num-col { text-align: right; flex-shrink: 0; }
-.pos-stream-num-col strong { display: block; font-size: 13px; font-weight: 750; color: #fff; font-variant-numeric: tabular-nums; }
-.pos-stream-num-col span { display: block; font-size: 11px; font-weight: 650; font-variant-numeric: tabular-nums; }
-
-/* 7. Pane Footer */
-.cockpit-pane-footer { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 8px; }
-.footer-action-pills-row { display: flex; gap: 8px; width: 100%; }
-.t212-pill-action {
-  flex: 1; padding: 8px 12px; background: #0f141a; border: 1px solid var(--rule);
-  border-radius: var(--radius-full); font-size: 12px; font-weight: 650; color: var(--ink-secondary);
-  text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all var(--transition-fast);
+.pos-stream-item:hover { background: var(--panel-soft); transform: none; border-left-color: var(--rule-strong); }
+.pos-stream-item.selected {
+  background: var(--panel-active);
+  border-color: var(--rule);
+  border-left: 2px solid var(--primary);
+  box-shadow: none;
 }
-.t212-pill-action:hover { background: #182029; color: #fff; border-color: var(--rule-strong); }
-.t212-legal-disclaimer { font-size: 10px; color: var(--muted-light); line-height: 1.4; text-align: center; padding: 0 4px; }
+.pos-stream-ident { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pos-stream-ident strong { font-size: 13px; font-weight: 650; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pos-stream-ident small { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+.pos-stream-num-col { text-align: right; display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+.pos-stream-num-col strong { font-size: 13px; font-weight: 650; color: var(--ink); font-family: var(--font-mono); }
+.pos-stream-num-col span { font-size: 11px; font-weight: 600; font-family: var(--font-mono); }
 
-/* ==========================================================================
-   Ticker Ring Logo
-   ========================================================================== */
-.ticker-ring-logo { position: relative; width: 34px; height: 34px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
-.ring-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
-.ring-track { fill: transparent; stroke: rgba(255,255,255,0.08); stroke-width: 2.4; }
-.ring-progress { fill: transparent; stroke: var(--primary); stroke-width: 2.4; stroke-linecap: round; filter: drop-shadow(0 0 2px var(--primary-glow)); }
-.ticker-avatar { font-size: 10.5px; font-weight: 800; color: #fff; background: #171f28; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15); }
-
-/* ==========================================================================
-   Right Column Main Cockpit
-   ========================================================================== */
-.cockpit-main-pane {
-  padding: 28px 36px 96px; display: flex; flex-direction: column; gap: 32px;
-  background: #000; overflow-y: auto; overflow-x: hidden;
-  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.12) transparent;
+/* Ticker ring + avatar — 直角徽标 + 细环 */
+.ticker-ring-logo { position: relative; width: 34px; height: 34px; flex-shrink: 0; }
+.ring-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ring-track { fill: none; stroke: var(--rule-strong); stroke-width: 2; }
+.ring-progress {
+  fill: none; stroke: var(--primary); stroke-width: 2;
+  stroke-linecap: butt;
+  filter: none;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  transition: stroke-dashoffset var(--dur-slow) var(--ease-spring);
 }
-.cockpit-main-pane::-webkit-scrollbar { width: 6px; }
-.cockpit-main-pane::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: var(--radius-full); }
-.cockpit-main-pane::-webkit-scrollbar-track { background: transparent; }
+.ticker-avatar {
+  position: absolute; inset: 6px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-xs);
+  font-size: 10px; font-weight: 750; letter-spacing: 0.04em;
+  font-family: var(--font-mono);
+  color: var(--ink);
+  background: #23241d;
+}
 
-.cockpit-instrument-container { display: flex; flex-direction: column; gap: 22px; }
-.cockpit-inst-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding-bottom: 4px; }
-.inst-profile { display: flex; align-items: center; gap: 16px; }
-.inst-tag-row { margin-bottom: 3px; }
-.inst-ticker-tag { font-size: 11.5px; font-weight: 750; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-.inst-title { font-size: 26px; font-weight: 800; letter-spacing: -0.6px; color: #fff; line-height: 1.15; }
-.inst-price-box { text-align: right; }
-.inst-price-main { font-size: 36px; font-weight: 800; letter-spacing: -0.8px; display: block; line-height: 1.1; font-variant-numeric: tabular-nums; color: #fff; }
-.inst-price-sub { display: block; font-size: 13.5px; font-weight: 700; margin-top: 3px; font-variant-numeric: tabular-nums; }
-.inst-actions { display: flex; gap: 12px; }
-
-/* Buy / Sell 胶囊（只读语义，§4.1） */
-.t212-action-pill { padding: 10px 32px; border-radius: var(--radius-full); font-size: 13.5px; font-weight: 750; letter-spacing: 0.02em; cursor: pointer; transition: all var(--transition-fast); }
-.t212-action-pill.sell { background: linear-gradient(180deg,#1c242e 0%,#141a22 100%); color: #fff; border: 1px solid var(--rule-strong); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
-.t212-action-pill.sell:hover { background: linear-gradient(180deg,#242e3b 0%,#1a222c 100%); border-color: rgba(255,255,255,0.25); }
-.t212-action-pill.buy { background: var(--primary); color: #04121d; font-weight: 800; box-shadow: 0 2px 8px rgba(0,166,255,0.35); }
-.t212-action-pill.buy:hover { background: var(--primary-bright); box-shadow: var(--glow-primary-md); }
-
-/* === 分段控件 range-switcher — DESIGN.md §4.8 ===
-   行内分段控件：position: relative; z-index: 10，位于图表工具栏正常流内，
-   绝不 absolute 覆盖图表画布（遮挡根因已修复）。滑行 thumb 用 spring 缓动。 */
-.range-switcher {
-  display: inline-flex; align-items: center; gap: 2px;
-  height: 32px; padding: 3px; align-self: flex-start;
-  background: var(--panel-subtle);
+/* Pending orders */
+.pane-section-header { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px 4px; }
+.pane-section-header h3 { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-2); font-family: var(--font-mono); }
+.pane-section-sub { font-size: 11px; color: var(--muted); margin-top: 4px; max-width: 46ch; }
+.count-tag {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 20px; padding: 0 6px;
+  border-radius: var(--radius-xs);
+  font-size: 10.5px; font-weight: 750; color: var(--primary-ink);
+  background: var(--primary); border: 0;
+  font-family: var(--font-mono);
+}
+.cockpit-orders-list { display: flex; flex-direction: column; gap: 4px; padding: 8px; }
+.cockpit-order-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-xs);
   border: 1px solid var(--rule);
-  border-radius: var(--radius-sm);
-  position: relative; z-index: 10;
+  background: var(--panel-hi);
 }
-.range-thumb {
-  position: absolute; top: 3px; bottom: 3px; left: 3px;
-  border-radius: 6px; background: var(--panel-elevated);
+.cockpit-order-row:hover { background: var(--panel-lo); transform: none; border-color: var(--rule-strong); }
+.order-row-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.order-row-info strong { font-size: 12.5px; font-weight: 650; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.order-row-info small { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+.order-cancel-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: var(--radius-xs);
+  font-size: 12px; color: var(--muted-2);
+  background: var(--panel-soft);
+  border: 1px solid var(--rule);
+  cursor: help;
+}
+
+/* Treemap — 左侧色条代替渐变洗涤 */
+.dynamic-treemap-container { position: relative; width: 100%; aspect-ratio: 1.62; padding: 2px 8px 8px; }
+.treemap-rect-slot { position: absolute; padding: 2.5px; }
+.treemap-tile {
+  position: relative; width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  text-align: left;
+  border: 1px solid var(--rule);
+  background: var(--panel-hi);
+  box-shadow: none;
+  transition: transform var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out), box-shadow var(--dur-fast) var(--ease-io), background-color var(--dur-mid) var(--ease-out);
+}
+.treemap-tile:hover { transform: translate(-1px, -1px); border-color: var(--rule-strong); box-shadow: var(--shadow-hard-sm); filter: none; }
+.treemap-tile.gain { background: linear-gradient(180deg, rgba(63, 207, 142, 0.10), rgba(63, 207, 142, 0.03)); border-color: rgba(63, 207, 142, 0.35); border-left: 3px solid var(--positive); }
+.treemap-tile.loss { background: linear-gradient(180deg, rgba(255, 94, 91, 0.10), rgba(255, 94, 91, 0.03)); border-color: rgba(255, 94, 91, 0.35); border-left: 3px solid var(--negative); }
+.treemap-tile.neutral { background: var(--panel-hi); }
+.treemap-tile.selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary), var(--shadow-hard-sm);
+  transform: translate(-1px, -1px);
+  z-index: 2;
+}
+.treemap-tile.compact { padding: 6px 8px; }
+.treemap-tile.compact .tile-ticker { font-size: 10px; }
+.tile-ticker { font-size: 12px; font-weight: 750; letter-spacing: 0.02em; color: var(--ink); font-family: var(--font-mono); }
+.tile-percent { font-size: 11px; font-weight: 700; font-family: var(--font-mono); }
+.treemap-tile .ticker-ring-logo { position: static; margin-bottom: auto; }
+.treemap-tile .ticker-ring-logo .ring-svg { position: relative; }
+
+.treemap-see-all, .cockpit-see-all-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin: 0 8px 8px;
+  height: 34px; padding: 0 6px 0 14px;
+  border-radius: var(--radius-xs);
   border: 1px solid var(--rule-strong);
-  transition: transform var(--transition-spring), width var(--transition-spring);
-  z-index: 0; pointer-events: none;
+  background: var(--panel-hi);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--ink-2);
+  transition: transform var(--dur-fast) var(--ease-io), box-shadow var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out), background-color var(--dur-mid) var(--ease-out), color var(--dur-mid) var(--ease-out);
 }
-.range-switcher button {
-  position: relative; z-index: 1; flex: 0 0 auto; min-width: 40px; height: 26px;
-  padding: 0 12px; border: 0; background: transparent; font-size: 12px; font-weight: 650;
-  color: var(--muted); transition: color var(--transition-fast); font-variant-numeric: tabular-nums;
-}
-.range-switcher button:hover { color: var(--ink-secondary); background: rgba(255,255,255,0.04); }
-.range-switcher button.active { color: var(--ink); }
-.range-switcher:focus-within { border-color: var(--primary); box-shadow: var(--glow-primary-sm); }
+.treemap-see-all:hover, .cockpit-see-all-btn:hover { border-color: var(--primary); background: var(--panel-active); color: var(--ink); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard-sm); }
 
-/* Chart panel */
-.cockpit-chart-wrap {
-  position: relative; z-index: 1;
-  background: linear-gradient(180deg,#0a0e14 0%,#06090c 100%);
-  border: 1px solid var(--rule-strong); border-radius: var(--radius-xl);
-  padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08);
+/* Button-in-button trailing orb — 直角小方块 */
+.btn-orb {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  margin-left: 2px;
+  border-radius: var(--radius-xs);
+  background: var(--primary);
+  border: 0;
+  color: var(--primary-ink);
+  transition: transform var(--dur-mid) var(--ease-spring), background-color var(--dur-mid) var(--ease-out);
 }
-.section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
-.section-heading h2 { font-size: 15px; font-weight: 750; letter-spacing: -0.2px; color: #fff; }
-.section-heading p { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
-.section-heading strong { font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.chart-count { font-size: 11px; color: var(--muted-light); margin: 4px 0 12px; }
-.price-chart { width: 100%; height: 330px; display: block; }
-.chart-legend { display: flex; align-items: center; gap: 16px; margin-bottom: 6px; }
-.chart-legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
-.legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+.treemap-see-all:hover .btn-orb, .cockpit-see-all-btn:hover .btn-orb { transform: translateX(3px); background: var(--primary-bright); }
+
+/* Pane footer */
+.cockpit-pane-footer { display: flex; flex-direction: column; gap: 10px; padding: 4px 6px; }
+.footer-action-pills-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.t212-pill-action {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 36px; padding: 0 14px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule-strong);
+  background: var(--panel-hi);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.03em; color: var(--ink-2);
+  transition: transform var(--dur-fast) var(--ease-io), box-shadow var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out), background-color var(--dur-mid) var(--ease-out), color var(--dur-mid) var(--ease-out);
+}
+.t212-pill-action:hover { color: var(--ink); border-color: var(--primary); background: var(--panel-active); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard-sm); }
+.t212-legal-disclaimer { font-size: 10px; line-height: 1.5; color: var(--muted-3); padding: 0 4px; }
+
+/* ---------- 9. Right pane: instrument cockpit ---------- */
+.cockpit-main-pane { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.cockpit-instrument-container { display: flex; flex-direction: column; gap: 8px; animation: rise-in 0.6s var(--ease-io) 0.1s both; }
+
+.cockpit-inst-head {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 12px 8px 12px;
+}
+.inst-profile { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.inst-profile .ticker-ring-logo { width: 46px; height: 46px; }
+.inst-profile .ticker-ring-logo .ticker-avatar { inset: 8px; font-size: 12px; }
+.inst-tag-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.inst-ticker-tag {
+  display: inline-flex; align-items: center;
+  height: 20px; padding: 0 8px;
+  border-radius: var(--radius-xs);
+  font-size: 9.5px; font-weight: 800; letter-spacing: 0.12em;
+  color: var(--primary-ink);
+  background: var(--primary);
+  border: 0;
+  font-family: var(--font-mono);
+}
+.inst-title { font-size: 21px; font-weight: 750; letter-spacing: -0.02em; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inst-price-box { text-align: right; display: flex; flex-direction: column; gap: 3px; }
+.inst-price-main { font-family: var(--font-serif); font-size: clamp(34px, 3.4vw, 44px); font-weight: 600; letter-spacing: -0.03em; line-height: 1; color: var(--ink); }
+.inst-price-sub { font-size: 12.5px; font-weight: 650; font-family: var(--font-mono); }
+.inst-actions { display: flex; gap: 8px; }
+.t212-action-pill {
+  height: 38px; min-width: 76px; padding: 0 18px;
+  border-radius: var(--radius-xs);
+  font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  border: 1px solid var(--rule);
+  background: var(--panel-hi);
+  color: var(--muted);
+  opacity: 0.62;
+}
+.t212-action-pill:hover { opacity: 1; transform: none; }
+.t212-action-pill.sell { color: var(--negative-bright); }
+.t212-action-pill.buy { color: var(--positive-bright); }
+
+/* Range switcher — 刻度段选器，实心黄滑块 */
+.range-switcher {
+  position: relative;
+  display: inline-flex;
+  align-self: flex-end;
+  margin: 8px 14px 0 0;
+  padding: 3px;
+  border-radius: var(--radius-xs);
+  background: var(--shell);
+  border: 1px solid var(--rule-strong);
+  box-shadow: none;
+  z-index: 10;
+}
+.range-switcher button { position: relative; z-index: 1; height: 28px; padding: 0 12px; border-radius: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; }
+.range-switcher button:hover { color: var(--ink-2); }
+.range-switcher button.active { color: var(--primary-ink); }
+.range-thumb {
+  position: absolute; top: 3px; left: 0;
+  height: 28px;
+  border-radius: 0;
+  background: var(--primary);
+  border: 0;
+  box-shadow: none;
+  transition: transform var(--dur-mid) var(--ease-spring), width var(--dur-mid) var(--ease-spring);
+  pointer-events: none;
+}
+
+/* Chart */
+.price-chart-panel { display: flex; flex-direction: column; min-width: 0; padding: 0 12px 16px; }
+.section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 10px 6px 4px; }
+.section-heading h2 { font-size: 15px; font-weight: 750; letter-spacing: -0.015em; color: var(--ink); }
+.section-heading p { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+.section-heading > strong { font-size: 16px; font-weight: 700; font-family: var(--font-mono); white-space: nowrap; }
+.section-heading > strong small { font-size: 11px; font-weight: 650; }
+.chart-count { font-size: 11px; color: var(--muted-2); padding: 2px 6px 8px; }
+.chart-legend { display: flex; gap: 14px; align-items: center; padding: 2px 6px 6px; font-size: 11px; color: var(--muted); }
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend-dot { width: 14px; height: 3px; border-radius: 0; display: inline-block; }
 .legend-dot.close { background: var(--primary); }
-.legend-dot.buy { background: var(--positive-bright); }
-.legend-dot.sell { background: var(--warning); }
-.market-source { font-size: 10.5px; color: var(--muted-light); line-height: 1.5; margin-top: 14px; }
+.legend-dot.buy { background: var(--positive); box-shadow: none; }
+.legend-dot.sell { background: var(--warning); box-shadow: none; }
+.price-chart { width: 100%; height: 340px; }
+.price-chart-panel .price-chart { height: 250px; }
+.chart-loading-box, .chart-loading { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 220px; color: var(--muted); font-size: 12.5px; }
 
-/* Your Investment 5-Row — §4.2 卡片 */
-.your-investment-cockpit {
-  background: linear-gradient(180deg,#0c1016 0%,#070a0e 100%);
-  border: 1px solid var(--rule-strong); border-radius: var(--radius-xl);
-  padding: 22px 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+/* Your investment — 点线引导的账本行 */
+.cockpit-section-title { display: flex; align-items: center; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-2); padding: 14px 16px 6px; font-family: var(--font-mono); }
+.inv-metrics-list { display: flex; flex-direction: column; padding: 0 10px 10px; }
+.inv-metric-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 11px 8px;
+  border-bottom: 1px solid var(--rule-soft);
 }
-.cockpit-section-title { font-size: 14.5px; font-weight: 750; letter-spacing: -0.2px; color: #fff; margin-bottom: 18px; }
-.inv-metrics-list { display: flex; flex-direction: column; gap: 14px; }
-.inv-metric-row { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--rule-subtle); font-size: 13px; }
-.inv-metric-row:last-child { border-bottom: 0; padding-bottom: 0; }
-.inv-metric-row span { font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-.inv-metric-row strong { font-size: 14px; font-weight: 750; color: #fff; font-variant-numeric: tabular-nums; }
+.inv-metric-row:last-child { border-bottom: 0; }
+.inv-metric-row:hover { background: var(--panel-soft); transform: none; }
+.inv-metric-row span { flex: 1; display: flex; align-items: baseline; gap: 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.03em; color: var(--muted); min-width: 0; }
+.inv-metric-row span::after { content: ""; flex: 1; border-bottom: 1px dotted var(--muted-3); transform: translateY(-3px); }
+.inv-metric-row strong { font-size: 14px; font-weight: 650; color: var(--ink); font-family: var(--font-mono); }
 
-/* AutoInvest Card */
-.autoinvest-card {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 24px; background: linear-gradient(90deg,#0c1016 0%,#070a0e 100%);
-  border: 1px solid var(--rule-strong); border-radius: var(--radius-lg);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+/* AutoInvest */
+.autoinvest-card { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-width: 0; }
+.autoinvest-card > div:first-child { padding: 12px 16px; }
+.autoinvest-card strong { font-size: 13.5px; font-weight: 700; color: var(--ink); display: block; }
+.autoinvest-card p { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+.t212-pill-btn-sm {
+  flex-shrink: 0;
+  height: 32px; padding: 0 16px; margin-right: 10px;
+  border-radius: var(--radius-xs);
+  font-size: 11.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--primary-ink);
+  background: var(--primary);
+  box-shadow: var(--shadow-hard-sm);
 }
-.autoinvest-card strong { display: block; font-size: 14px; font-weight: 750; color: #fff; }
-.autoinvest-card p { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
-.t212-pill-btn-sm { padding: 8px 22px; background: linear-gradient(180deg,#1c2633 0%,#131a23 100%); border: 1px solid var(--rule-strong); border-radius: var(--radius-full); font-size: 12.5px; font-weight: 750; color: #fff; transition: all var(--transition-fast); }
-.t212-pill-btn-sm:hover { background: linear-gradient(180deg,#253344 0%,#1a2430 100%); border-color: var(--primary-glow); }
+.t212-pill-btn-sm:hover { filter: none; background: var(--primary-bright); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard); }
+.t212-pill-btn-sm:active { transform: translate(1px, 1px); box-shadow: none; }
 
-/* Global legal footer */
-.legal { font-size: 10.5px; color: var(--muted-light); text-align: center; padding: 16px 24px 28px; border-top: 1px solid var(--rule); }
+/* Analytics strip */
+.cockpit-analytics-strip { display: flex; flex-direction: column; gap: 20px; }
+.ai-analysis-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px 4px; }
+.ai-badge {
+  display: inline-flex; align-items: center;
+  height: 22px; padding: 0 8px;
+  border-radius: var(--radius-xs);
+  font-size: 9.5px; font-weight: 800; letter-spacing: 0.16em;
+  color: var(--primary-ink);
+  background: var(--primary);
+  border: 0;
+  font-family: var(--font-mono);
+}
+.ai-analysis-header h3 { font-size: 14px; font-weight: 750; letter-spacing: -0.01em; color: var(--ink); }
+.ask-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  margin: 8px; padding: 14px 16px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule-strong);
+  border-left: 3px solid var(--primary);
+  background: var(--panel-hi);
+  box-shadow: none;
+}
+.ask-banner > div { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.ask-banner span { font-size: 11px; color: var(--muted); }
+.ask-banner strong { font-size: 13.5px; font-weight: 650; color: var(--ink); line-height: 1.45; }
+.ask-banner button {
+  display: inline-flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+  height: 36px; padding: 0 14px;
+  border-radius: var(--radius-xs);
+  border: 0;
+  background: var(--primary);
+  font-size: 12px; font-weight: 800; letter-spacing: 0.04em; color: var(--primary-ink);
+  box-shadow: var(--shadow-hard-sm);
+}
+.ask-banner button:hover { background: var(--primary-bright); color: var(--primary-ink); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard); }
+.ask-banner button:active { transform: translate(1px, 1px); box-shadow: none; }
+.ask-banner button svg { flex-shrink: 0; }
 
-/* ==========================================================================
-   Responsive — §8（窄屏双栏退化为单栏堆叠）
-   ========================================================================== */
-@media (max-width: 768px) {
-  .topbar-center-nav { display: none; }
-  .t212-cockpit-layout { grid-template-columns: 1fr; height: auto; overflow: visible; }
-  .cockpit-left-pane { border-right: 0; border-bottom: 1px solid var(--rule); overflow: visible; }
-  .cockpit-main-pane { overflow: visible; }
-  .cockpit-inst-head { flex-direction: column; align-items: flex-start; }
+.cockpit-sub-analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.sub-panel { min-width: 0; }
+.sub-panel > .section-heading { padding: 10px 10px 6px 14px; }
+.sub-panel .bar-list, .sub-panel .exposure-summary { padding: 4px 12px 12px; }
+
+.cockpit-holdings-preview { min-width: 0; }
+.cockpit-holdings-preview > .section-heading { padding: 10px 12px 8px 14px; }
+.cockpit-holdings-preview .table-scroll { padding: 0 6px 6px; }
+
+/* ---------- 10. Bars, allocations, exposure ---------- */
+.bar-list { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: flex; align-items: center; gap: 12px; padding: 2px 0; }
+.bar-label { width: 130px; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.bar-label strong { font-size: 12.5px; font-weight: 650; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-label small { font-size: 10.5px; color: var(--muted); }
+.bar-measure { flex: 1; height: 8px; border-radius: 0; background: var(--panel-soft); overflow: hidden; border: 1px solid var(--rule-soft); }
+.bar-measure i { display: block; height: 100%; border-radius: 0; transition: width var(--dur-slow) var(--ease-spring); }
+.bar-positive { background: var(--positive); box-shadow: none; }
+.bar-negative { background: var(--negative); box-shadow: none; }
+.bar-row > b { min-width: 92px; text-align: right; font-size: 12.5px; font-weight: 650; font-family: var(--font-mono); }
+
+.exposure-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.exposure-summary > div { padding: 12px; border-radius: var(--radius-xs); border: 1px solid var(--rule); background: var(--panel-hi); display: flex; flex-direction: column; gap: 4px; transition: transform var(--dur-fast) var(--ease-io), box-shadow var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out); }
+.exposure-summary > div:hover { border-color: var(--rule-strong); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard-sm); }
+.exposure-summary strong { font-size: 13px; font-weight: 750; color: var(--ink); letter-spacing: 0.04em; }
+.exposure-summary span { font-size: 12.5px; color: var(--ink-2); font-family: var(--font-mono); }
+.exposure-summary small { font-size: 10.5px; color: var(--muted); }
+
+.allocation { display: flex; flex-direction: column; gap: 12px; }
+.allocation-track { display: flex; height: 8px; border-radius: 0; overflow: hidden; background: var(--panel-soft); gap: 2px; border: 1px solid var(--rule-soft); }
+.allocation-track i { display: block; height: 100%; border-radius: 0; transition: width var(--dur-slow) var(--ease-spring); }
+.allocation-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.allocation-legend span { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--muted); }
+.allocation-legend i { width: 8px; height: 8px; border-radius: 0; flex-shrink: 0; }
+.allocation-legend b { color: var(--ink-2); font-weight: 650; }
+.allocation-legend em { font-style: normal; font-family: var(--font-mono); color: var(--muted); }
+
+.treemap-wrapper { position: relative; }
+
+/* ---------- 11. Tables — 排版驱动的账本表格 ---------- */
+.table-scroll { overflow-x: auto; }
+table { font-size: 12.5px; }
+thead th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 9.5px; font-weight: 750; letter-spacing: 0.14em; text-transform: uppercase;
+  font-family: var(--font-mono);
+  color: var(--muted-2);
+  border-bottom: 1px solid var(--rule-strong);
+  white-space: nowrap;
+}
+tbody td { padding: 13px 14px; border-bottom: 1px solid var(--rule-soft); color: var(--ink-2); vertical-align: middle; white-space: nowrap; }
+tbody tr { transition: background-color var(--dur-mid) var(--ease-out), box-shadow var(--dur-fast) var(--ease-io); }
+tbody tr:hover { background: var(--panel-soft); box-shadow: inset 2px 0 0 var(--primary); }
+tbody tr:last-child td { border-bottom: 0; }
+td strong { font-weight: 650; color: var(--ink); }
+td small { display: block; font-size: 10.5px; color: var(--muted); margin-top: 2px; font-family: var(--font-mono); }
+td.positive, td.negative { font-weight: 700; font-family: var(--font-mono); }
+td.positive { color: var(--positive-bright); }
+td.negative { color: var(--negative-bright); }
+
+.asset-cell { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.asset-text, .asset-link { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; }
+.asset-link strong { font-size: 13px; font-weight: 650; color: var(--ink); }
+.asset-link small { color: var(--muted); display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-sans); }
+.asset-link:hover strong { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+.asset-link:hover { opacity: 1; }
+
+.history-side { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: var(--radius-xs); font-size: 10px; font-weight: 800; letter-spacing: 0.08em; font-family: var(--font-mono); text-transform: uppercase; }
+.history-side.buy { color: var(--positive-bright); background: var(--positive-tint); border: 1px solid rgba(63, 207, 142, 0.35); }
+.history-side.sell { color: var(--negative-bright); background: var(--negative-tint); border: 1px solid rgba(255, 94, 91, 0.35); }
+.history-reference { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+
+/* ---------- 12. Content pages ---------- */
+.content-page { display: flex; flex-direction: column; gap: 18px; padding: 26px 6px 34px; animation: rise-in 0.5s var(--ease-io) both; }
+.content-page > h1 { font-size: clamp(26px, 3vw, 34px); font-weight: 780; letter-spacing: -0.03em; color: var(--ink); }
+.content-page > p { font-size: 13px; color: var(--muted); max-width: 72ch; line-height: 1.6; }
+
+.back-button {
+  display: inline-flex; align-items: center; gap: 8px;
+  align-self: flex-start;
+  height: 36px; padding: 0 16px 0 12px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule-strong);
+  background: var(--panel-hi);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--ink-2);
+  transition: transform var(--dur-fast) var(--ease-io), box-shadow var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out), background-color var(--dur-mid) var(--ease-out), color var(--dur-mid) var(--ease-out);
+}
+.back-button:hover { color: var(--ink); border-color: var(--primary); background: var(--panel-active); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard-sm); }
+
+.instrument-page { gap: 20px; }
+.instrument-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding: 6px 4px 2px; }
+.instrument-meta-row { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 11px; letter-spacing: 0.08em; font-family: var(--font-mono); text-transform: uppercase; }
+.instrument-heading h1 { font-size: clamp(28px, 3.4vw, 40px); font-weight: 780; letter-spacing: -0.03em; margin-top: 10px; color: var(--ink); }
+.instrument-heading > div:first-child > p { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+.instrument-price-action { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.instrument-price-action > span { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted-2); font-family: var(--font-mono); }
+.instrument-price-action > strong { font-family: var(--font-serif); font-size: 40px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; color: var(--ink); }
+.instrument-price-action > small { font-size: 12.5px; font-weight: 650; font-family: var(--font-mono); }
+.instrument-action-pills { display: flex; gap: 8px; margin-top: 8px; }
+.pill-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 32px; padding: 0 16px;
+  border-radius: var(--radius-xs);
+  font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  border: 1px solid var(--rule);
+  background: var(--panel-hi);
+  opacity: 0.6;
+}
+.pill-btn.sell { color: var(--negative-bright); }
+.pill-btn.buy { color: var(--positive-bright); }
+
+.market-source { font-size: 11px; color: var(--muted-2); line-height: 1.65; max-width: 100ch; margin-top: -6px; }
+.instrument-page .range-switcher { align-self: flex-start; margin: 2px 0 0 2px; }
+
+.your-investment-section { display: flex; flex-direction: column; gap: 12px; }
+.investment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.invest-row {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 16px 18px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule);
+  background: var(--panel-hi);
+  box-shadow: none;
+  transition: transform var(--dur-fast) var(--ease-io), box-shadow var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out);
+}
+.invest-row:hover { transform: translate(-1px, -1px); border-color: var(--rule-strong); box-shadow: var(--shadow-hard-sm); }
+.invest-row span { font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-2); font-family: var(--font-mono); }
+.invest-row strong { font-size: 16px; font-weight: 680; color: var(--ink); font-family: var(--font-mono); }
+.invest-row strong small { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+
+.instrument-history { display: flex; flex-direction: column; gap: 14px; }
+.history-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.metric-card {
+  padding: 16px 18px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule);
+  background: var(--panel-hi);
+  box-shadow: none;
+  display: flex; flex-direction: column; gap: 6px;
+  transition: transform var(--dur-fast) var(--ease-io), box-shadow var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out);
+}
+.metric-card:hover { transform: translate(-1px, -1px); border-color: var(--rule-strong); box-shadow: var(--shadow-hard-sm); }
+.metric-card span { font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-2); font-family: var(--font-mono); }
+.metric-card strong { font-size: 18px; font-weight: 700; color: var(--ink); font-family: var(--font-serif); letter-spacing: -0.01em; }
+.metric-card small { font-size: 11px; color: var(--muted); }
+
+/* History page */
+.history-tabs { display: inline-flex; gap: 0; padding: 0; border-radius: var(--radius-xs); border: 1px solid var(--rule-strong); background: var(--shell); align-self: flex-start; overflow: hidden; }
+.history-tabs button { height: 32px; padding: 0 16px; border-radius: 0; border-right: 1px solid var(--rule); font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; }
+.history-tabs button:last-child { border-right: 0; }
+.history-tabs button:hover { color: var(--ink-2); background: var(--panel-hover); }
+.history-tabs button.active {
+  color: var(--primary-ink);
+  background: var(--primary);
+  box-shadow: none;
+}
+.history-loading, .chart-loading { display: flex; align-items: center; gap: 10px; padding: 24px 4px; color: var(--muted); font-size: 12.5px; }
+.load-more {
+  align-self: flex-start;
+  height: 34px; padding: 0 16px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule-strong);
+  background: var(--panel-hi);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--ink-2);
+  transition: transform var(--dur-fast) var(--ease-io), box-shadow var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out), background-color var(--dur-mid) var(--ease-out), color var(--dur-mid) var(--ease-out);
+}
+.load-more:hover:not(:disabled) { color: var(--ink); border-color: var(--primary); background: var(--panel-active); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard-sm); }
+.load-more:disabled { opacity: 0.55; }
+
+/* Trade timeline */
+.trade-timeline { display: flex; flex-direction: column; gap: 14px; }
+.timeline-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.timeline-header label { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
+.timeline-header select {
+  height: 32px; padding: 0 12px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule-strong);
+  background: var(--panel-hi);
+  font-size: 12px; color: var(--ink);
+  appearance: auto;
+}
+.timeline-legend { display: flex; align-items: center; gap: 14px; font-size: 11px; color: var(--muted); flex-wrap: wrap; }
+.timeline-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.timeline-legend em { font-style: normal; color: var(--muted-3); }
+.buy-marker { width: 9px; height: 9px; border-radius: 0; display: inline-block; background: var(--positive); box-shadow: none; }
+.sell-marker { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 8px solid var(--warning); display: inline-block; filter: none; }
+.timeline-chart-scroll { overflow-x: auto; border-radius: var(--radius-xs); border: 1px solid var(--rule); background: var(--panel-lo); padding: 6px; }
+.timeline-chart { width: 100%; min-width: 640px; height: auto; }
+.timeline-grid { stroke: rgba(242, 239, 230, 0.05); }
+.timeline-axis { stroke: rgba(242, 239, 230, 0.14); }
+.timeline-axis-label { fill: var(--muted-2); font-size: 10px; font-family: var(--font-mono); }
+.timeline-stem { stroke: rgba(242, 239, 230, 0.09); stroke-width: 1.4; }
+.timeline-buy { fill: var(--positive); stroke: var(--canvas-0); stroke-width: 2; filter: none; }
+.timeline-sell { fill: var(--warning); stroke: var(--canvas-0); stroke-width: 2; filter: none; }
+.timeline-events { display: flex; flex-direction: column; gap: 6px; }
+.timeline-events > div { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius-xs); border: 1px solid var(--rule); background: var(--panel-hi); }
+.timeline-events > div:hover { background: var(--panel-lo); transform: none; border-color: var(--rule-strong); }
+.timeline-events span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.timeline-events strong { font-size: 12.5px; font-weight: 650; color: var(--ink); }
+.timeline-events small { font-size: 10.5px; color: var(--muted); }
+.timeline-events b { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-2); }
+.single-trade { display: flex; flex-direction: column; gap: 6px; padding: 18px; border-radius: var(--radius-xs); border: 1px solid var(--rule); background: var(--panel-hi); }
+.single-trade strong { font-family: var(--font-serif); font-size: 30px; font-weight: 600; color: var(--ink); }
+.single-trade span { font-size: 12.5px; color: var(--ink-2); }
+.single-trade small { font-size: 11px; color: var(--muted); }
+
+/* Settings / help / setup */
+.settings-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.settings-row > div { flex: 1; min-width: 190px; padding: 16px 18px; border-radius: var(--radius-xs); border: 1px solid var(--rule); background: var(--panel-hi); box-shadow: none; display: flex; flex-direction: column; gap: 6px; }
+.settings-row > div > span { font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-2); font-family: var(--font-mono); }
+.settings-row strong { font-size: 14px; font-weight: 650; color: var(--ink); display: inline-flex; align-items: center; gap: 8px; }
+.status-dot { width: 8px; height: 8px; border-radius: 0; background: var(--positive); box-shadow: none; display: inline-block; animation: pulse-dot 2.4s var(--ease-io) infinite; }
+.settings-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.settings-actions button, .error-actions button, .confirm-dialog button {
+  height: 36px; padding: 0 16px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule-strong);
+  background: var(--panel-hi);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.03em; color: var(--ink-2);
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: transform var(--dur-fast) var(--ease-io), box-shadow var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out), background-color var(--dur-mid) var(--ease-out), color var(--dur-mid) var(--ease-out);
+}
+.settings-actions button:hover, .error-actions button:hover, .confirm-dialog button:hover { color: var(--ink); border-color: var(--primary); background: var(--panel-active); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard-sm); }
+button.danger-outline, .confirm-dialog .danger { color: var(--negative-bright); border-color: rgba(255, 94, 91, 0.4); background: var(--negative-tint); }
+button.danger-outline:hover, .confirm-dialog .danger:hover { background: rgba(255, 94, 91, 0.18); border-color: var(--negative); box-shadow: var(--shadow-hard-sm); }
+
+.read-only-note, .trust-list span { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+.read-only-note { padding: 16px 18px; border-radius: var(--radius-xs); border: 1px solid var(--rule-strong); border-left: 3px solid var(--primary); background: var(--panel-hi); }
+.read-only-note svg { color: var(--primary); flex-shrink: 0; margin-top: 1px; }
+.read-only-note strong { color: var(--ink); }
+
+.language-setting { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; padding: 18px 20px; border-radius: var(--radius-xs); border: 1px solid var(--rule); background: var(--panel-hi); }
+.language-setting > div:first-child > span { font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-2); font-family: var(--font-mono); }
+.language-setting h2 { font-size: 16px; font-weight: 750; margin-top: 4px; color: var(--ink); }
+.language-setting p { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.language-options { display: inline-flex; gap: 0; padding: 0; border-radius: var(--radius-xs); border: 1px solid var(--rule-strong); background: var(--shell); overflow: hidden; }
+.language-options button { height: 30px; padding: 0 14px; border-radius: 0; border-right: 1px solid var(--rule); font-size: 11.5px; font-weight: 700; color: var(--muted); font-family: var(--font-mono); }
+.language-options button:last-child { border-right: 0; }
+.language-options button:hover { color: var(--ink-2); }
+.language-options button.active { color: var(--primary-ink); background: var(--primary); box-shadow: none; }
+
+.help-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.help-list article { padding: 18px; border-radius: var(--radius-xs); border: 1px solid var(--rule); background: var(--panel-hi); box-shadow: none; transition: transform var(--dur-fast) var(--ease-io), box-shadow var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out); }
+.help-list article:hover { transform: translate(-1px, -1px); border-color: var(--rule-strong); box-shadow: var(--shadow-hard-sm); }
+.help-list h2 { font-size: 13.5px; font-weight: 750; color: var(--ink); }
+.help-list p { font-size: 12px; color: var(--muted); line-height: 1.6; margin-top: 8px; }
+.help-page > ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.help-page > ul li { padding: 12px 16px; border-radius: var(--radius-xs); border: 1px solid var(--rule); background: var(--panel-hi); font-size: 12.5px; color: var(--ink-2); }
+
+.setup-page { max-width: 760px; margin: 0 auto; padding: 40px 20px 60px; display: flex; flex-direction: column; gap: 24px; }
+.connection-card { animation: pop-in 0.4s var(--ease-io) both; }
+.connection-card > * { padding: 0 18px; }
+.connection-card .eyebrow { margin-top: 18px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 10px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--primary); font-family: var(--font-mono); }
+.connection-card h1 { font-size: clamp(26px, 3.5vw, 34px); font-weight: 780; letter-spacing: -0.03em; color: var(--ink); margin-top: 12px; }
+.connection-card > p { font-size: 13px; color: var(--muted); line-height: 1.65; margin-top: 10px; max-width: 60ch; }
+.connection-card form { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+.connection-card fieldset { border: 0; display: flex; flex-direction: column; gap: 10px; }
+.connection-card legend { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted-2); padding: 0 0 2px; font-family: var(--font-mono); }
+.environment-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.environment-options label {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule);
+  background: var(--panel-hi);
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-io), box-shadow var(--dur-fast) var(--ease-io), border-color var(--dur-mid) var(--ease-out), background-color var(--dur-mid) var(--ease-out);
+}
+.environment-options label:hover { border-color: var(--rule-strong); background: var(--panel-lo); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard-sm); }
+.environment-options label.selected { border-color: var(--primary); background: var(--panel-active); box-shadow: var(--shadow-hard-sm); }
+.environment-options label.selected.live { border-color: var(--positive); background: var(--positive-tint); box-shadow: var(--shadow-hard-sm); }
+.environment-options input { accent-color: var(--primary); }
+.environment-options b { font-size: 13px; font-weight: 750; color: var(--ink); }
+.environment-options small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.field { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--muted-2); }
+.field > span { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; font-family: var(--font-mono); }
+.field input {
+  height: 42px; padding: 0 14px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule-strong);
+  background: var(--panel-lo);
+  font-size: 13px; color: var(--ink);
+  font-family: var(--font-mono);
+}
+.field input:focus { border-color: var(--primary); box-shadow: var(--shadow-hard-sm); background: var(--panel-hi); }
+.secret-wrap { display: flex; align-items: center; position: relative; }
+.secret-wrap input { flex: 1; padding-right: 46px; }
+.secret-wrap button { position: absolute; right: 6px; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: var(--radius-xs); color: var(--muted); }
+.secret-wrap button:hover { color: var(--ink); background: var(--panel-hover); }
+.help-link { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--primary); text-decoration: none; font-weight: 650; }
+.help-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.connection-card .primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  height: 44px;
+  border-radius: var(--radius-xs);
+  font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--primary-ink);
+  background: var(--primary);
+  box-shadow: var(--shadow-hard);
+}
+.connection-card .primary:hover:not(:disabled) { filter: none; background: var(--primary-bright); transform: translate(-1px, -1px); box-shadow: var(--shadow-hard-lg); }
+.connection-card .primary:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: none; }
+.connection-card .primary:disabled { opacity: 0.65; }
+.trust-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 18px !important; margin-top: 4px; }
+.trust-list span { align-items: center; font-size: 12px; }
+.trust-list svg { color: var(--positive); flex-shrink: 0; width: 14px; height: 14px; }
+.setup-guide h2 { font-size: 14px; font-weight: 750; color: var(--ink); padding: 12px 16px 4px; }
+.setup-guide ol { padding: 4px 16px 8px 34px; display: flex; flex-direction: column; gap: 6px; }
+.setup-guide li { font-size: 12.5px; color: var(--ink-2); }
+.setup-guide p { font-size: 12px; color: var(--muted); line-height: 1.6; padding: 0 16px 14px; }
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 48px 20px; text-align: center; color: var(--muted); }
+.empty-state svg { width: 34px; height: 34px; color: var(--muted-2); stroke-width: 1.4; }
+.empty-state strong { font-size: 15px; font-weight: 750; color: var(--ink-2); }
+.empty-state span { font-size: 12.5px; color: var(--muted); max-width: 40ch; line-height: 1.6; }
+.empty-inline { padding: 18px 20px; border-radius: var(--radius-xs); border: 1px dashed var(--rule-strong); color: var(--muted); font-size: 12.5px; text-align: center; }
+.order-empty { margin: 8px; }
+
+/* ---------- 13. Dialogs, errors, toast ---------- */
+.dialog-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  background: rgba(12, 13, 10, 0.8);
+  animation: fade-in 0.25s var(--ease-out) both;
+}
+.confirm-dialog {
+  width: min(440px, 100%);
+  padding: 26px 26px 22px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule-strong);
+  background: var(--panel-lo);
+  box-shadow: var(--shadow-pop);
+  display: flex; flex-direction: column; gap: 12px;
+  animation: pop-in 0.3s var(--ease-spring) both;
+}
+.confirm-dialog > svg { width: 28px; height: 28px; color: var(--negative-bright); stroke-width: 1.5; }
+.confirm-dialog h2 { font-size: 18px; font-weight: 750; color: var(--ink); letter-spacing: -0.02em; }
+.confirm-dialog p { font-size: 12.5px; color: var(--muted); line-height: 1.65; }
+.confirm-dialog > div:last-child { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+
+.error-panel {
+  padding: 16px 18px;
+  border-radius: var(--radius-xs);
+  border: 1px solid rgba(255, 94, 91, 0.4);
+  border-left: 3px solid var(--negative);
+  background: var(--negative-tint);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.error-panel strong { font-size: 13.5px; font-weight: 750; color: var(--negative-bright); }
+.error-panel p { font-size: 12px; color: var(--ink-2); line-height: 1.6; }
+.error-panel .error-action { color: var(--muted); }
+.error-panel small { font-size: 11px; color: var(--muted); }
+.error-panel.compact { font-size: 12px; }
+.error-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.error-actions button { height: 32px; padding: 0 14px; font-size: 12px; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 28px; z-index: 210;
+  transform: translateX(-50%);
+  padding: 12px 18px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--rule-strong);
+  border-left: 3px solid var(--primary);
+  background: var(--panel-lo);
+  box-shadow: var(--shadow-hard-lg);
+  font-size: 12.5px; color: var(--ink-2);
+  animation: pop-in 0.3s var(--ease-spring) both;
+}
+.toast.failed { border-color: rgba(255, 94, 91, 0.4); border-left-color: var(--negative); color: var(--negative-bright); }
+
+/* ---------- 14. Legal, misc, preview helpers ---------- */
+.legal { text-align: center; font-size: 11px; color: var(--muted-3); padding: 14px 0 30px; line-height: 1.6; }
+.tone-positive { color: var(--positive-bright) !important; }
+.tone-negative { color: var(--negative-bright) !important; }
+.mini-chart-strip { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+.sparkline-svg { width: 100%; height: 46px; }
+.mini-range-pills { display: flex; gap: 6px; }
+.mini-pill-btn { height: 24px; padding: 0 10px; border-radius: var(--radius-xs); font-size: 10.5px; font-weight: 700; color: var(--muted); border: 1px solid var(--rule); background: var(--panel-hi); font-family: var(--font-mono); }
+.mini-pill-btn:hover { color: var(--ink-2); border-color: var(--rule-strong); }
+.mini-pill-btn.active { color: var(--primary-ink); background: var(--primary); border-color: var(--primary); }
+.hide-balances .js-balance { filter: blur(7px); transition: filter var(--dur-mid) var(--ease-out); pointer-events: none; user-select: none; }
+.hide-balances .account-hero-val, .hide-balances .tile-percent { filter: blur(6px); }
+
+/* ---------- 15. Responsive ---------- */
+@media (max-width: 1080px) {
+  .t212-cockpit-layout { grid-template-columns: minmax(290px, 330px) minmax(0, 1fr); }
+  .topbar-search-slot { width: 150px; }
+  .topbar-search-slot:focus-within { width: 170px; }
+  .inst-title { max-width: 260px; }
+}
+@media (max-width: 900px) {
+  .t212-cockpit-layout { grid-template-columns: 1fr; }
+  .cockpit-left-pane { order: 2; }
+  .cockpit-main-pane { order: 1; }
+  .cockpit-sub-analytics-grid { grid-template-columns: 1fr; }
+  .topbar-center-nav { order: 3; width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .topbar-center-nav::-webkit-scrollbar { display: none; }
+  .t212-native-topbar { flex-wrap: wrap; height: auto; padding: 10px 12px; gap: 8px; }
+  .topbar-left-zone { flex: 1; }
+  .topbar-right-zone { flex: 1; justify-content: flex-end; }
+  .topbar-nav-tab { height: 34px; padding: 0 13px; }
+}
+@media (max-width: 680px) {
+  .topbar-search-slot { display: none; }
+  .cockpit-inst-head { grid-template-columns: 1fr; gap: 12px; }
   .inst-price-box { text-align: left; }
-  .inst-actions { width: 100%; }
-  .t212-action-pill { flex: 1; text-align: center; }
+  .inst-actions { justify-content: flex-start; }
+  .inst-title { white-space: normal; }
+  .range-switcher { align-self: flex-start; margin-left: 4px; }
+  .account-sub-metrics-grid { grid-template-columns: 1fr; }
+  .environment-options { grid-template-columns: 1fr; }
+  .content-page { padding: 16px 2px 28px; }
+  .section-heading { flex-direction: column; }
 }
-@media (max-width: 480px) {
-  .topbar-search-slot { width: 120px; }
-  .topbar-search-slot:focus-within { width: 160px; }
-  .cockpit-main-pane { padding: 20px 18px 64px; }
+
+/* ---------- 16. Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
+
+/* ========================================================================
+   Trading 212 inspired refresh
+   深蓝导航 + 浅色数据画布；指标由真实 API 快照驱动。
+   ======================================================================== */
+:root {
+  --canvas-void: #eef2f6;
+  --canvas-0: #f5f7fa;
+  --canvas-1: #ffffff;
+  --canvas-2: #e8edf3;
+  --shell: #ffffff;
+  --shell-border: #dce3eb;
+  --panel-hi: #ffffff;
+  --panel-lo: #f8fafc;
+  --panel-soft: rgba(18, 43, 69, 0.045);
+  --panel-hover: rgba(18, 43, 69, 0.075);
+  --panel-active: rgba(22, 119, 255, 0.08);
+  --ink: #15263a;
+  --ink-2: #41566c;
+  --muted: #708196;
+  --muted-2: #8b9aab;
+  --muted-3: #c8d2dc;
+  --rule: #e4e9ef;
+  --rule-strong: #c9d3de;
+  --rule-soft: #edf1f5;
+  --primary: #1677ff;
+  --primary-bright: #3d91ff;
+  --primary-deep: #0957c7;
+  --primary-tint: rgba(22, 119, 255, 0.10);
+  --primary-tint-strong: rgba(22, 119, 255, 0.16);
+  --primary-ink: #ffffff;
+  --positive: #18a957;
+  --positive-bright: #0d8d45;
+  --positive-tint: rgba(24, 169, 87, 0.10);
+  --negative: #e0524d;
+  --negative-bright: #c63c37;
+  --negative-tint: rgba(224, 82, 77, 0.10);
+  --warning: #d88a15;
+  --info: #4c88c7;
+  --font-serif: var(--font-sans);
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --shadow-hard-sm: 0 1px 3px rgba(20, 45, 72, 0.08);
+  --shadow-hard: 0 4px 12px rgba(20, 45, 72, 0.11);
+  --shadow-hard-lg: 0 8px 22px rgba(20, 45, 72, 0.14);
+  --shadow-pop: 0 16px 42px rgba(20, 45, 72, 0.22);
+}
+
+html { background: var(--canvas-0); }
+body { background: var(--canvas-0); color: var(--ink); }
+body::before { height: 3px; background: var(--primary); }
+.workspace { max-width: 1540px; }
+
+.t212-native-topbar {
+  height: 64px;
+  margin-bottom: 22px;
+  background: #102b46;
+  border-bottom: 0;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(11, 32, 53, 0.18);
+}
+.t212-invest-brand-pill { border-color: rgba(255,255,255,.16); background: rgba(255,255,255,.08); color: #fff; box-shadow: none; border-radius: 9px; }
+.t212-invest-brand-pill:hover { border-color: #71adff; background: rgba(255,255,255,.14); box-shadow: none; }
+.invest-triangle-glyph { color: #79b2ff; }
+.invest-env-badge { background: #79b2ff; color: #0c315e; border-radius: 5px; }
+.invest-chevron-icon, .topbar-tool-btn, .search-glyph-icon { color: #b6c7da; }
+.topbar-center-nav { background: transparent; border: 0; box-shadow: none; }
+.topbar-nav-tab { color: #b6c7da; border-right: 0; border-bottom: 3px solid transparent; }
+.topbar-nav-tab:hover { color: #fff; background: rgba(255,255,255,.08); }
+.topbar-nav-tab.active { color: #fff; background: transparent; border-bottom-color: #67a8ff; box-shadow: none; }
+.topbar-search-slot { width: 210px; border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.10); }
+.topbar-search-slot:focus-within { width: 240px; border-color: #71adff; background: rgba(255,255,255,.15); box-shadow: none; }
+.topbar-search-field { color: #fff; }
+.topbar-search-field::placeholder { color: #a9bfd5; }
+.topbar-tool-btn { border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.08); }
+.topbar-tool-btn:hover { color: #0c315e; border-color: #79b2ff; background: #79b2ff; }
+
+.t212-cockpit-layout { grid-template-columns: minmax(292px, 330px) minmax(0, 1fr); gap: 24px; padding-top: 0; }
+.cockpit-left-pane, .cockpit-main-pane { gap: 18px; }
+.cockpit-account-card, .cockpit-main-pot-card, .cockpit-treemap-section, .cockpit-investments-section,
+.cockpit-pending-section, .cockpit-ai-prompt-strip, .cockpit-chart-wrap, .your-investment-cockpit,
+.autoinvest-card, .cockpit-ai-analysis-card, .sub-panel, .cockpit-holdings-preview,
+.cockpit-instrument-container, .connection-card, .setup-guide {
+  padding: 0;
+  border: 1px solid var(--shell-border);
+  border-radius: var(--radius-lg);
+  background: var(--shell);
+  box-shadow: var(--shadow-hard-sm);
+  overflow: hidden;
+}
+.cockpit-account-card::before, .cockpit-main-pot-card::before, .cockpit-treemap-section::before,
+.cockpit-investments-section::before, .cockpit-pending-section::before, .cockpit-ai-prompt-strip::before,
+.cockpit-chart-wrap::before, .your-investment-cockpit::before, .autoinvest-card::before,
+.cockpit-ai-analysis-card::before, .sub-panel::before, .cockpit-holdings-preview::before,
+.cockpit-instrument-container::before, .connection-card::before, .setup-guide::before { display: none; }
+.cockpit-account-card > *, .cockpit-main-pot-card > *, .cockpit-treemap-section > *, .cockpit-investments-section > *,
+.cockpit-pending-section > *, .cockpit-ai-prompt-strip > *, .cockpit-chart-wrap > *, .your-investment-cockpit > *,
+.autoinvest-card > *, .cockpit-ai-analysis-card > *, .sub-panel > *, .cockpit-holdings-preview > *,
+.cockpit-instrument-container > *, .connection-card > *, .setup-guide > * { z-index: auto; }
+
+.account-card-header { padding: 18px 20px 4px; }
+.account-label, .pot-label, .ai-strip-title, .cockpit-section-title, .pane-section-header h3, .invest-head-title h3 { color: var(--muted); }
+.account-label::before, .pot-label::before, .ai-strip-title::before, .cockpit-section-title::before,
+.pane-section-header h3::before, .invest-head-title h3::before { width: 5px; height: 5px; background: var(--primary); border-radius: 50%; }
+.account-hero-val { padding: 14px 20px 0; background-image: none; font-family: var(--font-sans); font-size: clamp(36px, 4vw, 48px); font-weight: 720; color: var(--ink); }
+.account-sub-metrics-grid { padding: 18px 20px 20px; gap: 12px; }
+.sub-metric-block { padding: 12px; border-color: var(--rule); border-radius: var(--radius-sm); background: var(--panel-lo); }
+.sub-metric-block:hover { background: var(--panel-hover); border-color: var(--rule-strong); box-shadow: none; }
+.sub-metric-block span, .metric-card span, .invest-row span { color: var(--muted); }
+.cockpit-main-pot-card { align-items: center; }
+.pot-info { padding: 17px 20px; }
+.pot-val { color: var(--ink); font-size: 22px; }
+.t212-deposit-pill-btn, .connection-card .primary { background: var(--primary); color: #fff; border-radius: 8px; box-shadow: 0 3px 8px rgba(22,119,255,.20); text-transform: none; letter-spacing: 0; }
+.t212-deposit-pill-btn:hover, .connection-card .primary:hover:not(:disabled) { background: var(--primary-bright); box-shadow: 0 5px 12px rgba(22,119,255,.24); }
+
+.portfolio-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); border-top: 1px solid var(--rule); }
+.portfolio-stat-grid .metric-card { min-width: 0; padding: 14px 15px; border: 0; border-radius: 0; background: var(--shell); box-shadow: none; }
+.portfolio-stat-grid .metric-card:hover { transform: none; box-shadow: none; background: var(--panel-lo); }
+.portfolio-stat-grid .metric-card strong { overflow: hidden; text-overflow: ellipsis; font-family: var(--font-sans); font-size: 15px; }
+.portfolio-context-strip { display: flex; flex-wrap: wrap; gap: 7px 12px; padding: 12px 16px; color: var(--muted); font-size: 10.5px; line-height: 1.4; background: #f8fafc; border: 1px solid var(--shell-border); border-radius: var(--radius-md); }
+.portfolio-context-strip span { white-space: nowrap; }
+.portfolio-context-strip b { color: var(--ink); font-size: 11.5px; font-weight: 700; }
+
+.ai-strip-title { padding: 15px 16px 0; }
+.ai-prompt-card-chip { background: var(--panel-lo); border-color: var(--rule); color: var(--ink-2); border-radius: 9px; }
+.ai-prompt-card-chip:hover { color: var(--primary-deep); border-color: #9fc4f6; background: var(--primary-tint); box-shadow: none; }
+.ai-sparkle-badge { background: var(--primary); border-radius: 8px; box-shadow: none; }
+.sparkle-glyph { color: #fff; }
+.investments-header { padding: 17px 18px; }
+.investments-header:hover { background: var(--panel-soft); }
+.investments-list-stream { padding: 4px 10px 10px; }
+.create-pie-row { margin: 4px 2px 8px; border-color: #b9d0ee; border-style: dashed; background: #f8fbff; border-radius: 9px; }
+.create-pie-row:hover { border-color: var(--primary); background: var(--primary-tint); box-shadow: none; }
+.create-pie-icon-box { width: 32px; height: 32px; background: var(--primary); color: #fff; border-radius: 8px; }
+.pos-stream-item { padding: 11px 8px; margin: 2px 0; border-radius: 9px; }
+.pos-stream-item:hover { background: var(--panel-soft); border-left-color: #a8bfd8; }
+.pos-stream-item.selected { background: var(--primary-tint); border: 1px solid #c8def9; border-left: 3px solid var(--primary); }
+.ticker-avatar { background: #eaf1f8; color: #29445f; border-radius: 8px; }
+.ring-track { stroke: #d9e3ed; }
+.ring-progress { stroke: var(--primary); }
+
+.cockpit-inst-head { padding: 22px 22px 12px; }
+.inst-ticker-tag { background: var(--primary-tint); color: var(--primary-deep); border: 1px solid #bcd7fb; border-radius: 6px; }
+.inst-title, .section-heading h2, .instrument-heading h1, .content-page > h1 { color: var(--ink); }
+.inst-price-main, .instrument-price-action > strong { color: var(--ink); font-family: var(--font-sans); font-weight: 720; }
+.t212-action-pill { border-color: var(--rule-strong); background: var(--panel-lo); border-radius: 8px; }
+.t212-action-pill.buy { color: var(--positive-bright); }
+.t212-action-pill.sell { color: var(--negative-bright); }
+.range-switcher { margin-right: 18px; background: var(--panel-lo); border-color: var(--rule); border-radius: 9px; }
+.range-switcher button { color: var(--muted); }
+.range-thumb { background: var(--primary); border-radius: 6px; }
+.price-chart-panel { padding: 0 20px 20px; }
+.price-chart-panel .price-chart { height: 280px; }
+.section-heading { padding: 14px 2px 7px; }
+.section-heading p, .chart-count, .pane-section-sub { color: var(--muted); }
+
+.cockpit-section-title { padding: 16px 20px 7px; }
+.inv-metrics-list { padding: 0 14px 12px; }
+.inv-metric-row { padding: 12px 6px; border-color: var(--rule); }
+.inv-metric-row span::after { border-color: var(--muted-3); }
+.autoinvest-card { background: #f8fbff; }
+.t212-pill-btn-sm { background: var(--primary); color: #fff; border-radius: 8px; box-shadow: none; }
+
+.sub-panel .bar-list, .sub-panel .exposure-summary { padding: 4px 16px 16px; }
+.bar-measure { background: #eef3f8; border-color: #e0e7ee; border-radius: 4px; }
+.bar-positive { background: var(--positive); }
+.bar-negative { background: var(--negative); }
+.exposure-summary > div, .invest-row, .metric-card, .settings-row > div, .language-setting, .help-list article, .help-page > ul li { background: var(--shell); border-color: var(--rule); border-radius: var(--radius-md); box-shadow: none; }
+.exposure-summary > div:hover, .metric-card:hover, .invest-row:hover, .help-list article:hover { border-color: #b9d0ee; box-shadow: var(--shadow-hard-sm); }
+.allocation-track { background: #eef3f8; border-color: var(--rule); border-radius: 5px; }
+.timeline-chart-scroll { border-color: var(--rule); background: var(--panel-lo); border-radius: var(--radius-md); }
+.history-side.buy { color: var(--positive-bright); background: var(--positive-tint); border-color: #a9dfbf; }
+.history-side.sell { color: var(--negative-bright); background: var(--negative-tint); border-color: #f0b1ad; }
+.history-tabs { border-color: var(--rule-strong); background: var(--shell); border-radius: 9px; }
+.history-tabs button.active, .language-options button.active { color: #fff; background: var(--primary); }
+.history-tabs button, .language-options button { color: var(--muted); }
+.load-more, .settings-actions button, .error-actions button, .confirm-dialog button { background: var(--shell); border-color: var(--rule-strong); color: var(--ink-2); border-radius: 8px; }
+.load-more:hover:not(:disabled), .settings-actions button:hover, .error-actions button:hover, .confirm-dialog button:hover { color: var(--primary-deep); border-color: #9fc4f6; background: var(--primary-tint); box-shadow: none; }
+.legal, .t212-legal-disclaimer { color: var(--muted); }
+.error-panel { border-color: #f0b1ad; background: var(--negative-tint); }
+.dialog-backdrop { background: rgba(12, 34, 56, 0.48); }
+.confirm-dialog { background: var(--shell); border-color: var(--rule); border-radius: var(--radius-lg); }
+
+@media (max-width: 900px) {
+  .t212-cockpit-layout { grid-template-columns: 1fr; gap: 18px; }
+  .cockpit-sub-analytics-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 680px) {
+  .portfolio-stat-grid { grid-template-columns: 1fr 1fr; }
+  .portfolio-context-strip { gap: 6px 9px; }
+  .t212-native-topbar { background: #102b46; }
+}
+
+/* ========================================================================
+   Product UI refinement — quiet, source-backed, anti-template
+   ======================================================================== */
+:root {
+  color-scheme: light;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+               "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: "SF Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  --canvas-0: #f4f6f8;
+  --canvas-1: #ffffff;
+  --canvas-2: #edf1f5;
+  --shell: #ffffff;
+  --shell-border: #dde4ec;
+  --panel-hi: #ffffff;
+  --panel-lo: #f7f9fb;
+  --panel-soft: #f5f7fa;
+  --panel-hover: #f1f5f9;
+  --panel-active: #edf4ff;
+  --ink: #14263a;
+  --ink-2: #42566c;
+  --muted: #718197;
+  --muted-2: #92a0b0;
+  --muted-3: #c9d2dc;
+  --rule: #e5eaf0;
+  --rule-strong: #cfd8e3;
+  --rule-soft: #eef2f6;
+  --primary: #1677ff;
+  --primary-bright: #0f6fe8;
+  --primary-deep: #0b5fc7;
+  --positive: #159653;
+  --positive-bright: #128348;
+  --negative: #d84a47;
+  --negative-bright: #c43f3c;
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+  --shadow-hard-sm: 0 1px 2px rgba(20, 38, 58, 0.035);
+  --shadow-hard: 0 2px 8px rgba(20, 38, 58, 0.055);
+  --shadow-hard-lg: 0 8px 24px rgba(20, 38, 58, 0.09);
+  --content-max: 1440px;
+  --topbar-gutter: 28px;
+}
+
+html { font-size: 14px; }
+body {
+  background: var(--canvas-0);
+  background-image: none;
+  font-family: var(--font-sans);
+  letter-spacing: 0;
+}
+body::before { display: none; }
+button:active:not(:disabled) { transform: none; }
+:focus-visible { outline: 2px solid rgba(22, 119, 255, .75); outline-offset: 2px; }
+
+.t212-native-topbar {
+  height: 64px;
+  margin: 0 0 24px;
+  padding-inline: max(var(--topbar-gutter), calc((100% - var(--content-max)) / 2 + var(--topbar-gutter)));
+  background: #102b46;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: none;
+  animation: none;
+}
+.t212-invest-brand-pill {
+  height: 38px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 7px;
+  font-size: 12px;
+  letter-spacing: .035em;
+}
+.t212-invest-brand-pill:hover { background: rgba(255, 255, 255, .07); transform: none; }
+.invest-env-badge { height: 19px; padding: 0 6px; border-radius: 4px; font-size: 9px; letter-spacing: .08em; }
+.topbar-center-nav { height: 100%; gap: 18px; overflow: visible; }
+.topbar-nav-tab {
+  position: relative;
+  height: 100%;
+  padding: 0 4px;
+  gap: 7px;
+  border: 0;
+  font-size: 13px;
+  font-weight: 560;
+  letter-spacing: 0;
+}
+.topbar-nav-tab::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 0;
+  height: 2px;
+  background: transparent;
+}
+.topbar-nav-tab:hover { background: transparent; color: #fff; }
+.topbar-nav-tab.active { border: 0; background: transparent; font-weight: 620; }
+.topbar-nav-tab.active::after { background: #69a9ff; }
+.topbar-search-slot {
+  height: 38px;
+  width: 210px;
+  border-color: rgba(255, 255, 255, .16);
+  background: rgba(255, 255, 255, .055);
+  border-radius: 7px;
+}
+.topbar-search-slot:focus-within { width: 238px; background: rgba(255, 255, 255, .08); }
+.topbar-search-field { font-family: var(--font-sans); font-size: 12.5px; }
+.topbar-tool-btn {
+  width: 38px;
+  height: 38px;
+  border-color: rgba(255, 255, 255, .16);
+  background: transparent;
+  border-radius: 7px;
+}
+.topbar-tool-btn:hover { color: #fff; border-color: rgba(255, 255, 255, .32); background: rgba(255, 255, 255, .07); }
+
+.t212-cockpit-layout {
+  grid-template-columns: minmax(320px, 352px) minmax(0, 1fr);
+  gap: 22px;
+  padding: 0 var(--topbar-gutter) 28px;
+}
+.cockpit-left-pane, .cockpit-main-pane { gap: 14px; }
+.cockpit-left-pane > *, .cockpit-instrument-container { animation: none; }
+
+.cockpit-account-card, .cockpit-main-pot-card, .cockpit-treemap-section, .cockpit-investments-section,
+.cockpit-pending-section, .cockpit-ai-prompt-strip, .cockpit-chart-wrap, .your-investment-cockpit,
+.autoinvest-card, .cockpit-ai-analysis-card, .sub-panel, .cockpit-holdings-preview,
+.cockpit-instrument-container, .connection-card, .setup-guide {
+  border-color: var(--shell-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.account-card-header { padding: 17px 20px 0; }
+.account-label, .pot-label, .ai-strip-title, .cockpit-section-title,
+.pane-section-header h3, .invest-head-title h3 {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  text-transform: none;
+  color: var(--muted);
+}
+.account-label::before, .pot-label::before, .ai-strip-title::before,
+.cockpit-section-title::before, .pane-section-header h3::before,
+.invest-head-title h3::before { display: none; }
+.icon-btn-ghost { color: var(--muted); }
+.account-hero-val {
+  padding: 13px 20px 0;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: clamp(34px, 3vw, 41px);
+  font-weight: 680;
+  line-height: 1.08;
+  letter-spacing: -.035em;
+}
+.account-sub-metrics-grid {
+  gap: 0;
+  padding: 18px 20px 19px;
+}
+.sub-metric-block {
+  min-width: 0;
+  padding: 12px 14px 0 0;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-radius: 0;
+  background: transparent;
+}
+.sub-metric-block + .sub-metric-block { padding-left: 18px; border-left: 1px solid var(--rule); }
+.sub-metric-block:hover { border-color: var(--rule); background: transparent; transform: none; box-shadow: none; }
+.sub-metric-block span { font-family: var(--font-sans); font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+.sub-metric-block strong { font-family: var(--font-sans); font-size: 15px; font-weight: 640; }
+
+.cockpit-cash-summary {
+  overflow: hidden;
+  border: 1px solid var(--shell-border);
+  border-radius: var(--radius-lg);
+  background: var(--shell);
+  box-shadow: var(--shadow-hard-sm);
+}
+.cockpit-cash-summary .cockpit-main-pot-card {
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  box-shadow: none;
+}
+.pot-info { padding: 17px 20px; }
+.pot-val { font-family: var(--font-sans); font-size: 21px; font-weight: 650; }
+.t212-deposit-pill-btn {
+  height: 34px;
+  margin-right: 18px;
+  padding: 0 13px;
+  border: 1px solid #9bc2f5;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--primary-deep);
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 600;
+}
+.t212-deposit-pill-btn:hover { border-color: var(--primary); background: var(--panel-active); transform: none; box-shadow: none; }
+.cockpit-cash-summary .portfolio-stat-grid {
+  display: block;
+  border: 0;
+  background: transparent;
+}
+.cockpit-cash-summary .portfolio-stat-grid .metric-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 8px;
+  padding: 11px 20px;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  background: transparent;
+}
+.cockpit-cash-summary .portfolio-stat-grid .metric-card:last-child { border-bottom: 0; }
+.cockpit-cash-summary .portfolio-stat-grid .metric-card:hover { background: transparent; }
+.cockpit-cash-summary .portfolio-stat-grid .metric-card span { font-size: 12px; color: var(--muted); }
+.cockpit-cash-summary .portfolio-stat-grid .metric-card strong { font-family: var(--font-sans); font-size: 13.5px; font-weight: 620; }
+.cockpit-cash-summary .portfolio-stat-grid .metric-card small { font-size: 10.5px; color: var(--muted); }
+.portfolio-context-strip {
+  padding: 11px 14px;
+  border-color: var(--rule);
+  background: transparent;
+  border-radius: var(--radius-md);
+}
+
+.cockpit-ai-prompt-strip { box-shadow: none; }
+.ai-strip-title { padding: 14px 16px 0; }
+.ai-prompt-scroller { gap: 6px; padding: 10px 12px 13px; }
+.ai-prompt-card-chip {
+  padding: 7px 10px;
+  border-color: var(--rule);
+  border-radius: 7px;
+  background: transparent;
+  font-size: 11.5px;
+}
+.ai-prompt-card-chip:hover { border-color: #a9c8ef; background: var(--panel-active); transform: none; box-shadow: none; }
+
+.investments-header { padding: 15px 17px; }
+.invest-head-title { gap: 8px; }
+.invest-sum-val { font-family: var(--font-sans); font-size: 12.5px; font-weight: 600; }
+.investments-list-stream { padding: 0 8px 8px; }
+.pos-stream-item {
+  margin: 0;
+  padding: 10px 8px;
+  border: 0;
+  border-top: 1px solid var(--rule-soft);
+  border-radius: 0;
+}
+.pos-stream-item:hover { background: var(--panel-soft); border-left-color: transparent; }
+.pos-stream-item.selected { border: 0; border-top: 1px solid var(--rule-soft); box-shadow: inset 2px 0 var(--primary); background: var(--panel-active); }
+.pos-stream-ident strong, .pos-stream-num-col strong { font-weight: 600; }
+.pos-stream-ident small, .pos-stream-num-col strong, .pos-stream-num-col span { font-family: var(--font-sans); }
+.ticker-ring-logo { width: 34px; height: 34px; }
+.ring-svg { display: none; }
+.ticker-avatar {
+  inset: 0;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: #eef3f7;
+  color: #30485f;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.cockpit-instrument-container { gap: 0; overflow: hidden; }
+.cockpit-inst-head {
+  grid-template-columns: minmax(220px, 1fr) auto auto;
+  gap: 24px;
+  padding: 24px 24px 18px;
+  border-bottom: 1px solid var(--rule);
+}
+.inst-ticker-tag {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .025em;
+}
+.inst-title { margin-top: 2px; font-size: 21px; font-weight: 670; letter-spacing: -.018em; }
+.inst-price-main { font-size: clamp(28px, 3vw, 38px); font-weight: 680; letter-spacing: -.03em; }
+.inst-price-sub { margin-top: 3px; font-family: var(--font-sans); font-size: 12px; font-weight: 620; }
+.read-only-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.range-switcher {
+  align-self: flex-end;
+  margin: 14px 20px 10px 0;
+  padding: 2px;
+  border-color: var(--rule);
+  border-radius: 7px;
+  background: var(--panel-lo);
+}
+.range-switcher button { height: 29px; padding: 0 12px; font-family: var(--font-sans); font-size: 11.5px; }
+.range-thumb { display: none; }
+.range-switcher button.active { color: #fff; background: var(--primary); border-radius: 5px; }
+.cockpit-chart-wrap { border: 0; border-radius: 0; box-shadow: none; }
+.price-chart-panel { padding: 0 20px 18px; }
+.price-chart-panel .price-chart { height: 300px; }
+
+.your-investment-cockpit, .autoinvest-card {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-radius: 0;
+  box-shadow: none;
+}
+.cockpit-section-title { padding: 16px 20px 7px; color: var(--ink-2); font-size: 12px; }
+.inv-metrics-list { padding: 0 20px 10px; }
+.inv-metric-row { padding: 11px 0; }
+.inv-metric-row span::after { display: none; }
+.inv-metric-row span { color: var(--muted); font-size: 12px; }
+.inv-metric-row strong { font-family: var(--font-sans); font-size: 13px; font-weight: 610; }
+.autoinvest-card { padding: 16px 20px; background: var(--shell); }
+.autoinvest-card > div strong { font-weight: 620; }
+.autoinvest-card > div p { color: var(--muted); }
+.t212-pill-btn-sm:disabled {
+  border: 1px solid var(--rule-strong);
+  background: transparent;
+  color: var(--muted);
+  opacity: 1;
+  box-shadow: none;
+}
+
+.cockpit-ai-analysis-card, .sub-panel, .cockpit-holdings-preview,
+.cockpit-treemap-section, .cockpit-pending-section { box-shadow: none; }
+.ai-badge { background: transparent; color: var(--muted); border: 0; padding: 0; }
+.ask-banner { background: var(--panel-lo); border-color: var(--rule); border-radius: 8px; }
+.treemap-tile.gain { background: #f1faf5; border-color: #cfe8da; }
+.treemap-tile.loss { background: #fff5f4; border-color: #f0d4d2; }
+.treemap-tile:hover { transform: none; box-shadow: none; }
+.cockpit-see-all-btn {
+  height: 32px;
+  padding: 0 12px;
+  border-color: var(--rule-strong);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-2);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.cockpit-see-all-btn:hover { border-color: #9fc4f6; background: var(--panel-active); color: var(--primary-deep); transform: none; box-shadow: none; }
+.count-tag { background: var(--panel-lo); border: 1px solid var(--rule); color: var(--muted); border-radius: 5px; }
+.tone-positive { color: var(--positive-bright) !important; }
+.tone-negative { color: var(--negative-bright) !important; }
+
+@media (max-width: 1080px) {
+  .t212-cockpit-layout { grid-template-columns: minmax(292px, 320px) minmax(0, 1fr); }
+  .topbar-center-nav { gap: 9px; }
+  .cockpit-inst-head { grid-template-columns: minmax(180px, 1fr) auto; }
+  .inst-actions { grid-column: 1 / -1; justify-content: flex-end; }
+}
+@media (max-width: 900px) {
+  .t212-native-topbar { height: auto; padding: 8px 14px 0; }
+  .topbar-center-nav { height: 38px; gap: 18px; }
+  .topbar-nav-tab { height: 38px; }
+  .t212-cockpit-layout { grid-template-columns: 1fr; padding: 0 14px 24px; }
+  .cockpit-left-pane { order: 1; }
+  .cockpit-main-pane { order: 2; }
+}
+@media (max-width: 680px) {
+  .t212-native-topbar { margin-bottom: 14px; }
+  .cockpit-inst-head { grid-template-columns: 1fr; gap: 12px; padding: 20px 18px 16px; }
+  .inst-price-box { text-align: left; }
+  .inst-actions { grid-column: auto; justify-content: flex-start; }
+  .range-switcher { align-self: flex-start; margin: 12px 0 8px 16px; }
+  .account-sub-metrics-grid { grid-template-columns: 1fr 1fr; }
+  .price-chart-panel { padding-inline: 12px; }
+}
+
 </style>
 </head>
 <body>
 <div class="t212-native-app-root">
 
-  <!-- ===================== TopNavBar ===================== -->
+  <!-- ============ TopNavBar（浮动岛） ============ -->
   <header class="t212-native-topbar">
     <div class="topbar-left-zone">
       <button type="button" class="t212-invest-brand-pill" title="Account settings">
         <span class="invest-triangle-glyph">▲</span>
         <span class="invest-title-text">INVEST</span>
         <span class="invest-env-badge">DEMO</span>
-        <svg class="invest-chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <svg class="invest-chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
     </div>
 
     <nav class="topbar-center-nav" aria-label="Trading 212 navigation">
       <button type="button" class="topbar-nav-tab active" aria-current="page">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-        <span>Overview</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.4"/><rect x="14" y="3" width="7" height="5" rx="1.4"/><rect x="14" y="12" width="7" height="9" rx="1.4"/><rect x="3" y="16" width="7" height="5" rx="1.4"/></svg>
+        <span>概览</span>
       </button>
       <button type="button" class="topbar-nav-tab">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        <span>Holdings</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2.4"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        <span>持仓</span>
       </button>
       <button type="button" class="topbar-nav-tab">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-        <span>History</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+        <span>历史</span>
       </button>
       <button type="button" class="topbar-nav-tab">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
-        <span>Settings</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.86l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.86-.34 1.7 1.7 0 0 0-1.02 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.86.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.86 1.7 1.7 0 0 0-1.55-1.02H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.86l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.86.34H9a1.7 1.7 0 0 0 1.02-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1.02 1.55 1.7 1.7 0 0 0 1.86-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.86V9a1.7 1.7 0 0 0 1.55 1.02H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1.02Z"/></svg>
+        <span>设置</span>
       </button>
       <button type="button" class="topbar-nav-tab">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-        <span>Help</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.6"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        <span>帮助</span>
       </button>
     </nav>
 
     <div class="topbar-right-zone">
       <div class="topbar-search-slot">
-        <svg class="search-glyph-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" class="topbar-search-field" placeholder="Search symbols…" />
+        <svg class="search-glyph-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="topbar-search-field" placeholder="搜索标的…" />
       </div>
-      <button type="button" class="topbar-tool-btn" id="eyeBtn" aria-label="Hide amounts" title="Hide amounts">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" id="eyeIcon"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+      <button type="button" class="topbar-tool-btn" id="eyeBtn" aria-label="隐藏金额" title="隐藏金额">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
       </button>
-      <button type="button" class="topbar-tool-btn" aria-label="Refresh" title="Refresh">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.2-2.5L3 16"/><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.2 2.5L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
+      <button type="button" class="topbar-tool-btn" aria-label="刷新" title="刷新">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.2-2.5L3 16"/><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.2 2.5L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
       </button>
     </div>
   </header>
 
-  <!-- ===================== Cockpit Layout ===================== -->
+  <!-- ============ Cockpit Bento ============ -->
   <div class="t212-cockpit-layout">
 
-    <!-- ============ LEFT PANE ============ -->
+    <!-- LEFT FOLIO -->
     <aside class="cockpit-left-pane">
 
-      <!-- 1. Account Value Card -->
+      <!-- 1. Account hero -->
       <section class="cockpit-account-card">
         <div class="account-card-header">
-          <span class="account-label">Portfolio value</span>
-          <button class="icon-btn-ghost" aria-label="Options">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+          <span class="account-label">账户总价值 · EUR</span>
+          <button class="icon-btn-ghost" aria-label="账户设置" title="账户设置">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.86l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.86-.34 1.7 1.7 0 0 0-1.02 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.86.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.86 1.7 1.7 0 0 0-1.55-1.02H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.86l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.86.34H9a1.7 1.7 0 0 0 1.02-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1.02 1.55 1.7 1.7 0 0 0 1.86-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.86V9a1.7 1.7 0 0 0 1.55 1.02H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1.02Z"/></svg>
           </button>
         </div>
-        <span class="account-hero-val js-balance">€12,438.50</span>
+        <strong class="account-hero-val js-balance">€24,382.61</strong>
         <div class="account-sub-metrics-grid">
           <div class="sub-metric-block">
-            <span>Today</span>
-            <strong class="tone-positive">+€84.20 · +0.68%</strong>
+            <span>24小时变动</span>
+            <strong class="tone-positive">+€217.40 (+0.90%)</strong>
           </div>
           <div class="sub-metric-block">
-            <span>Total return</span>
-            <strong class="tone-positive">+€1,243.18 · +11.1%</strong>
-          </div>
-        </div>
-        <div class="mini-chart-strip">
-          <svg class="sparkline-svg" viewBox="0 0 300 42" preserveAspectRatio="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="rgba(0,208,132,0.22)"/>
-                <stop offset="100%" stop-color="rgba(0,208,132,0)"/>
-              </linearGradient>
-            </defs>
-            <path d="M0 32 L20 30 L40 34 L60 26 L80 28 L100 20 L120 24 L140 16 L160 18 L180 12 L200 15 L220 9 L240 11 L260 6 L280 8 L300 4 L300 42 L0 42 Z" fill="url(#sparkFill)"/>
-            <path d="M0 32 L20 30 L40 34 L60 26 L80 28 L100 20 L120 24 L140 16 L160 18 L180 12 L200 15 L220 9 L240 11 L260 6 L280 8 L300 4" fill="none" stroke="var(--positive-bright)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>
-          </svg>
-          <div class="mini-range-pills">
-            <button class="mini-pill-btn">1D</button>
-            <button class="mini-pill-btn">1W</button>
-            <button class="mini-pill-btn active">1M</button>
-            <button class="mini-pill-btn">3M</button>
-            <button class="mini-pill-btn">1Y</button>
+            <span>收益率</span>
+            <strong class="tone-positive">+22.41%</strong>
           </div>
         </div>
       </section>
 
-      <!-- 2. Cash Pot Card -->
+      <!-- 2. Cash summary -->
+      <div class="cockpit-cash-summary">
       <section class="cockpit-main-pot-card">
         <div class="pot-info">
-          <span class="pot-label">Available cash</span>
-          <strong class="pot-val js-balance">€1,205.00</strong>
-          <span class="pot-sub">In Pies €0.00</span>
+          <span class="pot-label">主账户资金</span>
+          <strong class="pot-val js-balance">€2,115.40</strong>
+          <small class="pot-sub">Pie 内现金 €0.00</small>
         </div>
-        <button class="t212-deposit-pill-btn" type="button">Deposit</button>
+        <button class="t212-deposit-pill-btn" type="button">账户</button>
       </section>
 
-      <!-- 4. Investments Stream -->
-      <section class="cockpit-investments-section">
-        <div class="investments-header">
-          <div class="invest-head-title">
-            <h3>Investments</h3>
-            <span class="invest-sum-val js-balance">€11,233.50</span>
-          </div>
-          <span class="collapse-arrow">⌃</span>
-        </div>
+      <div class="portfolio-stat-grid" aria-label="账户快照">
+        <div class="metric-card"><span>投资市值</span><strong>€22,267.21</strong><small>91.3%</small></div>
+        <div class="metric-card"><span>持仓成本</span><strong>€19,930.88</strong></div>
+        <div class="metric-card"><span>已实现盈亏</span><strong class="tone-positive">+€1,126.40</strong></div>
+        <div class="metric-card"><span>汇兑影响</span><strong class="tone-positive">+€86.20</strong></div>
+      </div>
+      </div>
+      <div class="portfolio-context-strip" aria-label="组合上下文">
+        <span><b>5</b> 个持仓</span><span><b>0</b> 个 Pie 持仓</span><span><b>8.7%</b> 现金占比</span><span><b>55.2%</b> 前三大集中度</span>
+      </div>
 
-        <div class="investments-list-stream">
-          <!-- AAPL (selected) -->
+      <!-- 3. AI prompt strip -->
+      <div class="cockpit-ai-prompt-strip">
+        <span class="ai-strip-title">询问 dsh</span>
+        <div class="ai-prompt-scroller">
+          <button type="button" class="ai-prompt-card-chip"><span>今天是什么在驱动我的投资组合？</span></button>
+          <button type="button" class="ai-prompt-card-chip"><span>有哪些即将发生的事件可能影响我的持仓？</span></button>
+        </div>
+      </div>
+
+      <!-- 4. Investments stream -->
+      <section class="cockpit-investments-section">
+        <div class="investments-header" id="invHeader">
+          <div class="invest-head-title">
+            <h3>投资组合</h3>
+            <span class="invest-sum-val js-balance">€22,267.21</span>
+          </div>
+          <span class="collapse-arrow" id="invArrow">⌃</span>
+        </div>
+        <div class="investments-list-stream" id="invList">
           <button type="button" class="pos-stream-item selected">
             <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true">
-                <circle cx="17" cy="17" r="14" class="ring-track"/>
-                <circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:0"/>
-              </svg>
-              <span class="ticker-avatar" style="background:linear-gradient(135deg,#0a3a66 0%,#06203a 100%);border:1px solid rgba(56,150,255,0.3)">AP</span>
+              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:10"/></svg>
+              <span class="ticker-avatar">AP</span>
             </span>
-            <div class="pos-stream-ident">
-              <strong>Apple Inc.</strong>
-              <small>14.0000 AAPL</small>
-            </div>
-            <div class="pos-stream-num-col">
-              <strong class="js-balance">€2,847.30</strong>
-              <span class="tone-positive">+€423.18 · +17.4%</span>
-            </div>
+            <div class="pos-stream-ident"><strong>Apple Inc.</strong><small>27.4000 AAPL</small></div>
+            <div class="pos-stream-num-col"><strong class="js-balance">€5,428.10</strong><span class="tone-positive">+€840.60 (+18.3%)</span></div>
           </button>
-
-          <!-- NVDA -->
           <button type="button" class="pos-stream-item">
             <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true">
-                <circle cx="17" cy="17" r="14" class="ring-track"/>
-                <circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:23.35"/>
-              </svg>
-              <span class="ticker-avatar" style="background:linear-gradient(135deg,#0a5234 0%,#062a1c 100%);border:1px solid rgba(0,208,132,0.3)">NV</span>
+              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:21"/></svg>
+              <span class="ticker-avatar">NV</span>
             </span>
-            <div class="pos-stream-ident">
-              <strong>NVIDIA Corp.</strong>
-              <small>9.5000 NVDA</small>
-            </div>
-            <div class="pos-stream-num-col">
-              <strong class="js-balance">€3,184.10</strong>
-              <span class="tone-positive">+€712.45 · +28.8%</span>
-            </div>
+            <div class="pos-stream-ident"><strong>NVIDIA Corp.</strong><small>16.8750 NVDA</small></div>
+            <div class="pos-stream-num-col"><strong class="js-balance">€5,860.25</strong><span class="tone-positive">+€1,311.75 (+28.8%)</span></div>
           </button>
-
-          <!-- MSFT -->
           <button type="button" class="pos-stream-item">
             <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true">
-                <circle cx="17" cy="17" r="14" class="ring-track"/>
-                <circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:30.79"/>
-              </svg>
-              <span class="ticker-avatar" style="background:linear-gradient(135deg,#3a2a66 0%,#1f1640 100%);border:1px solid rgba(150,120,255,0.3)">MS</span>
+              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:28"/></svg>
+              <span class="ticker-avatar">MS</span>
             </span>
-            <div class="pos-stream-ident">
-              <strong>Microsoft Corp.</strong>
-              <small>7.2500 MSFT</small>
-            </div>
-            <div class="pos-stream-num-col">
-              <strong class="js-balance">€2,690.40</strong>
-              <span class="tone-positive">+€198.22 · +7.9%</span>
-            </div>
+            <div class="pos-stream-ident"><strong>Microsoft Corp.</strong><small>13.2500 MSFT</small></div>
+            <div class="pos-stream-num-col"><strong class="js-balance">€4,965.12</strong><span class="tone-positive">+€365.30 (+7.9%)</span></div>
           </button>
-
-          <!-- TSLA -->
           <button type="button" class="pos-stream-item">
             <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true">
-                <circle cx="17" cy="17" r="14" class="ring-track"/>
-                <circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:36.55"/>
-              </svg>
-              <span class="ticker-avatar" style="background:linear-gradient(135deg,#662020 0%,#3a1010 100%);border:1px solid rgba(255,90,90,0.3)">TS</span>
+              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:33"/></svg>
+              <span class="ticker-avatar">TS</span>
             </span>
-            <div class="pos-stream-ident">
-              <strong>Tesla Inc.</strong>
-              <small>5.0000 TSLA</small>
-            </div>
-            <div class="pos-stream-num-col">
-              <strong class="js-balance">€1,511.70</strong>
-              <span class="tone-negative">−€90.79 · −5.7%</span>
-            </div>
+            <div class="pos-stream-ident"><strong>Tesla Inc.</strong><small>9.5000 TSLA</small></div>
+            <div class="pos-stream-num-col"><strong class="js-balance">€2,681.24</strong><span class="tone-negative">−€161.02 (−5.7%)</span></div>
+          </button>
+          <button type="button" class="pos-stream-item">
+            <span class="ticker-ring-logo">
+              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:39"/></svg>
+              <span class="ticker-avatar">VO</span>
+            </span>
+            <div class="pos-stream-ident"><strong>Vanguard S&P 500</strong><small>6.1200 VOO</small></div>
+            <div class="pos-stream-num-col"><strong class="js-balance">€3,332.50</strong><span class="tone-positive">+€287.01 (+9.4%)</span></div>
           </button>
         </div>
       </section>
 
-      <!-- 7. Pane Footer -->
+      <!-- 5. Asset allocation mosaic -->
+      <section class="cockpit-treemap-section">
+        <div class="pane-section-header">
+          <div>
+            <h3>资产配置</h3>
+            <p class="pane-section-sub">按市值查看持仓比例与收益</p>
+          </div>
+        </div>
+        <div class="dynamic-treemap-container">
+          <div class="treemap-rect-slot" style="left:0%;top:0%;width:50%;height:47%"><button class="treemap-tile dynamic-tile gain selected"><strong class="tile-ticker">AAPL</strong><span class="tile-percent tone-positive">+18.3%</span></button></div>
+          <div class="treemap-rect-slot" style="left:50%;top:0%;width:50%;height:47%"><button class="treemap-tile dynamic-tile gain"><strong class="tile-ticker">NVDA</strong><span class="tile-percent tone-positive">+28.8%</span></button></div>
+          <div class="treemap-rect-slot" style="left:0%;top:49%;width:33.4%;height:51%"><button class="treemap-tile dynamic-tile gain"><strong class="tile-ticker">MSFT</strong><span class="tile-percent tone-positive">+7.9%</span></button></div>
+          <div class="treemap-rect-slot" style="left:34%;top:49%;width:33%;height:51%"><button class="treemap-tile dynamic-tile loss"><strong class="tile-ticker">TSLA</strong><span class="tile-percent tone-negative">−5.7%</span></button></div>
+          <div class="treemap-rect-slot" style="left:68%;top:49%;width:32%;height:51%"><button class="treemap-tile dynamic-tile gain"><strong class="tile-ticker">VOO</strong><span class="tile-percent tone-positive">+9.4%</span></button></div>
+        </div>
+        <button class="cockpit-see-all-btn" type="button">查看全部</button>
+      </section>
+
+      <!-- 6. Pane footer -->
       <div class="cockpit-pane-footer">
         <div class="footer-action-pills-row">
           <button class="t212-pill-action" type="button">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-            History
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+            历史
           </button>
-          <button class="t212-pill-action" type="button">Reorder sections</button>
         </div>
-        <p class="t212-legal-disclaimer">Investment services are provided by Trading 212 EU GmbH, authorised and regulated by BaFin.</p>
+        <p class="t212-legal-disclaimer">投资服务由受 BaFin 监管的 Trading 212 EU GmbH 提供。</p>
       </div>
     </aside>
 
-    <!-- ============ RIGHT PANE ============ -->
+    <!-- RIGHT COCKPIT -->
     <main class="cockpit-main-pane">
       <div class="cockpit-instrument-container">
 
-        <!-- Instrument header -->
+        <!-- Instrument head -->
         <div class="cockpit-inst-head">
           <div class="inst-profile">
-            <span class="ticker-ring-logo" style="width:48px;height:48px">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true" style="width:48px;height:48px">
-                <circle cx="17" cy="17" r="14" class="ring-track"/>
-                <circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:0"/>
-              </svg>
-              <span class="ticker-avatar" style="width:34px;height:34px;font-size:13px;background:linear-gradient(135deg,#0a3a66 0%,#06203a 100%);border:1px solid rgba(56,150,255,0.3)">AP</span>
+            <span class="ticker-ring-logo">
+              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:10"/></svg>
+              <span class="ticker-avatar">AP</span>
             </span>
             <div>
-              <div class="inst-tag-row">
-                <span class="inst-ticker-tag">AAPL · USD</span>
-              </div>
+              <div class="inst-tag-row"><span class="inst-ticker-tag">AAPL · USD</span></div>
               <h2 class="inst-title">Apple Inc.</h2>
             </div>
           </div>
           <div class="inst-price-box">
-            <strong class="inst-price-main">$189.43</strong>
-            <span class="inst-price-sub tone-positive">↗ +$1,205.40 (+4.30%)</span>
+            <strong class="inst-price-main">$198.17</strong>
+            <span class="inst-price-sub tone-positive">+€440.17 (+4.30%)</span>
           </div>
           <div class="inst-actions">
-            <button class="t212-action-pill sell" type="button" title="Read-only">Sell</button>
-            <button class="t212-action-pill buy" type="button" title="Read-only">Buy</button>
+            <span class="read-only-status">只读账户</span>
           </div>
         </div>
 
-        <!-- Range Switcher (§4.8) — default active 1Y -->
-        <div class="range-switcher" role="radiogroup" aria-label="Price range">
-          <span class="range-thumb" aria-hidden="true"></span>
-          <button type="button" role="radio" aria-checked="false" tabindex="-1">1M</button>
-          <button type="button" role="radio" aria-checked="false" tabindex="-1">3M</button>
-          <button type="button" role="radio" aria-checked="true" class="active" tabindex="0">1Y</button>
-          <button type="button" role="radio" aria-checked="false" tabindex="-1">5Y</button>
+        <!-- Range switcher -->
+        <div class="range-switcher" role="radiogroup" aria-label="价格时间范围" id="rangeSwitcher">
+          <span class="range-thumb" id="rangeThumb" aria-hidden="true"></span>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1">1个月</button>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1">3个月</button>
+          <button type="button" role="radio" aria-checked="true" class="active" tabindex="0">1年</button>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1">5年</button>
         </div>
 
-        <!-- Price Chart -->
+        <!-- Chart -->
         <div class="cockpit-chart-wrap">
-          <div class="section-heading">
-            <div>
-              <h2>Price history and trade markers</h2>
-              <p>AAPL · Daily close · Jan 2024 – Dec 2024 · Scaled price axis</p>
+          <section class="price-chart-panel">
+            <div class="section-heading">
+              <div>
+                <h2>历史价格与买卖点</h2>
+                <p>AAPL · 每日收盘价 · 2025-08 – 2026-08 · 纵轴聚焦价格区间</p>
+              </div>
+              <strong class="tone-positive">$198.17 <small>+4.30%</small></strong>
             </div>
-            <strong class="tone-positive">$189.43 <small>+4.30%</small></strong>
-          </div>
-          <div class="chart-legend">
-            <span><i class="legend-dot close"></i> Close</span>
-            <span><i class="legend-dot buy"></i> Buy</span>
-            <span><i class="legend-dot sell"></i> Sell</span>
-          </div>
-          <p class="chart-count">3 Trading 212 trades in range · Drag the slider or pinch to zoom</p>
-          <svg id="priceChart" class="price-chart" viewBox="0 0 820 330" preserveAspectRatio="none" role="img" aria-label="AAPL 1Y price chart with 3 trade markers">
-            <defs>
-              <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="rgba(0,166,255,0.24)"/>
-                <stop offset="70%" stop-color="rgba(0,166,255,0.04)"/>
-                <stop offset="100%" stop-color="rgba(0,166,255,0)"/>
-              </linearGradient>
-            </defs>
-          </svg>
+            <div class="chart-legend">
+              <span><i class="legend-dot close"></i> 收盘价</span>
+              <span><i class="legend-dot buy"></i> 买入</span>
+              <span><i class="legend-dot sell"></i> 卖出</span>
+            </div>
+            <p class="chart-count">区间内 14 个 Trading 212 成交点 · 可拖动底部滑块或双指缩放</p>
+            <svg class="price-chart" viewBox="0 0 820 250" preserveAspectRatio="none" role="img" aria-label="AAPL 1年历史价格曲线，包含 14 个买卖成交点">
+              <g class="timeline-grid">
+                <line x1="72" y1="50" x2="820" y2="50"/>
+                <line x1="72" y1="100" x2="820" y2="100"/>
+                <line x1="72" y1="150" x2="820" y2="150"/>
+                <line x1="72" y1="200" x2="820" y2="200"/>
+              </g>
+              <path d="M72 212 L130 200 L190 208 L250 186 L310 196 L370 168 L430 178 L490 150 L550 158 L610 128 L670 136 L730 106 L790 116 L820 100" fill="none" stroke="#1677ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <line x1="72" y1="12" x2="820" y2="12" stroke="rgba(112,129,150,0.35)" stroke-dasharray="5 5"/>
+              <line x1="72" y1="10" x2="72" y2="240" stroke="rgba(112,129,150,0.14)"/>
+              <rect x="304" y="190" width="12" height="12" fill="#18a957" stroke="#ffffff" stroke-width="2"/>
+              <rect x="604" y="122" width="12" height="12" fill="#18a957" stroke="#ffffff" stroke-width="2"/>
+              <polygon points="430,170 438,184 422,184" fill="#d88a15" stroke="#ffffff" stroke-width="2"/>
+              <text x="72" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace">2025-08</text>
+              <text x="820" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">2026-08</text>
+            </svg>
+          </section>
         </div>
 
-        <!-- Your Investment 5-Row -->
+        <!-- Your investment -->
         <section class="your-investment-cockpit" aria-label="Your investment">
-          <h3 class="cockpit-section-title">Your investment</h3>
+          <h3 class="cockpit-section-title">持仓明细</h3>
           <div class="inv-metrics-list">
-            <div class="inv-metric-row">
-              <span>Value</span>
-              <strong class="js-balance">€2,847.30</strong>
-            </div>
-            <div class="inv-metric-row">
-              <span>Return</span>
-              <strong class="tone-positive">+€423.18 (+17.4%)</strong>
-            </div>
-            <div class="inv-metric-row">
-              <span>Shares</span>
-              <strong>14.0000</strong>
-            </div>
-            <div class="inv-metric-row">
-              <span>Average price</span>
-              <strong>$176.20</strong>
-            </div>
-            <div class="inv-metric-row">
-              <span>Cost</span>
-              <strong class="js-balance">€2,424.12</strong>
-            </div>
+            <div class="inv-metric-row"><span>当前市值</span><strong class="js-balance">€5,428.10</strong></div>
+            <div class="inv-metric-row"><span>未实现收益</span><strong class="tone-positive">+€840.60 (+18.3%)</strong></div>
+            <div class="inv-metric-row"><span>持股数量</span><strong>27.4000</strong></div>
+            <div class="inv-metric-row"><span>平均买入价</span><strong>$167.44</strong></div>
+            <div class="inv-metric-row"><span>持仓成本</span><strong class="js-balance">€4,587.50</strong></div>
           </div>
         </section>
 
-        <!-- AutoInvest Card -->
-        <div class="autoinvest-card">
-          <div>
-            <strong>AutoInvest</strong>
-            <p>Set up recurring investments starting from €1</p>
-          </div>
-          <button class="t212-pill-btn-sm" type="button">Start</button>
-        </div>
-
       </div>
 
-      <footer class="legal">Holdings and trades come from Trading 212; historical prices come from Yahoo Finance. For information only, not investment advice.</footer>
+      <!-- Analytics strip -->
+      <section class="cockpit-analytics-strip">
+        <div class="cockpit-ai-analysis-card">
+          <div class="ai-analysis-header">
+            <span class="ai-badge">询问 dsh</span>
+            <h3>组合问答</h3>
+          </div>
+          <div class="ask-banner">
+            <div>
+              <span>回到任意 dsh 对话直接提问</span>
+              <strong>请用我的 Trading 212 数据总结前三大持仓和集中度风险</strong>
+            </div>
+            <button type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>复制问题</button>
+          </div>
+        </div>
+
+        <div class="cockpit-sub-analytics-grid">
+          <div class="sub-panel">
+            <div class="section-heading"><div><h2>未实现盈亏贡献</h2><p>按绝对影响排序 · 账户币种</p></div></div>
+            <div class="bar-list">
+              <div class="bar-row"><div class="bar-label"><strong>NVIDIA Corp.</strong><small>NVDA · +28.8%</small></div><div class="bar-measure"><i class="bar-positive" style="width:100%"></i></div><b>+€1,311.75</b></div>
+              <div class="bar-row"><div class="bar-label"><strong>Apple Inc.</strong><small>AAPL · +18.3%</small></div><div class="bar-measure"><i class="bar-positive" style="width:64%"></i></div><b>+€840.60</b></div>
+              <div class="bar-row"><div class="bar-label"><strong>Microsoft Corp.</strong><small>MSFT · +7.9%</small></div><div class="bar-measure"><i class="bar-positive" style="width:28%"></i></div><b>+€365.30</b></div>
+              <div class="bar-row"><div class="bar-label"><strong>Vanguard S&amp;P 500</strong><small>VOO · +9.4%</small></div><div class="bar-measure"><i class="bar-positive" style="width:22%"></i></div><b>+€287.01</b></div>
+              <div class="bar-row"><div class="bar-label"><strong>Tesla Inc.</strong><small>TSLA · −5.7%</small></div><div class="bar-measure"><i class="bar-negative" style="width:12%"></i></div><b style="color:var(--negative-bright)">−€161.02</b></div>
+            </div>
+          </div>
+          <div class="sub-panel">
+            <div class="section-heading"><div><h2>标的交易币种暴露</h2><p>逐仓快照 · 标的币种分布</p></div></div>
+            <div class="exposure-summary">
+              <div><strong>USD</strong><span>€17,753.71</span><small>4 个持仓 · 79.7%</small></div>
+              <div><strong>EUR</strong><span>€3,332.50</span><small>1 个持仓 · 15.0%</small></div>
+              <div><strong>GBP</strong><span>€1,181.00</span><small>1 个持仓 · 5.3%</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cockpit-holdings-preview">
+          <div class="section-heading"><div><h2>主要持仓</h2><p>点击资产查看真实价格曲线、买卖点和交易历史</p></div></div>
+          <div class="table-scroll">
+            <table class="holdings-table">
+              <thead><tr><th>资产</th><th>数量</th><th>均价 / 现价</th><th>市值 / 权重</th><th>未实现收益</th></tr></thead>
+              <tbody>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:10"/></svg><span class="ticker-avatar">AP</span></span><div class="asset-text"><strong>Apple Inc.</strong><small>AAPL · USD</small></div></div></td><td>27.4000</td><td><strong>$167.44</strong><small>$198.17</small></td><td><strong>€5,428.10</strong><small>24.4%</small></td><td class="positive"><strong>+€840.60</strong><small>+18.3%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:21"/></svg><span class="ticker-avatar">NV</span></span><div class="asset-text"><strong>NVIDIA Corp.</strong><small>NVDA · USD</small></div></div></td><td>16.8750</td><td><strong>$213.40</strong><small>$234.52</small></td><td><strong>€5,860.25</strong><small>26.3%</small></td><td class="positive"><strong>+€1,311.75</strong><small>+28.8%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:28"/></svg><span class="ticker-avatar">MS</span></span><div class="asset-text"><strong>Microsoft Corp.</strong><small>MSFT · USD</small></div></div></td><td>13.2500</td><td><strong>$312.60</strong><small>$337.40</small></td><td><strong>€4,965.12</strong><small>22.3%</small></td><td class="positive"><strong>+€365.30</strong><small>+7.9%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:33"/></svg><span class="ticker-avatar">TS</span></span><div class="asset-text"><strong>Tesla Inc.</strong><small>TSLA · USD</small></div></div></td><td>9.5000</td><td><strong>$281.40</strong><small>$265.40</small></td><td><strong>€2,681.24</strong><small>12.0%</small></td><td class="negative"><strong>−€161.02</strong><small>−5.7%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:39"/></svg><span class="ticker-avatar">VO</span></span><div class="asset-text"><strong>Vanguard S&amp;P 500</strong><small>VOO · USD</small></div></div></td><td>6.1200</td><td><strong>$521.80</strong><small>$544.70</small></td><td><strong>€3,332.50</strong><small>15.0%</small></td><td class="positive"><strong>+€287.01</strong><small>+9.4%</small></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <footer class="legal">持仓和成交来自 Trading 212；个股历史价格来自 Yahoo Finance。仅供参考，不构成投资建议。</footer>
     </main>
   </div>
 </div>
 
 <script>
-/* ==========================================================================
-   1) Range Switcher — 滑块跟随选中项滑动（§4.8 spring 缓动）
-   ========================================================================== */
-(function initRangeSwitcher() {
-  const root = document.querySelector('.range-switcher');
-  if (!root) return;
-  const thumb = root.querySelector('.range-thumb');
-  const buttons = Array.from(root.querySelectorAll('button'));
-
-  function moveTo(btn) {
-    thumb.style.transform = 'translateX(' + (btn.offsetLeft - 3) + 'px)';
-    thumb.style.width = btn.offsetWidth + 'px';
+(function () {
+  // Eye toggle — blur balances
+  var eyeBtn = document.getElementById('eyeBtn')
+  var hidden = false
+  eyeBtn.addEventListener('click', function () {
+    hidden = !hidden
+    document.body.classList.toggle('hide-balances', hidden)
+    eyeBtn.setAttribute('aria-label', hidden ? '显示金额' : '隐藏金额')
+    eyeBtn.setAttribute('title', hidden ? '显示金额' : '隐藏金额')
+  })
+  // Range switcher — spring thumb
+  var sw = document.getElementById('rangeSwitcher')
+  var thumb = document.getElementById('rangeThumb')
+  var moveThumb = function () {
+    var active = sw.querySelector('button.active')
+    if (active) { thumb.style.transform = 'translateX(' + active.offsetLeft + 'px)'; thumb.style.width = active.offsetWidth + 'px' }
   }
-
-  buttons.forEach(function (btn, i) {
-    btn.addEventListener('click', function () {
-      buttons.forEach(function (b) {
-        b.classList.remove('active');
-        b.setAttribute('aria-checked', 'false');
-        b.tabIndex = -1;
-      });
-      btn.classList.add('active');
-      btn.setAttribute('aria-checked', 'true');
-      btn.tabIndex = 0;
-      moveTo(btn);
-    });
-    btn.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        e.preventDefault();
-        const dir = e.key === 'ArrowRight' ? 1 : -1;
-        const next = buttons[(i + dir + buttons.length) % buttons.length];
-        next.click();
-        next.focus();
-      }
-    });
-  });
-
-  function sync() {
-    const active = root.querySelector('button.active');
-    if (active) moveTo(active);
-  }
-  sync();
-  window.addEventListener('resize', sync);
-})();
-
-/* ==========================================================================
-   2) Price Chart — 纯 SVG 折线 + 渐变填充 + 买卖点 marker（模拟 ECharts）
-   ========================================================================== */
-(function buildChart() {
-  const svg = document.getElementById('priceChart');
-  if (!svg) return;
-
-  const W = 820, H = 330;
-  const margin = { top: 18, right: 64, bottom: 28, left: 12 };
-  const innerW = W - margin.left - margin.right;
-  const innerH = H - margin.top - margin.bottom;
-
-  // Deterministic uptrend-with-volatility series (AAPL-like, 56 points)
-  const data = [];
-  for (let i = 0; i < 56; i++) {
-    const base = 168 + i * 0.39;
-    const wave = Math.sin(i * 0.45) * 2.4 + Math.sin(i * 0.17) * 1.6;
-    data.push(base + wave);
-  }
-
-  const min = Math.min.apply(null, data);
-  const max = Math.max.apply(null, data);
-  const pad = (max - min) * 0.12;
-  const yMin = min - pad, yMax = max + pad;
-
-  const xs = function (i) { return margin.left + (i / (data.length - 1)) * innerW; };
-  const ys = function (v) { return margin.top + ((yMax - v) / (yMax - yMin)) * innerH; };
-
-  // Build line + area paths
-  let line = '', area = '';
-  data.forEach(function (v, i) {
-    const x = xs(i).toFixed(1), y = ys(v).toFixed(1);
-    line += (i ? 'L' : 'M') + x + ' ' + y + ' ';
-  });
-  area = 'M' + xs(0).toFixed(1) + ' ' + (margin.top + innerH).toFixed(1) + ' ' +
-         data.map(function (v, i) { return 'L' + xs(i).toFixed(1) + ' ' + ys(v).toFixed(1); }).join(' ') +
-         ' L' + xs(data.length - 1).toFixed(1) + ' ' + (margin.top + innerH).toFixed(1) + ' Z';
-
-  const ns = 'http://www.w3.org/2000/svg';
-  let html = '';
-
-  // Grid lines + y-axis labels (5 ticks)
-  const ticks = 5;
-  for (let t = 0; t < ticks; t++) {
-    const val = yMin + (yMax - yMin) * (t / (ticks - 1));
-    const y = ys(val).toFixed(1);
-    const isLast = t === ticks - 1;
-    html += '<line x1="' + margin.left + '" y1="' + y + '" x2="' + (W - margin.right) + '" y2="' + y +
-            '" stroke="rgba(255,255,255,0.04)" stroke-width="1" vector-effect="non-scaling-stroke"/>';
-    html += '<text x="' + (W - margin.right + 8) + '" y="' + (parseFloat(y) + 4) + '" fill="#52606e" font-size="11" text-anchor="start" font-family="var(--font-sans)">$' + val.toFixed(2) + '</text>';
-    if (isLast) {
-      html += '<line x1="' + margin.left + '" y1="' + y + '" x2="' + (W - margin.right) + '" y2="' + y +
-              '" stroke="rgba(255,255,255,0.08)" stroke-width="1" vector-effect="non-scaling-stroke"/>';
-    }
-  }
-  // Left vertical axis baseline
-  html += '<line x1="' + margin.left + '" y1="' + margin.top + '" x2="' + margin.left + '" y2="' + (margin.top + innerH) +
-          '" stroke="rgba(255,255,255,0.06)" stroke-width="1" vector-effect="non-scaling-stroke"/>';
-
-  // x-axis date labels
-  html += '<text x="' + margin.left + '" y="' + (H - 8) + '" fill="#52606e" font-size="10.5" text-anchor="start">Jan \'24</text>';
-  html += '<text x="' + (W - margin.right) + '" y="' + (H - 8) + '" fill="#52606e" font-size="10.5" text-anchor="end">Dec \'24</text>';
-
-  // Area + line
-  html += '<path d="' + area + '" fill="url(#areaFill)"/>';
-  html += '<path d="' + line + '" fill="none" stroke="#00a6ff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" style="filter:drop-shadow(0 0 6px rgba(0,166,255,0.35))"/>';
-
-  // Dashed markLine at last close
-  const lastX = xs(data.length - 1).toFixed(1);
-  const lastY = ys(data[data.length - 1]).toFixed(1);
-  html += '<line x1="' + margin.left + '" y1="' + lastY + '" x2="' + (W - margin.right) + '" y2="' + lastY +
-          '" stroke="rgba(0,166,255,0.55)" stroke-width="1.2" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/>';
-  html += '<rect x="' + (W - margin.right - 64) + '" y="' + (parseFloat(lastY) - 11) + '" width="60" height="18" rx="4" fill="#0e141c" stroke="rgba(0,166,255,0.3)" stroke-width="1"/>';
-  html += '<text x="' + (W - margin.right - 34) + '" y="' + (parseFloat(lastY) + 2) + '" fill="#00a6ff" font-size="11" text-anchor="middle" font-weight="700">$189.43</text>';
-
-  // Trade markers (buy = green circle, sell = orange diamond)
-  const buys = [9, 23, 40];
-  const sells = [15, 31, 49];
-  buys.forEach(function (i) {
-    const x = xs(i).toFixed(1), y = ys(data[i]).toFixed(1);
-    html += '<circle cx="' + x + '" cy="' + y + '" r="6" fill="#00d084" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke" style="filter:drop-shadow(0 0 6px rgba(0,208,132,0.6))"/>';
-  });
-  sells.forEach(function (i) {
-    const x = xs(i), y = ys(data[i]);
-    const d = parseFloat(x), e = parseFloat(y);
-    html += '<polygon points="' + d + ',' + (e - 7) + ' ' + (d + 7) + ',' + e + ' ' + d + ',' + (e + 7) + ' ' + (d - 7) + ',' + e +
-            '" fill="#ffb020" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke" style="filter:drop-shadow(0 0 6px rgba(255,176,32,0.6))"/>';
-  });
-
-  svg.innerHTML += html;
-})();
-
-/* ==========================================================================
-   3) Eye toggle — 隐藏 / 显示金额（只读语义演示）
-   ========================================================================== */
-(function initEye() {
-  const btn = document.getElementById('eyeBtn');
-  const icon = document.getElementById('eyeIcon');
-  if (!btn) return;
-  const balances = Array.from(document.querySelectorAll('.js-balance'));
-  let hidden = false;
-
-  balances.forEach(function (el) { el.dataset.value = el.textContent; });
-
-  const eyeOpen = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
-  const eyeOff = '<path d="M10.7 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3 3.9"/><path d="M6.6 6.6A17.6 17.6 0 0 0 2 12s3.5 7 10 7a10.9 10.9 0 0 0 4.2-.8"/><line x1="2" y1="2" x2="22" y2="22"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>';
-
-  btn.addEventListener('click', function () {
-    hidden = !hidden;
-    balances.forEach(function (el) { el.textContent = hidden ? '••••••' : el.dataset.value; });
-    icon.innerHTML = hidden ? eyeOff : eyeOpen;
-    btn.setAttribute('aria-label', hidden ? 'Show amounts' : 'Hide amounts');
-    btn.setAttribute('title', hidden ? 'Show amounts' : 'Hide amounts');
-  });
-})();
+  sw.addEventListener('click', function (e) {
+    var btn = e.target.closest('button')
+    if (!btn) return
+    sw.querySelectorAll('button').forEach(function (b) { b.classList.remove('active'); b.setAttribute('aria-checked', 'false'); b.tabIndex = -1 })
+    btn.classList.add('active'); btn.setAttribute('aria-checked', 'true'); btn.tabIndex = 0
+    moveThumb()
+  })
+  moveThumb()
+  // Investments collapse
+  var invHeader = document.getElementById('invHeader')
+  var invList = document.getElementById('invList')
+  var invArrow = document.getElementById('invArrow')
+  invHeader.addEventListener('click', function () {
+    var collapsed = invList.style.display === 'none'
+    invList.style.display = collapsed ? '' : 'none'
+    invArrow.classList.toggle('collapsed', !collapsed)
+  })
+})()
 </script>
 </body>
 </html>

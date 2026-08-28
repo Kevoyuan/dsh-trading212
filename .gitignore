@@ -1,9 +1,11 @@
 node_modules/
 lib/
 dist/
+cordis.local.patch.yml
 coverage/
 .DS_Store
 docs/design/
 .gstack/
 PLAN.md
 TODOS.md
+.workbuddy/

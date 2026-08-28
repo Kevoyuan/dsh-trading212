@@ -82,7 +82,7 @@ export class MarketDataService {
     let timedOut = false
     const timer = setTimeout(() => { timedOut = true; controller.abort() }, this.timeoutMs)
     try {
-      const response = await this.fetchImpl(url, { headers: { Accept: 'application/json', 'User-Agent': 'dsh-trading212/0.7.0' }, signal: controller.signal })
+      const response = await this.fetchImpl(url, { headers: { Accept: 'application/json', 'User-Agent': 'dsh-trading212/0.8.0' }, signal: controller.signal })
       if (!response.ok) throw new AppError('UPSTREAM_UNAVAILABLE', 'Yahoo Finance 行情暂时不可用', 502, `Yahoo Finance 返回 HTTP ${response.status}`, '稍后重试；Trading 212 持仓和买卖历史不受影响')
       return await response.json() as unknown
     } catch (error) {

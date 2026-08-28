@@ -43,6 +43,7 @@ export declare const inject: string[]
 export interface Config {
   requestTimeoutMs: number
   cacheTtlMs: number
+  marketCacheTtlMs: number
 }
 export declare const Config: Schema<Config>
 export declare function apply(ctx: Context, config: Config): void
