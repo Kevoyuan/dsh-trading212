@@ -4,20 +4,22 @@
 
 [![npm version](https://img.shields.io/npm/v/dsh-trading212.svg)](https://www.npmjs.com/package/dsh-trading212)
 
-在 **dsh** 里直接查看自己的 Trading 212 投资组合，并用自然语言提问。只读、低门槛：配置一次 API 密钥后，就能看持仓、历史成交、风险概览和个股买卖点。
+在 **dsh** 里直接查看自己的 Trading 212 投资组合，并用自然语言提问。只读、低门槛：配置一次 API 密钥后，就能在响应式 dashboard 中查看持仓、收益、资产配置、历史成交和个股买卖点。
 
 > 仅供个人信息整理与研究参考，不构成投资建议。本插件不会下单、修改或取消订单。
 
-![真实 dsh Trading 212 dashboard 连接设置界面；未展示账户金额、持仓、姓名或密钥](https://raw.githubusercontent.com/Kevoyuan/dsh-trading212/main/docs/images/dashboard-settings.png)
+![dsh Trading 212 投资组合仪表盘，包含账户总览、收益走势、买卖成交点、资产配置与持仓列表](https://raw.githubusercontent.com/Kevoyuan/dsh-trading212/main/docs/images/dashboard-desktop-full-en.png)
 
-*真实产品界面截图；画面不包含账户金额、持仓、姓名或 API 密钥。*
+*产品界面截图（采用纯虚拟演示数据）。支持右上角一键隐私遮罩（眼睛图标），可对账户总资产、个股持仓市值、持股数量、买入均价及盈亏全面打码。*
 
 ## 能做什么
 
 - 在 dsh 中完成 Demo / Live API 配置；刷新后仍会恢复连接状态
 - 一眼查看账户总览、现金、收益、外汇影响、集中度和待处理订单
+- 适配桌面与移动端的 dashboard，包含概览、持仓、历史、设置和帮助
+- 一键隐私模式：点击顶部 👁️ 眼睛图标即可对账户总价值、可用现金、个股持仓市值、持股数量、买入均价、成本以及盈亏贡献全面打码遮罩（`••••`），保障录屏与投屏时的隐私
 - 查看持仓、历史订单、资金流水与分红
-- 点击个股查看价格曲线，并叠加 Trading 212 的真实买入/卖出成交点
+- 查看 1 日到 5 年的个股价格曲线；短周期支持分钟级数据，并叠加 Trading 212 的真实买入/卖出成交点
 - 中英双语界面，默认跟随 dsh 界面语言，也可在设置中手动切换
 - 在 dsh 对话中询问自己的组合，例如最大持仓、风险、货币敞口和未成交订单
 - 凭据由 dsh 的 credential provider 保存；不会写入 URL、浏览器存储、日志或 tool 输出
@@ -28,6 +30,7 @@
 
 1. 已安装并可打开 dsh。
 2. 一个 Trading 212 API Key 和 API Secret。建议先创建 **Demo** 环境密钥。
+
 ### 安装插件
 
 直接执行：
@@ -83,7 +86,7 @@ dsh 会按需调用只读的 `trading212_portfolio` 和 `trading212_history` too
 | 数据 | 用途 | 会发送什么 |
 | --- | --- | --- |
 | Trading 212 官方 API | 账户、持仓、订单、成交、资金流水、分红 | API Key / Secret 仅用于向 Trading 212 验证 |
-| Yahoo Finance 非官方接口 | 个股每日历史价格曲线 | 仅发送公开标的标识；不发送凭据、数量或账户金额 |
+| Yahoo Finance 非官方接口 | 个股日内与历史价格曲线 | 仅发送公开标的标识；不发送凭据、数量或账户金额 |
 
 历史价格可能延迟、缺失或暂时不可用；即使 Yahoo Finance 不可用，Trading 212 的持仓与成交记录仍可查看。
 
@@ -105,7 +108,7 @@ dsh plugin --profile web add --save-exact ./dist/dsh-trading212-<version>.tgz
 pnpm harness:dev
 ```
 
-该命令会生成被 `.gitignore` 忽略的 `cordis.local.patch.yml`。它将 `name` 指向当前仓库的绝对 `src/index.ts` 路径，再执行 `pnpm dsh web --patch ./cordis.local.patch.yml`，符合 Harness 对本地插件 patch 的要求。Git 安装则由 `prepare` 自动构建 `lib/`；发布 bundle 的 patch 和包清单由 `package.json` 中的 `dsh.bundle` 声明。
+该命令会生成被 `.gitignore` 忽略的 `cordis.local.patch.yml`：仅在本次运行中禁用已安装的 `trading212` 条目，再以 `trading212-local` 插入当前仓库的绝对 `src/index.ts` 路径，最后执行 `pnpm dsh web --patch ./cordis.local.patch.yml`。Git 安装由 `prepare` 自动构建 `lib/`；发布 bundle 的 patch 和包清单由 `package.json` 中的 `dsh.bundle` 声明。
 
 代码结构：
 

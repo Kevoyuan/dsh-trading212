@@ -4,20 +4,22 @@
 
 [![npm version](https://img.shields.io/npm/v/dsh-trading212.svg)](https://www.npmjs.com/package/dsh-trading212)
 
-A read-only Trading 212 portfolio workspace for **dsh**. Configure your API credentials once, then inspect your holdings, transaction history, portfolio risks, and stock-level trade markers—or ask questions about your portfolio in any dsh conversation.
+A read-only Trading 212 portfolio workspace for **dsh**. Configure your API credentials once, then inspect holdings, performance, allocation, transaction history, and stock-level trade markers in a responsive dashboard—or ask questions about your portfolio in any dsh conversation.
 
 > For personal research and information only. This plugin does not provide investment advice and cannot place, modify, or cancel orders.
 
-![Real dsh Trading 212 dashboard settings screen with no account values, positions, identity, or credentials shown](https://raw.githubusercontent.com/Kevoyuan/dsh-trading212/main/docs/images/dashboard-settings.png)
+![dsh Trading 212 portfolio workspace dashboard with account snapshot, stock price chart with Trading 212 execution fills, asset allocation treemap, and top holdings](https://raw.githubusercontent.com/Kevoyuan/dsh-trading212/main/docs/images/dashboard-desktop-full-en.png)
 
-*Real product screenshot. No account value, position, personal identity, API key, or API secret is shown.*
+*Product interface shown with synthetic demo data. Includes a one-click privacy toggle (eye icon) that completely masks balances, stock values, share quantities, and returns.*
 
 ## Features
 
 - Guided Demo or Live API setup with persistent dsh credential storage
 - Portfolio value, cash, returns, FX impact, concentration, and pending-order overview
+- Responsive desktop and mobile dashboard with overview, holdings, history, settings, and help views
+- One-click privacy masking (eye toggle) to hide all balances, holding values, share quantities, average purchase prices, and returns
 - Holdings, order history, cash transactions, and dividends
-- ECharts stock price history with actual Trading 212 buy and sell fills overlaid
+- ECharts price history from 1 day to 5 years, including minute-level short ranges and actual Trading 212 buy/sell fills
 - English and Chinese UI that follows dsh by default, with a manual override in Settings
 - Read-only `trading212_portfolio` and `trading212_history` tools for normal dsh conversations
 - Sanitized errors for authentication, permission, rate-limit, timeout, and upstream failures
@@ -82,7 +84,7 @@ dsh calls the read-only tools when needed and receives normalized portfolio data
 | Source | Purpose | Data sent |
 | --- | --- | --- |
 | Official Trading 212 API | Account, positions, orders, fills, cash transactions, and dividends | API key and secret are used only to authenticate with Trading 212 |
-| Unofficial Yahoo Finance endpoint | Daily historical prices for individual stocks | Public instrument identifiers only; no credentials, quantities, or account values |
+| Unofficial Yahoo Finance endpoint | Intraday and historical prices for individual stocks | Public instrument identifiers only; no credentials, quantities, or account values |
 
 Historical market prices may be delayed, incomplete, or temporarily unavailable. Trading 212 holdings and execution history remain available when Yahoo Finance fails.
 
@@ -103,7 +105,7 @@ For a local Harness Web run directly from source:
 pnpm harness:dev
 ```
 
-The command generates the ignored `cordis.local.patch.yml`, points its `name` at the repository's absolute `src/index.ts` path, and starts `pnpm dsh web --patch ./cordis.local.patch.yml`, matching Harness's local-plugin patch convention. Git installs run `prepare` to build `lib/`; the published bundle patch and package metadata are declared through `dsh.bundle` in `package.json`.
+The command generates the ignored `cordis.local.patch.yml`, disables any installed `trading212` entry for that run, inserts the repository's absolute `src/index.ts` path as `trading212-local`, and starts `pnpm dsh web --patch ./cordis.local.patch.yml`. Git installs run `prepare` to build `lib/`; the published bundle patch and package metadata are declared through `dsh.bundle` in `package.json`.
 
 Main directories:
 

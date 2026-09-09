@@ -1174,7 +1174,20 @@ button.danger-outline:hover, .confirm-dialog .danger:hover { background: rgba(25
 .mini-pill-btn:hover { color: var(--ink-2); border-color: var(--rule-strong); }
 .mini-pill-btn.active { color: var(--primary-ink); background: var(--primary); border-color: var(--primary); }
 .hide-balances .js-balance { filter: blur(7px); transition: filter var(--dur-mid) var(--ease-out); pointer-events: none; user-select: none; }
-.hide-balances .account-hero-val, .hide-balances .tile-percent { filter: blur(6px); }
+.hide-balances .account-hero-val,
+.hide-balances .tile-percent,
+.hide-balances .inv-metric-row strong,
+.hide-balances .invest-row strong,
+.hide-balances .holdings-table td strong,
+.hide-balances .holdings-table td small,
+.hide-balances .pos-stream-num-col strong,
+.hide-balances .pos-stream-num-col span,
+.hide-balances .bar-list .bar-row b,
+.hide-balances .exposure-summary span,
+.hide-balances .inst-price-sub {
+  filter: blur(6px);
+  user-select: none;
+}
 
 /* ---------- 15. Responsive ---------- */
 @media (max-width: 1080px) {

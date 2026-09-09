@@ -468,7 +468,7 @@ function CurrencyExposureChart({ portfolio }: { portfolio: PortfolioSnapshot }) 
   return <BarList rows={rows} currency={portfolio.account.currency} ariaLabel={tx('按标的交易币种划分的持仓市值', 'Holding value by instrument currency')} />
 }
 
-function HoldingTable({ positions, currency, limit, compact = false, selectedTicker, onSelect }: { positions: Position[]; currency: string; limit?: number; compact?: boolean; selectedTicker?: string; onSelect?: (position: Position) => void }) {
+function HoldingTable({ positions, currency, limit, compact = false, selectedTicker, hideBalances = false, onSelect }: { positions: Position[]; currency: string; limit?: number; compact?: boolean; selectedTicker?: string; hideBalances?: boolean; onSelect?: (position: Position) => void }) {
   const rows = [...positions].sort((a, b) => (b.walletImpact?.currentValue ?? 0) - (a.walletImpact?.currentValue ?? 0)).slice(0, limit)
   if (rows.length === 0) return <div className="empty-state"><BriefcaseBusiness strokeWidth={1.5} /><strong>{tx('目前没有持仓', 'No holdings yet')}</strong><span>{tx('现金和账户总价值仍会显示在概览中。', 'Cash and total account value still appear in Overview.')}</span></div>
   const invested = positions.reduce((sum, item) => sum + (item.walletImpact?.currentValue ?? 0), 0)
@@ -480,7 +480,7 @@ function HoldingTable({ positions, currency, limit, compact = false, selectedTic
     const label = position.instrument?.name ?? position.instrument?.ticker ?? tx('未知资产', 'Unknown asset')
     const ticker = position.instrument?.ticker ?? ''
     const weight = invested ? value / invested * 100 : 0
-    return <tr key={ticker || index} className={ticker === selectedTicker ? 'is-selected' : ''}><td data-label={tx('资产', 'Asset')}><div className="asset-cell"><TickerRingLogo ticker={ticker} weightPercent={weight} />{onSelect && ticker ? <button className="asset-link" type="button" onClick={() => onSelect(position)}><strong>{label}</strong><small>{tickerLabel(ticker)} · {position.instrument?.currency ?? currency}</small></button> : <div className="asset-text"><strong>{label}</strong><small>{tickerLabel(ticker)} · {position.instrument?.currency ?? currency}</small></div>}</div><small>{(position.quantityInPies ?? 0) > 0 ? `Pie ${decimal(position.quantityInPies, 4)}` : ''}</small></td><td data-label={tx('数量', 'Quantity')}>{decimal(position.quantity, 4)}<small>{tx('可交易', 'Tradable')} {decimal(position.quantityAvailableForTrading, 4)}</small></td><td data-label={tx('均价 / 现价', 'Average / current')}><strong>{position.averagePricePaid === undefined ? '—' : money(position.averagePricePaid, position.instrument?.currency ?? currency)}</strong><small>{position.currentPrice === undefined ? '—' : money(position.currentPrice, position.instrument?.currency ?? currency)}</small></td>{!compact && <td data-label={tx('成本', 'Cost')}>{money(cost, currency)}</td>}<td data-label={tx('市值 / 权重', 'Value / weight')}><strong>{money(value, currency)}</strong><small>{plainPercent(weight)}</small></td><td data-label={tx('未实现收益', 'Unrealized return')} className={profit >= 0 ? 'tone-positive' : 'tone-negative'}><strong>{signedMoney(profit, currency)}</strong><small>{percent(cost ? profit / cost * 100 : undefined)}</small></td>{!compact && <td data-label={tx('外汇影响', 'FX impact')} className={(fx ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{fx === undefined ? '—' : signedMoney(fx, currency)}</td>}</tr>
+    return <tr key={ticker || index} className={ticker === selectedTicker ? 'is-selected' : ''}><td data-label={tx('资产', 'Asset')}><div className="asset-cell"><TickerRingLogo ticker={ticker} weightPercent={weight} />{onSelect && ticker ? <button className="asset-link" type="button" onClick={() => onSelect(position)}><strong>{label}</strong><small>{tickerLabel(ticker)} · {position.instrument?.currency ?? currency}</small></button> : <div className="asset-text"><strong>{label}</strong><small>{tickerLabel(ticker)} · {position.instrument?.currency ?? currency}</small></div>}</div><small>{(position.quantityInPies ?? 0) > 0 ? (hideBalances ? 'Pie ••••' : `Pie ${decimal(position.quantityInPies, 4)}`) : ''}</small></td><td data-label={tx('数量', 'Quantity')}>{hideBalances ? '••••' : decimal(position.quantity, 4)}<small>{tx('可交易', 'Tradable')} {hideBalances ? '••••' : decimal(position.quantityAvailableForTrading, 4)}</small></td><td data-label={tx('均价 / 现价', 'Average / current')}><strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '—' : money(position.averagePricePaid, position.instrument?.currency ?? currency))}</strong><small>{position.currentPrice === undefined ? '—' : money(position.currentPrice, position.instrument?.currency ?? currency)}</small></td>{!compact && <td data-label={tx('成本', 'Cost')}>{hideBalances ? '••••••' : money(cost, currency)}</td>}<td data-label={tx('市值 / 权重', 'Value / weight')}><strong>{hideBalances ? '••••••' : money(value, currency)}</strong><small>{plainPercent(weight)}</small></td><td data-label={tx('未实现收益', 'Unrealized return')} className={profit >= 0 ? 'tone-positive' : 'tone-negative'}><strong>{hideBalances ? '••••' : signedMoney(profit, currency)}</strong><small>{hideBalances ? '••••' : percent(cost ? profit / cost * 100 : undefined)}</small></td>{!compact && <td data-label={tx('外汇影响', 'FX impact')} className={(fx ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{hideBalances ? '••••' : (fx === undefined ? '—' : signedMoney(fx, currency))}</td>}</tr>
   })}</tbody></table></div>
 }
 
@@ -739,7 +739,7 @@ function Metric({ label, value, note, tone }: { label: string; value: string; no
   return <div className="metric-card"><span>{label}</span><strong className={tone === 'positive' ? 'tone-positive' : tone === 'negative' ? 'tone-negative' : ''}>{value}</strong>{note && <small>{note}</small>}</div>
 }
 
-function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, onSelect }: { position: Position; accountCurrency: string; portfolioTotal?: number; onSelect?: (position: Position) => void }) {
+function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hideBalances = false, onSelect }: { position: Position; accountCurrency: string; portfolioTotal?: number; hideBalances?: boolean; onSelect?: (position: Position) => void }) {
   const ticker = position.instrument?.ticker ?? ''
   const name = position.instrument?.name ?? tickerLabel(ticker)
   const currency = position.instrument?.currency ?? accountCurrency
@@ -784,7 +784,7 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, onSe
         <div className="inst-price-box">
           <strong className="inst-price-main">{money(position.currentPrice, currency)}</strong>
           <span className={`inst-price-sub ${profit >= 0 ? 'tone-positive' : 'tone-negative'}`}>
-            {signedMoney(profit, accountCurrency)} ({percent(returnPct)})
+            {hideBalances ? '••••' : `${signedMoney(profit, accountCurrency)} (${percent(returnPct)})`}
           </span>
         </div>
         <div className="inst-actions">
@@ -815,25 +815,25 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, onSe
         <div className="inv-metrics-list">
           <div className="inv-metric-row">
             <span>{tx('当前市值', 'VALUE')}</span>
-            <strong>{money(position.walletImpact?.currentValue, accountCurrency)}</strong>
+            <strong className="js-balance">{hideBalances ? '••••••' : money(position.walletImpact?.currentValue, accountCurrency)}</strong>
           </div>
           <div className="inv-metric-row">
             <span>{tx('未实现收益', 'RETURN')}</span>
             <strong className={profit >= 0 ? 'tone-positive' : 'tone-negative'}>
-              {signedMoney(profit, accountCurrency)} ({percent(returnPct)})
+              {hideBalances ? '••••' : `${signedMoney(profit, accountCurrency)} (${percent(returnPct)})`}
             </strong>
           </div>
           <div className="inv-metric-row">
             <span>{tx('持股数量', 'SHARES')}</span>
-            <strong>{decimal(position.quantity, 4)}</strong>
+            <strong>{hideBalances ? '••••' : decimal(position.quantity, 4)}</strong>
           </div>
           <div className="inv-metric-row">
             <span>{tx('平均买入价', 'AVERAGE PRICE')}</span>
-            <strong>{position.averagePricePaid === undefined ? '—' : money(position.averagePricePaid, currency)}</strong>
+            <strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '—' : money(position.averagePricePaid, currency))}</strong>
           </div>
           <div className="inv-metric-row">
             <span>{tx('持仓成本', 'COST')}</span>
-            <strong>{money(cost, accountCurrency)}</strong>
+            <strong className="js-balance">{hideBalances ? '••••••' : money(cost, accountCurrency)}</strong>
           </div>
         </div>
       </section>
@@ -842,7 +842,7 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, onSe
   )
 }
 
-function InstrumentDetailPage({ position, accountCurrency, onBack }: { position: Position; accountCurrency: string; onBack: () => void }) {
+function InstrumentDetailPage({ position, accountCurrency, hideBalances = false, onBack }: { position: Position; accountCurrency: string; hideBalances?: boolean; onBack: () => void }) {
   const ticker = position.instrument?.ticker ?? ''
   const name = position.instrument?.name ?? tickerLabel(ticker)
   const currency = position.instrument?.currency ?? accountCurrency
@@ -881,13 +881,13 @@ function InstrumentDetailPage({ position, accountCurrency, onBack }: { position:
           <span>{tickerLabel(ticker)} · {position.instrument?.isin ?? tx('ISIN 未提供', 'ISIN unavailable')}</span>
         </div>
         <h1>{name}</h1>
-        <p>{decimal(position.quantity, 4)} {tx('股', 'shares')} · {tx('标的币种', 'Instrument currency')} {currency}</p>
+        <p>{hideBalances ? '••••' : decimal(position.quantity, 4)} {tx('股', 'shares')} · {tx('标的币种', 'Instrument currency')} {currency}</p>
       </div>
       <div className="instrument-price-action">
         <span>{tx('当前价格', 'Current price')}</span>
         <strong>{money(position.currentPrice, currency)}</strong>
         <small className={profit >= 0 ? 'tone-positive' : 'tone-negative'}>
-          {signedMoney(profit, accountCurrency)} · {percent(cost ? profit / cost * 100 : undefined)}
+          {hideBalances ? '••••' : `${signedMoney(profit, accountCurrency)} · ${percent(cost ? profit / cost * 100 : undefined)}`}
         </small>
         <div className="instrument-action-pills" title={tx('当前连接为只读模式', 'Read-only mode')}>
           <span className="pill-btn sell">{tx('卖出', 'Sell')}</span>
@@ -904,11 +904,11 @@ function InstrumentDetailPage({ position, accountCurrency, onBack }: { position:
         <h2>{tx('持仓明细', 'Your investment')}</h2>
       </div>
       <div className="investment-grid">
-        <div className="invest-row"><span>{tx('当前市值', 'VALUE')}</span><strong>{money(position.walletImpact?.currentValue, accountCurrency)}</strong></div>
-        <div className="invest-row"><span>{tx('未实现收益', 'RETURN')}</span><strong className={profit >= 0 ? 'tone-positive' : 'tone-negative'}>{signedMoney(profit, accountCurrency)} <small>({percent(cost ? profit / cost * 100 : undefined)})</small></strong></div>
-        <div className="invest-row"><span>{tx('持股数量', 'SHARES')}</span><strong>{decimal(position.quantity, 4)} <small>({tx('可交易', 'Tradable')} {decimal(position.quantityAvailableForTrading, 4)})</small></strong></div>
-        <div className="invest-row"><span>{tx('平均买入价', 'AVERAGE PRICE')}</span><strong>{position.averagePricePaid === undefined ? '—' : money(position.averagePricePaid, currency)}</strong></div>
-        <div className="invest-row"><span>{tx('持仓成本', 'COST')}</span><strong>{money(cost, accountCurrency)}</strong></div>
+        <div className="invest-row"><span>{tx('当前市值', 'VALUE')}</span><strong className="js-balance">{hideBalances ? '••••••' : money(position.walletImpact?.currentValue, accountCurrency)}</strong></div>
+        <div className="invest-row"><span>{tx('未实现收益', 'RETURN')}</span><strong className={profit >= 0 ? 'tone-positive' : 'tone-negative'}>{hideBalances ? '••••' : signedMoney(profit, accountCurrency)} <small>({hideBalances ? '••••' : percent(cost ? profit / cost * 100 : undefined)})</small></strong></div>
+        <div className="invest-row"><span>{tx('持股数量', 'SHARES')}</span><strong>{hideBalances ? '••••' : decimal(position.quantity, 4)} <small>({tx('可交易', 'Tradable')} {hideBalances ? '••••' : decimal(position.quantityAvailableForTrading, 4)})</small></strong></div>
+        <div className="invest-row"><span>{tx('平均买入价', 'AVERAGE PRICE')}</span><strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '—' : money(position.averagePricePaid, currency))}</strong></div>
+        <div className="invest-row"><span>{tx('持仓成本', 'COST')}</span><strong className="js-balance">{hideBalances ? '••••••' : money(cost, accountCurrency)}</strong></div>
       </div>
     </section>
     <section className="instrument-history"><div className="section-heading"><div><h2>{tx('这只股票的买卖历史', 'Trade history for this instrument')}</h2><p>{tx(`Trading 212 返回的真实成交记录 · 已加载 ${orders.length} 笔`, `Actual Trading 212 fills · ${orders.length} loaded`)}</p></div></div>{historyError && <ErrorPanel error={historyError} onRetry={() => void loadHistory()} compact />}{historyLoading && orders.length === 0 ? <div className="history-loading"><LoaderCircle strokeWidth={1.5} className="spin" />{tx('正在读取买卖历史…', 'Loading trade history…')}</div> : <HistoryRows kind="orders" items={orders} />}{cursor && <button className="load-more" type="button" disabled={historyLoading} onClick={() => void loadHistory(cursor, true)}>{historyLoading ? tx('正在加载…', 'Loading…') : tx('加载更多', 'Load more')}</button>}</section>
@@ -1154,7 +1154,7 @@ function OverviewPage({
       {/* 右侧深度 Cockpit 详情主屏 Right Main */}
       <main className="cockpit-main-pane">
         {activePosition ? (
-          <CockpitInstrumentView position={activePosition} accountCurrency={currency} portfolioTotal={analytics.totalValue} onSelect={onInstrument} />
+          <CockpitInstrumentView position={activePosition} accountCurrency={currency} portfolioTotal={analytics.totalValue} hideBalances={hideBalances} onSelect={onInstrument} />
         ) : (
           <div className="empty-inline">{tx('目前没有持仓', 'No holdings yet')}</div>
         )}
@@ -1165,7 +1165,7 @@ function OverviewPage({
               <h2>{tx('主要持仓', 'Top holdings')}</h2>
               <p>{tx('点击资产查看真实价格曲线、买卖点和交易历史', 'Select an asset to view its price chart, trade markers, and history')}</p>
             </div>
-            <HoldingTable positions={filteredPositions} currency={currency} limit={6} compact selectedTicker={activePosition?.instrument?.ticker} onSelect={onInstrument} />
+            <HoldingTable positions={filteredPositions} currency={currency} limit={6} compact selectedTicker={activePosition?.instrument?.ticker} hideBalances={hideBalances} onSelect={onInstrument} />
           </section>
         </section>
       </main>
@@ -1256,9 +1256,9 @@ function Workspace({
   else if (portfolio === undefined) content = null
   else if (page === 'instrument') {
     const position = portfolio.positions.find(item => item.instrument?.ticker === selectedTicker)
-    content = position ? <InstrumentDetailPage position={position} accountCurrency={portfolio.account.currency} onBack={() => onNavigate('holdings')} /> : <section className="content-page"><button className="back-button" type="button" onClick={() => onNavigate('holdings')}><ArrowLeft strokeWidth={1.5} />{tx('返回持仓', 'Back to holdings')}</button><div className="empty-state"><AlertTriangle strokeWidth={1.5} /><strong>{tx('找不到这项持仓', 'Holding not found')}</strong><span>{tx('刷新后该持仓可能已经变化。', 'It may have changed since the last refresh.')}</span></div></section>
+    content = position ? <InstrumentDetailPage position={position} accountCurrency={portfolio.account.currency} hideBalances={hideBalances} onBack={() => onNavigate('holdings')} /> : <section className="content-page"><button className="back-button" type="button" onClick={() => onNavigate('holdings')}><ArrowLeft strokeWidth={1.5} />{tx('返回持仓', 'Back to holdings')}</button><div className="empty-state"><AlertTriangle strokeWidth={1.5} /><strong>{tx('找不到这项持仓', 'Holding not found')}</strong><span>{tx('刷新后该持仓可能已经变化。', 'It may have changed since the last refresh.')}</span></div></section>
   }
-  else if (page === 'holdings') content = <section className="content-page"><h1>{tx('持仓', 'Holdings')}</h1><p>{tx(`${portfolio.positions.length} 个持仓 · 点击任意资产查看价格曲线和买卖历史`, `${portfolio.positions.length} holdings · Select an asset to view its price chart and trade history`)}</p>{error && <ErrorPanel error={error} status={status} onRetry={onRefresh} compact />}<HoldingTable positions={portfolio.positions} currency={portfolio.account.currency} onSelect={onInstrument} /></section>
+  else if (page === 'holdings') content = <section className="content-page"><h1>{tx('持仓', 'Holdings')}</h1><p>{tx(`${portfolio.positions.length} 个持仓 · 点击任意资产查看价格曲线和买卖历史`, `${portfolio.positions.length} holdings · Select an asset to view its price chart and trade history`)}</p>{error && <ErrorPanel error={error} status={status} onRetry={onRefresh} compact />}<HoldingTable positions={portfolio.positions} currency={portfolio.account.currency} hideBalances={hideBalances} onSelect={onInstrument} /></section>
   else content = <>{error && <ErrorPanel error={error} status={status} onRetry={onRefresh} compact />}<OverviewPage portfolio={portfolio} hideBalances={hideBalances} searchQuery={searchQuery} onHoldings={() => onNavigate('holdings')} onInstrument={onInstrument} onNavigate={onNavigate} /></>
   
   return <main className="workspace">{content}<footer className="legal">{tx('持仓和成交来自 Trading 212；个股历史价格来自 Yahoo Finance。仅供参考，不构成投资建议。', 'Holdings and trades come from Trading 212; historical prices come from Yahoo Finance. For information only, not investment advice.')}</footer></main>
@@ -1303,7 +1303,7 @@ export function App() {
   const navigate = (next: Page) => { if (next !== 'instrument') setSelectedTicker(undefined); setPage(next) }
   const openInstrument = (position: Position) => { setSelectedTicker(position.instrument?.ticker); setPage('instrument') }
   return (
-    <div className="t212-native-app-root">
+    <div className={`t212-native-app-root ${hideBalances ? 'hide-balances' : ''}`}>
       <TopNavBar
         connected={boot.status.connected}
         status={boot.status}
