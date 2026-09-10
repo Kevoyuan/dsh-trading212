@@ -8,6 +8,7 @@ import '@deepseek-ai/dsh-host-webserver'
 import { defineTool, type JsonValue } from '@deepseek-ai/dsh-tools'
 import Schema from '@deepseek-ai/schemastery'
 import { AppError, normalizeError, toErrorEnvelope } from './errors.ts'
+import { toLosslessJson } from './lossless.ts'
 import { MarketDataService, type MarketRange } from './market-data.ts'
 import { LogoService } from './logo-service.ts'
 import { PortfolioService } from './portfolio-service.ts'
@@ -159,7 +160,7 @@ export function apply(ctx: Context, config: Config): void {
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
     async execute(args, exec) {
-      return await service.snapshot(args.refresh === true, exec.signal) as unknown as JsonValue
+      return toLosslessJson(await service.snapshot(args.refresh === true, exec.signal)) as unknown as JsonValue
     },
   }))
 
@@ -176,7 +177,7 @@ export function apply(ctx: Context, config: Config): void {
       render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
     },
     async execute(args, exec) {
-      return await service.history(parseHistoryKind(args.kind), parseCursor(args.cursor), exec.signal, parseTicker(args.ticker)) as unknown as JsonValue
+      return toLosslessJson(await service.history(parseHistoryKind(args.kind), parseCursor(args.cursor), exec.signal, parseTicker(args.ticker))) as unknown as JsonValue
     },
   }))
 
