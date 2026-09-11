@@ -29,8 +29,8 @@ const decimal = (value: number | undefined, maximumFractionDigits = 2) => new In
   maximumFractionDigits,
 }).format(value ?? 0)
 
-const percent = (value: number | undefined, digits = 1) => value === undefined ? '—' : `${value >= 0 ? '+' : ''}${decimal(value, digits)}%`
-const plainPercent = (value: number | undefined, digits = 1) => value === undefined ? '—' : `${decimal(value, digits)}%`
+const percent = (value: number | undefined, digits = 1) => value === undefined ? '-' : `${value >= 0 ? '+' : ''}${decimal(value, digits)}%`
+const plainPercent = (value: number | undefined, digits = 1) => value === undefined ? '-' : `${decimal(value, digits)}%`
 const displayTickerAliases: Record<string, string> = {
   SNDK1: 'SNDK',
   YNDX: 'NBIS',
@@ -38,7 +38,7 @@ const displayTickerAliases: Record<string, string> = {
 
 export const tickerLabel = (ticker: string | undefined) => {
   const rawTicker = ticker?.replace(/_.*/, '')
-  return rawTicker ? displayTickerAliases[rawTicker] ?? rawTicker : '—'
+  return rawTicker ? displayTickerAliases[rawTicker] ?? rawTicker : '-'
 }
 const signedMoney = (value: number | undefined, currency: string) => `${(value ?? 0) >= 0 ? '+' : ''}${money(value, currency)}`
 
@@ -480,7 +480,7 @@ function HoldingTable({ positions, currency, limit, compact = false, selectedTic
     const label = position.instrument?.name ?? position.instrument?.ticker ?? tx('未知资产', 'Unknown asset')
     const ticker = position.instrument?.ticker ?? ''
     const weight = invested ? value / invested * 100 : 0
-    return <tr key={ticker || index} className={ticker === selectedTicker ? 'is-selected' : ''}><td data-label={tx('资产', 'Asset')}><div className="asset-cell"><TickerRingLogo ticker={ticker} weightPercent={weight} />{onSelect && ticker ? <button className="asset-link" type="button" onClick={() => onSelect(position)}><strong>{label}</strong><small>{tickerLabel(ticker)} · {position.instrument?.currency ?? currency}</small></button> : <div className="asset-text"><strong>{label}</strong><small>{tickerLabel(ticker)} · {position.instrument?.currency ?? currency}</small></div>}</div><small>{(position.quantityInPies ?? 0) > 0 ? (hideBalances ? 'Pie ••••' : `Pie ${decimal(position.quantityInPies, 4)}`) : ''}</small></td><td data-label={tx('数量', 'Quantity')}>{hideBalances ? '••••' : decimal(position.quantity, 4)}<small>{tx('可交易', 'Tradable')} {hideBalances ? '••••' : decimal(position.quantityAvailableForTrading, 4)}</small></td><td data-label={tx('均价 / 现价', 'Average / current')}><strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '—' : money(position.averagePricePaid, position.instrument?.currency ?? currency))}</strong><small>{position.currentPrice === undefined ? '—' : money(position.currentPrice, position.instrument?.currency ?? currency)}</small></td>{!compact && <td data-label={tx('成本', 'Cost')}>{hideBalances ? '••••••' : money(cost, currency)}</td>}<td data-label={tx('市值 / 权重', 'Value / weight')}><strong>{hideBalances ? '••••••' : money(value, currency)}</strong><small>{plainPercent(weight)}</small></td><td data-label={tx('未实现收益', 'Unrealized return')} className={profit >= 0 ? 'tone-positive' : 'tone-negative'}><strong>{hideBalances ? '••••' : signedMoney(profit, currency)}</strong><small>{hideBalances ? '••••' : percent(cost ? profit / cost * 100 : undefined)}</small></td>{!compact && <td data-label={tx('外汇影响', 'FX impact')} className={(fx ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{hideBalances ? '••••' : (fx === undefined ? '—' : signedMoney(fx, currency))}</td>}</tr>
+    return <tr key={ticker || index} className={ticker === selectedTicker ? 'is-selected' : ''}><td data-label={tx('资产', 'Asset')}><div className="asset-cell"><TickerRingLogo ticker={ticker} weightPercent={weight} />{onSelect && ticker ? <button className="asset-link" type="button" onClick={() => onSelect(position)}><strong>{label}</strong><small>{tickerLabel(ticker)} · {position.instrument?.currency ?? currency}</small></button> : <div className="asset-text"><strong>{label}</strong><small>{tickerLabel(ticker)} · {position.instrument?.currency ?? currency}</small></div>}</div><small>{(position.quantityInPies ?? 0) > 0 ? (hideBalances ? 'Pie ••••' : `Pie ${decimal(position.quantityInPies, 4)}`) : ''}</small></td><td data-label={tx('数量', 'Quantity')}>{hideBalances ? '••••' : decimal(position.quantity, 4)}<small>{tx('可交易', 'Tradable')} {hideBalances ? '••••' : decimal(position.quantityAvailableForTrading, 4)}</small></td><td data-label={tx('均价 / 现价', 'Average / current')}><strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '-' : money(position.averagePricePaid, position.instrument?.currency ?? currency))}</strong><small>{position.currentPrice === undefined ? '-' : money(position.currentPrice, position.instrument?.currency ?? currency)}</small></td>{!compact && <td data-label={tx('成本', 'Cost')}>{hideBalances ? '••••••' : money(cost, currency)}</td>}<td data-label={tx('市值 / 权重', 'Value / weight')}><strong>{hideBalances ? '••••••' : money(value, currency)}</strong><small>{plainPercent(weight)}</small></td><td data-label={tx('未实现收益', 'Unrealized return')} className={profit >= 0 ? 'tone-positive' : 'tone-negative'}><strong>{hideBalances ? '••••' : signedMoney(profit, currency)}</strong><small>{hideBalances ? '••••' : percent(cost ? profit / cost * 100 : undefined)}</small></td>{!compact && <td data-label={tx('外汇影响', 'FX impact')} className={(fx ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{hideBalances ? '••••' : (fx === undefined ? '-' : signedMoney(fx, currency))}</td>}</tr>
   })}</tbody></table></div>
 }
 
@@ -490,8 +490,8 @@ function PendingOrders({ orders, currency }: { orders: PortfolioSnapshot['pendin
     <td data-label={tx('资产与时间', 'Asset and time')}><div className="asset-cell"><TickerRingLogo ticker={order.ticker} /><div className="asset-text"><strong>{order.instrument?.name ?? order.ticker}</strong><small>{order.createdAt ? new Date(order.createdAt).toLocaleString(localeCode()) : tickerLabel(order.ticker)} · {order.initiatedFrom ?? tx('来源未知', 'Unknown source')}</small></div></div></td>
     <td data-label={tx('方向 / 类型', 'Side / type')}><span className={`history-side ${order.side.toLowerCase()}`}>{order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')}</span><small>{order.type}{order.extendedHours ? tx(' · 含延长交易时段', ' · Extended hours') : ''}</small></td>
     <td data-label={tx('数量', 'Quantity')}>{decimal(order.quantity, 4)}<small>{tx('已成交', 'Filled')} {decimal(order.filledQuantity, 4)}</small></td>
-    <td data-label="限价 / 止损"><strong>{order.limitPrice === undefined ? '—' : money(order.limitPrice, order.instrument?.currency ?? order.currency ?? currency)}</strong><small>{order.stopPrice === undefined ? '—' : money(order.stopPrice, order.instrument?.currency ?? order.currency ?? currency)}</small></td>
-    <td data-label="状态"><strong>{order.status}</strong><small>{order.timeInForce ?? order.strategy ?? '—'}</small></td>
+    <td data-label="限价 / 止损"><strong>{order.limitPrice === undefined ? '-' : money(order.limitPrice, order.instrument?.currency ?? order.currency ?? currency)}</strong><small>{order.stopPrice === undefined ? '-' : money(order.stopPrice, order.instrument?.currency ?? order.currency ?? currency)}</small></td>
+    <td data-label="状态"><strong>{order.status}</strong><small>{order.timeInForce ?? order.strategy ?? '-'}</small></td>
   </tr>)}</tbody></table></div>
 }
 
@@ -506,9 +506,9 @@ function HistoryRows({ kind, items }: { kind: HistoryKind; items: HistoryItem[] 
   if (kind === 'orders') return <div className="table-scroll"><table><thead><tr><th>{tx('时间与资产', 'Time and asset')}</th><th>{tx('方向 / 状态', 'Side / status')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('成交价', 'Fill price')}</th><th>{tx('净额', 'Net value')}</th></tr></thead><tbody>{Children.toArray((items as HistoricalOrder[]).map((item, index) => {
     const date = item.fill?.filledAt ?? item.order.createdAt
     const currency = item.fill?.walletImpact?.currency ?? item.order.instrument?.currency ?? 'EUR'
-    return <tr key={`order:${item.order.id}:fill:${item.fill?.id ?? index}`}><td data-label={tx('时间与资产', 'Time and asset')}><strong>{item.order.instrument?.name ?? item.order.ticker}</strong><small>{date ? new Date(date).toLocaleString(localeCode()) : tx('时间未知', 'Unknown time')} · {item.order.ticker.replace(/_.*/, '')}</small></td><td data-label={tx('方向 / 状态', 'Side / status')}><span className={`history-side ${item.order.side.toLowerCase()}`}>{item.order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')}</span><small>{item.order.status}</small></td><td data-label={tx('数量', 'Quantity')}>{decimal(item.fill?.quantity ?? item.order.filledQuantity ?? item.order.quantity, 4)}</td><td data-label={tx('成交价', 'Fill price')}>{item.fill?.price === undefined ? '—' : money(item.fill.price, item.order.instrument?.currency ?? currency)}</td><td data-label={tx('净额', 'Net value')}>{item.fill?.walletImpact?.netValue === undefined ? '—' : money(item.fill.walletImpact.netValue, currency)}</td></tr>
+    return <tr key={`order:${item.order.id}:fill:${item.fill?.id ?? index}`}><td data-label={tx('时间与资产', 'Time and asset')}><strong>{item.order.instrument?.name ?? item.order.ticker}</strong><small>{date ? new Date(date).toLocaleString(localeCode()) : tx('时间未知', 'Unknown time')} · {item.order.ticker.replace(/_.*/, '')}</small></td><td data-label={tx('方向 / 状态', 'Side / status')}><span className={`history-side ${item.order.side.toLowerCase()}`}>{item.order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')}</span><small>{item.order.status}</small></td><td data-label={tx('数量', 'Quantity')}>{decimal(item.fill?.quantity ?? item.order.filledQuantity ?? item.order.quantity, 4)}</td><td data-label={tx('成交价', 'Fill price')}>{item.fill?.price === undefined ? '-' : money(item.fill.price, item.order.instrument?.currency ?? currency)}</td><td data-label={tx('净额', 'Net value')}>{item.fill?.walletImpact?.netValue === undefined ? '-' : money(item.fill.walletImpact.netValue, currency)}</td></tr>
   }))}</tbody></table></div>
-  if (kind === 'dividends') return <div className="table-scroll"><table><thead><tr><th>{tx('日期与资产', 'Date and asset')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('每股', 'Per share')}</th><th>{tx('到账金额', 'Amount')}</th></tr></thead><tbody>{Children.toArray((items as Dividend[]).map(item => <tr key={item.reference}><td data-label={tx('日期与资产', 'Date and asset')}><strong>{item.instrument?.name ?? item.ticker}</strong><small>{new Date(item.paidOn).toLocaleDateString(localeCode())} · {item.ticker.replace(/_.*/, '')}</small></td><td data-label={tx('数量', 'Quantity')}>{decimal(item.quantity, 4)}</td><td data-label={tx('每股', 'Per share')}>{item.grossAmountPerShare === undefined ? '—' : decimal(item.grossAmountPerShare, 4)}</td><td data-label={tx('到账金额', 'Amount')} className="positive">+{money(item.amount, item.currency)}</td></tr>))}</tbody></table></div>
+  if (kind === 'dividends') return <div className="table-scroll"><table><thead><tr><th>{tx('日期与资产', 'Date and asset')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('每股', 'Per share')}</th><th>{tx('到账金额', 'Amount')}</th></tr></thead><tbody>{Children.toArray((items as Dividend[]).map(item => <tr key={item.reference}><td data-label={tx('日期与资产', 'Date and asset')}><strong>{item.instrument?.name ?? item.ticker}</strong><small>{new Date(item.paidOn).toLocaleDateString(localeCode())} · {item.ticker.replace(/_.*/, '')}</small></td><td data-label={tx('数量', 'Quantity')}>{decimal(item.quantity, 4)}</td><td data-label={tx('每股', 'Per share')}>{item.grossAmountPerShare === undefined ? '-' : decimal(item.grossAmountPerShare, 4)}</td><td data-label={tx('到账金额', 'Amount')} className="positive">+{money(item.amount, item.currency)}</td></tr>))}</tbody></table></div>
   return <div className="table-scroll"><table><thead><tr><th>{tx('时间与类型', 'Time and type')}</th><th>{tx('编号', 'Reference')}</th><th>{tx('金额', 'Amount')}</th></tr></thead><tbody>{Children.toArray((items as CashTransaction[]).map(item => <tr key={item.reference}><td data-label={tx('时间与类型', 'Time and type')}><strong>{transactionLabel(item.type)}</strong><small>{new Date(item.dateTime).toLocaleString(localeCode())}</small></td><td data-label={tx('编号', 'Reference')}><span className="history-reference">{item.reference}</span></td><td data-label={tx('金额', 'Amount')} className={item.amount >= 0 ? 'positive' : 'negative'}>{item.amount >= 0 ? '+' : ''}{money(item.amount, item.currency)}</td></tr>))}</tbody></table></div>
 }
 
@@ -602,7 +602,7 @@ const intervalLabel = (series: MarketSeries) => series.interval === '1d'
   ? tx('每日收盘价', 'Daily close')
   : tx(`${series.interval === '1m' ? '1分钟' : '5分钟'}价格 · 含盘前盘后`, `${series.interval === '1m' ? '1-minute' : '5-minute'} prices · Extended hours`)
 
-/* RangeSwitcher — 行内分段控件（DESIGN.md §4.8）。
+/* RangeSwitcher - 行内分段控件（DESIGN.md §4.8）。
    滑块经 translateX + 匹配宽度滑入（spring 缓动），绝不 absolute 覆盖图表画布。
    labels 复用现有 rangeLabel（返回 tx() 双语字符串）。 */
 function RangeSwitcher({ value, onChange, labels }: { value: MarketRange; onChange: (r: MarketRange) => void; labels: (r: MarketRange) => string }) {
@@ -728,7 +728,7 @@ function PriceHistoryChart({ series, orders, name, compact = false }: { series: 
     return () => { resize?.disconnect(); chart.dispose() }
   }, [candles, compact, end, name, series.currency, series.range, start, trades])
   return <section className="price-chart-panel" aria-labelledby="price-chart-title">
-    {!compact && <div className="section-heading"><div><h2 id="price-chart-title">{tx('历史价格与买卖点', 'Price history and trade markers')}</h2><p>{series.symbol} · {intervalLabel(series)} · {new Date(start).toLocaleDateString(localeCode())} – {new Date(end).toLocaleDateString(localeCode())} · {tx('纵轴聚焦价格区间', 'Scaled price axis')}</p></div><strong className={(change ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{money(last, series.currency)} <small>{percent(change)}</small></strong></div>}
+    {!compact && <div className="section-heading"><div><h2 id="price-chart-title">{tx('历史价格与买卖点', 'Price history and trade markers')}</h2><p>{series.symbol} · {intervalLabel(series)} · {new Date(start).toLocaleDateString(localeCode())} - {new Date(end).toLocaleDateString(localeCode())} · {tx('纵轴聚焦价格区间', 'Scaled price axis')}</p></div><strong className={(change ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{money(last, series.currency)} <small>{percent(change)}</small></strong></div>}
     {!compact && <p className="chart-count">{tx(`区间内 ${trades.length} 个 Trading 212 成交点 · 可拖动底部滑块或双指缩放`, `${trades.length} Trading 212 trades in range · Drag the slider or pinch to zoom`)}</p>}
     <div ref={chartRef} className="price-chart" role="img" aria-label={compact ? tx(`${name} ${rangeLabel(series.range)}历史价格曲线`, `${name} price chart`) : tx(`${name} ${rangeLabel(series.range)}历史价格曲线，包含 ${trades.length} 个买卖成交点`, `${name} ${rangeLabel(series.range)} price chart with ${trades.length} trade markers`)} />
     <div className="sr-only" aria-label="成交点明细">{trades.map(trade => <span key={trade.key}>{trade.side === 'BUY' ? '买入' : '卖出'}，{new Date(trade.filledAt).toLocaleString('zh-CN')}，成交价 {money(trade.price, series.currency)}，{decimal(trade.quantity, 4)} 股</span>)}</div>
@@ -829,7 +829,7 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hide
           </div>
           <div className="inv-metric-row">
             <span>{tx('平均买入价', 'AVERAGE PRICE')}</span>
-            <strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '—' : money(position.averagePricePaid, currency))}</strong>
+            <strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '-' : money(position.averagePricePaid, currency))}</strong>
           </div>
           <div className="inv-metric-row">
             <span>{tx('持仓成本', 'COST')}</span>
@@ -907,7 +907,7 @@ function InstrumentDetailPage({ position, accountCurrency, hideBalances = false,
         <div className="invest-row"><span>{tx('当前市值', 'VALUE')}</span><strong className="js-balance">{hideBalances ? '••••••' : money(position.walletImpact?.currentValue, accountCurrency)}</strong></div>
         <div className="invest-row"><span>{tx('未实现收益', 'RETURN')}</span><strong className={profit >= 0 ? 'tone-positive' : 'tone-negative'}>{hideBalances ? '••••' : signedMoney(profit, accountCurrency)} <small>({hideBalances ? '••••' : percent(cost ? profit / cost * 100 : undefined)})</small></strong></div>
         <div className="invest-row"><span>{tx('持股数量', 'SHARES')}</span><strong>{hideBalances ? '••••' : decimal(position.quantity, 4)} <small>({tx('可交易', 'Tradable')} {hideBalances ? '••••' : decimal(position.quantityAvailableForTrading, 4)})</small></strong></div>
-        <div className="invest-row"><span>{tx('平均买入价', 'AVERAGE PRICE')}</span><strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '—' : money(position.averagePricePaid, currency))}</strong></div>
+        <div className="invest-row"><span>{tx('平均买入价', 'AVERAGE PRICE')}</span><strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '-' : money(position.averagePricePaid, currency))}</strong></div>
         <div className="invest-row"><span>{tx('持仓成本', 'COST')}</span><strong className="js-balance">{hideBalances ? '••••••' : money(cost, accountCurrency)}</strong></div>
       </div>
     </section>
@@ -956,8 +956,8 @@ function HistorySummary({ kind, items }: { kind: HistoryKind; items: HistoryItem
   }
   const chartRows = [...byAsset].map(([key, item]) => ({ key, label: item.label, detail: tx(`${item.count} 笔`, `${item.count} payments`), value: item.value })).sort((a, b) => b.value - a.value).slice(0, 6)
   const dates = rows.map(item => new Date(item.paidOn).getTime()).filter(Number.isFinite)
-  const range = dates.length ? `${new Date(Math.min(...dates)).toLocaleDateString(localeCode())} – ${new Date(Math.max(...dates)).toLocaleDateString(localeCode())}` : undefined
-  return <><section className="history-metrics"><Metric label={tx('已加载记录', 'Loaded records')} value={tx(`${rows.length} 笔`, `${rows.length}`)} note={tx('当前分页样本', 'Current loaded sample')} /><Metric label={tx('派息资产', 'Paying assets')} value={tx(`${tickers} 个`, `${tickers}`)} /><Metric label={tx('覆盖区间', 'Date range')} value={range ?? '—'} /></section>{chartRows.length >= 4 && <section className="history-chart"><div className="section-heading"><div><h2>{tx('分红来源', 'Dividend sources')}</h2><p>{tx('当前已加载记录 · 按到账金额排名', 'Loaded records · Ranked by amount received')}</p></div></div><BarList rows={chartRows} currency={currency} ariaLabel={tx('当前已加载分红记录按资产汇总', 'Loaded dividends grouped by asset')} /></section>}</>
+  const range = dates.length ? `${new Date(Math.min(...dates)).toLocaleDateString(localeCode())} - ${new Date(Math.max(...dates)).toLocaleDateString(localeCode())}` : undefined
+  return <><section className="history-metrics"><Metric label={tx('已加载记录', 'Loaded records')} value={tx(`${rows.length} 笔`, `${rows.length}`)} note={tx('当前分页样本', 'Current loaded sample')} /><Metric label={tx('派息资产', 'Paying assets')} value={tx(`${tickers} 个`, `${tickers}`)} /><Metric label={tx('覆盖区间', 'Date range')} value={range ?? '-'} /></section>{chartRows.length >= 4 && <section className="history-chart"><div className="section-heading"><div><h2>{tx('分红来源', 'Dividend sources')}</h2><p>{tx('当前已加载记录 · 按到账金额排名', 'Loaded records · Ranked by amount received')}</p></div></div><BarList rows={chartRows} currency={currency} ariaLabel={tx('当前已加载分红记录按资产汇总', 'Loaded dividends grouped by asset')} /></section>}</>
 }
 
 function HistoryPage() {
