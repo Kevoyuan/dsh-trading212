@@ -862,7 +862,7 @@ fieldset{ border: 0; }
 .instrument-history, .history-metrics, .history-side, .history-chart, .trade-timeline, .timeline-chart{
   display: grid; row-gap: var(--g-3); align-content: start;
 }
-.cockpit-pending-section, .cockpit-orders-list, .investment-grid, .allocation-list{ display: grid; row-gap: var(--g-2); }
+.cockpit-pending-section, .cockpit-orders-list, .investment-grid{ display: grid; row-gap: var(--g-2); }
 .cockpit-order-row{ display: grid; row-gap: var(--s-1); padding: 14px 0; border-bottom: 1px solid var(--hair); }
 .shortcuts-modal-grid{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--g-4); row-gap: var(--g-2); }
 
@@ -1058,7 +1058,7 @@ input[type="radio"], input[type="checkbox"]{ accent-color:var(--accent); }
 
 /* ---- 21.3 fixed-size grids must be allowed to collapse below their min track ---- */
 .inv-metrics-list, .history-metrics, .shortcuts-modal-grid, .cockpit-sub-analytics-grid,
-.exposure-summary, .portfolio-stat-grid, .allocation-list-head{ min-width:0; }
+.exposure-summary, .portfolio-stat-grid{ min-width:0; }
 .inv-metrics-list{ grid-template-columns:repeat(auto-fit, minmax(min(150px, 100%), 1fr)); }
 .history-metrics{ grid-template-columns:repeat(auto-fit, minmax(min(180px, 100%), 1fr)); }
 .shortcuts-modal-grid{ grid-template-columns:repeat(auto-fit, minmax(min(190px, 100%), 1fr)); }
@@ -1338,7 +1338,6 @@ img, svg, video, canvas{ max-width:100%; }
 }
 .empty-state strong{ font-size:var(--fs-row); font-weight:620; color:var(--ink-1); }
 .empty-state span, .empty-inline span{ max-width:52ch; }
-.empty-inline.order-empty{ padding:var(--g-5); }
 
 /* ---- 20.4 dialogs, toast, shortcuts modal ---- */
 .dialog-backdrop, .shortcuts-modal-backdrop{
@@ -1508,46 +1507,7 @@ img, svg, video, canvas{ max-width:100%; }
 .instrument-price-action > small{ font-size:var(--fs-micro); font-weight:620; }
 
 /* ---- 20.8 allocation + treemap extras ---- */
-.treemap-wrapper{ position:relative; display:flex; flex-direction:column; gap:var(--g-2); }
-.treemap-see-all, .cockpit-see-all-btn{
-  display:inline-flex; align-items:center; gap:var(--s-1);
-  align-self:flex-start; padding:var(--s-1) 0;
-  /* --accent-deep, not --accent: this sits on the --well plate at 12px, where the
-     lighter accent lands at 4.45:1. Deep ink is the same hue with real margin. */
-  font-size:var(--fs-micro); font-weight:640; color:var(--accent-deep);
-  transition:color var(--d-2) var(--ease);
-}
-.treemap-see-all:hover, .cockpit-see-all-btn:hover{ color:var(--ink-1); }
 .dynamic-tile{ cursor:pointer; }
-.allocation{ display:flex; flex-direction:column; gap:var(--g-2); }
-.allocation-track, .allocation-list-track{
-  display:flex; width:100%; height:8px; overflow:hidden;
-  background:var(--well); border-radius:var(--r-pill);
-}
-.allocation-track i, .allocation-list-track i{ display:block; height:100%; }
-.allocation-legend{ display:flex; flex-wrap:wrap; gap:var(--g-3); }
-.allocation-legend > span{ display:inline-flex; align-items:center; gap:var(--s-2); font-size:var(--fs-micro); color:var(--ink-2); }
-.allocation-legend i{ width:8px; height:8px; border-radius:var(--r-pill); }
-.allocation-legend b{ font-weight:620; }
-.allocation-legend em{ font-style:normal; color:var(--ink-3); }
-.allocation-list{ display:flex; flex-direction:column; gap:var(--g-2); }
-.allocation-list-head, .allocation-list-rows > div{
-  display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:center; gap:var(--g-3);
-}
-.allocation-list-head{ padding-bottom:var(--s-1); border-bottom:1px solid var(--hair); font-size:var(--fs-micro); font-weight:620; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
-.allocation-list-rows{ display:flex; flex-direction:column; }
-.allocation-list-rows > div{ padding:var(--g-2) 0; border-bottom:1px solid var(--hair); }
-.allocation-list-rows > div:last-child{ border-bottom:0; }
-.allocation-list-asset{ display:flex; align-items:center; gap:var(--s-2); min-width:0; }
-.allocation-list-asset i{ width:8px; height:8px; flex:0 0 8px; border-radius:var(--r-pill); }
-.allocation-list-asset b{ font-weight:620; }
-.allocation-list-asset small{ color:var(--ink-3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.allocation-list-all{
-  align-self:flex-start; padding:var(--s-1) 0;
-  font-size:var(--fs-micro); font-weight:640; color:var(--accent);
-  transition:color var(--d-2) var(--ease);
-}
-.allocation-list-all:hover{ color:var(--accent-deep); }
 
 /* ---- 20.9 table + chart misc ---- */
 .asset-link{

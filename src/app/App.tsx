@@ -1,8 +1,8 @@
 import { Children, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { createChart, createSeriesMarkers, CrosshairMode, LineSeries, LineStyle, type IChartApi, type LineData, type MouseEventParams, type SeriesMarker, type Time, type UTCTimestamp } from 'lightweight-charts'
 import {
-  AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Bell, BriefcaseBusiness, Check, ChevronDown, CircleDollarSign, CircleHelp, Clipboard, Eye, EyeOff,
-  History as HistoryIcon, Layers3, LayoutDashboard, LoaderCircle, Menu, Moon, Plus, RefreshCw, Search, Settings, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Unplug, X,
+  AlertTriangle, ArrowLeft, ArrowRight, BriefcaseBusiness, Check, ChevronDown, CircleHelp, Clipboard, Eye, EyeOff,
+  History as HistoryIcon, LayoutDashboard, LoaderCircle, Moon, RefreshCw, Search, Settings, ShieldCheck, Sun, Unplug,
 } from 'lucide-react'
 import { ApiError, api, diagnosticText } from './api.ts'
 import { copyText } from './clipboard.ts'
@@ -215,8 +215,6 @@ function SetupPage({ onConnected }: { onConnected: (status: ConnectionStatus, sn
   return <main className="setup-page"><ConnectionForm onConnected={onConnected} /><aside className="setup-guide"><h2>{tx('创建密钥时请选择', 'Select these key permissions')}</h2><ol><li>{tx('账户摘要读取权限', 'Read account summary')}</li><li>{tx('投资组合读取权限', 'Read portfolio')}</li><li>{tx('订单读取权限', 'Read orders')}</li><li>{tx('历史数据读取权限', 'Read history')}</li></ol><p>{tx('不要授予下单、修改或取消订单权限。如果启用了 IP 限制，请允许当前运行 dsh 的设备。', 'Do not grant permissions to place, modify, or cancel orders. If IP restrictions are enabled, allow the device running dsh.')}</p></aside></main>
 }
 
-const palette = ['#2563EB', '#10B981', '#8B5CF6', '#F59E0B', '#F43F5E', '#06B6D4', '#64748B']
-
 function TickerRingLogo({ ticker, weightPercent }: { ticker: string; weightPercent?: number }) {
   const clean = tickerLabel(ticker)
   const initial = clean.slice(0, 2).toUpperCase()
@@ -403,102 +401,6 @@ function DynamicTreemapGrid({
   )
 }
 
-function AllocationTreemap({
-  portfolio,
-  metricMode = 'daily',
-  onHoldings,
-  onSelect,
-}: {
-  portfolio: PortfolioSnapshot
-  metricMode?: TreemapMetricMode
-  onHoldings?: () => void
-  onSelect?: (position: Position) => void
-}) {
-  const source = portfolio.analytics.allocation
-  if (source.length === 0) return null
-  return (
-    <div className="treemap-wrapper">
-      <DynamicTreemapGrid
-        allocation={source}
-        metricMode={metricMode}
-        currency={portfolio.account.currency}
-        onSelect={ticker => {
-          const pos = portfolio.positions.find(p => p.instrument?.ticker === ticker)
-          if (pos && onSelect) onSelect(pos)
-        }}
-      />
-      {onHoldings && (
-        <button className="treemap-see-all" type="button" onClick={onHoldings}>
-          <span>{tx('查看全部持仓', 'See all holdings')}</span>
-          <span className="btn-action-chevron" aria-hidden="true">›</span>
-        </button>
-      )}
-    </div>
-  )
-}
-
-function AllocationList({
-  portfolio,
-  activeTicker,
-  hideBalances,
-  onHoldings,
-  onSelect,
-}: {
-  portfolio: PortfolioSnapshot
-  activeTicker?: string
-  hideBalances: boolean
-  onHoldings: () => void
-  onSelect: (ticker: string) => void
-}) {
-  const currency = portfolio.account.currency
-  const rows = portfolio.analytics.allocation.slice(0, 6)
-  if (rows.length === 0) return <div className="empty-inline">{tx('目前没有持仓', 'No holdings yet')}</div>
-
-  return <div className="allocation-list">
-    <div
-      className="allocation-list-track"
-      role="img"
-      aria-label={rows.map(item => `${item.name} ${plainPercent(item.weightPercent)}`).join('，')}
-    >
-      {rows.map((item, index) => <i key={item.ticker} style={{ width: `${Math.max(item.weightPercent, .5)}%`, background: palette[index] }} />)}
-    </div>
-    <div className="allocation-list-head" aria-hidden="true">
-      <span>{tx('资产', 'Asset')}</span><span>{tx('占比', 'Weight')}</span><span>{tx('价值', 'Value')}</span>
-    </div>
-    <div className="allocation-list-rows">
-      {rows.map((item, index) => <button
-        key={item.ticker}
-        type="button"
-        className={item.ticker === activeTicker ? 'selected' : ''}
-        onClick={() => onSelect(item.ticker)}
-      >
-        <span className="allocation-list-asset"><i style={{ background: palette[index] }} /><b>{tickerLabel(item.ticker)}</b><small>{item.name}</small></span>
-        <strong>{plainPercent(item.weightPercent)}</strong>
-        <em>{hideBalances ? '••••' : money(item.currentValue, currency)}</em>
-      </button>)}
-    </div>
-    <button className="allocation-list-all" type="button" onClick={onHoldings}>{tx('查看全部持仓', 'View all holdings')}</button>
-  </div>
-}
-
-function Allocation({ portfolio, onHoldings, onSelect }: { portfolio: PortfolioSnapshot; onHoldings?: () => void; onSelect?: (position: Position) => void }) {
-  const currency = portfolio.account.currency
-  const source = portfolio.analytics.allocation
-  if (source.length === 0) return <div className="empty-inline">{tx('目前没有持仓', 'No holdings yet')}</div>
-  const leading = source.slice(0, 5)
-  const other = source.slice(5)
-  const rows = other.length === 0 ? leading : [...leading, {
-    ticker: 'other', name: tx(`其他 ${other.length} 项`, `${other.length} others`), instrumentCurrency: currency,
-    currentValue: other.reduce((sum, item) => sum + item.currentValue, 0), totalCost: 0,
-    unrealizedProfitLoss: 0, fxImpact: 0, weightPercent: other.reduce((sum, item) => sum + item.weightPercent, 0),
-  }]
-  return <div className="allocation" aria-label={tx('持仓市值构成', 'Holding value allocation')}>
-    <AllocationTreemap portfolio={portfolio} onHoldings={onHoldings} onSelect={onSelect} />
-    <div className="allocation-track" role="img" aria-label={rows.map(item => `${item.name} ${plainPercent(item.weightPercent)}`).join('，')}>{rows.map((item, index) => <i key={item.ticker} style={{ width: `${Math.max(item.weightPercent, .4)}%`, background: palette[index] }} />)}</div>
-    <div className="allocation-legend">{rows.map((item, index) => <span key={item.ticker}><i style={{ background: palette[index] }} /><b>{item.name}</b><em>{money(item.currentValue, currency)} · {plainPercent(item.weightPercent)}</em></span>)}</div>
-  </div>
-}
-
 function BarList({ rows, currency, signed = false, ariaLabel }: { rows: Array<{ key: string; label: string; detail?: string; value: number }>; currency: string; signed?: boolean; ariaLabel: string }) {
   const max = Math.max(...rows.map(row => Math.abs(row.value)), 1)
   if (rows.length === 0) return <div className="empty-inline">{tx('暂无足够数据', 'Not enough data')}</div>
@@ -590,17 +492,6 @@ const orderStatusLabel = (status: string) => ({
   LOCAL: tx('本地待提交', 'Local'),
   UNCONFIRMED: tx('待确认', 'Unconfirmed'),
 } as Record<string, string>)[status] ?? status
-
-function PendingOrders({ orders, currency }: { orders: PortfolioSnapshot['pendingOrders']; currency: string }) {
-  if (orders.length === 0) return <div className="empty-inline order-empty">{tx('没有待处理订单', 'No pending orders')}</div>
-  return <div className="table-scroll"><table><thead><tr><th>{tx('资产与时间', 'Asset and time')}</th><th>{tx('方向 / 类型', 'Side / type')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('限价 / 止损', 'Limit / stop')}</th><th>{tx('状态', 'Status')}</th></tr></thead><tbody>{orders.map(order => <tr key={order.id}>
-    <td data-label={tx('资产与时间', 'Asset and time')}><div className="asset-cell"><TickerRingLogo ticker={order.ticker} /><div className="asset-text"><strong>{order.instrument?.name ?? order.ticker}</strong><small>{order.createdAt ? new Date(order.createdAt).toLocaleString(localeCode()) : tickerLabel(order.ticker)} · {order.initiatedFrom ?? tx('来源未知', 'Unknown source')}</small></div></div></td>
-    <td data-label={tx('方向 / 类型', 'Side / type')}><span className={`history-side ${order.side.toLowerCase()}`}>{order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')}</span><small>{order.type}{order.extendedHours ? tx(' · 含延长交易时段', ' · Extended hours') : ''}</small></td>
-    <td data-label={tx('数量', 'Quantity')}>{decimal(order.quantity, 4)}<small>{tx('已成交', 'Filled')} {decimal(order.filledQuantity, 4)}</small></td>
-    <td data-label="限价 / 止损"><strong>{order.limitPrice === undefined ? '-' : money(order.limitPrice, order.instrument?.currency ?? order.currency ?? currency)}</strong><small>{order.stopPrice === undefined ? '-' : money(order.stopPrice, order.instrument?.currency ?? order.currency ?? currency)}</small></td>
-    <td data-label="状态"><strong>{orderStatusLabel(order.status)}</strong><small>{order.timeInForce ?? order.strategy ?? '-'}</small></td>
-  </tr>)}</tbody></table></div>
-}
 
 const historyLabel = (kind: HistoryKind) => ({ orders: tx('历史订单', 'Orders'), transactions: tx('资金流水', 'Cash activity'), dividends: tx('分红', 'Dividends') })[kind]
 const transactionLabel = (type: string) => ({
@@ -959,7 +850,7 @@ function Metric({ label, value, note, tone }: { label: string; value: string; no
   return <div className="metric-card"><span>{label}</span><strong className={tone === 'positive' ? 'tone-positive' : tone === 'negative' ? 'tone-negative' : ''}>{value}</strong>{note && <small>{note}</small>}</div>
 }
 
-function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hideBalances = false, onSelect }: { position: Position; accountCurrency: string; portfolioTotal?: number; hideBalances?: boolean; onSelect?: (position: Position) => void }) {
+function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hideBalances = false }: { position: Position; accountCurrency: string; portfolioTotal?: number; hideBalances?: boolean }) {
   const ticker = position.instrument?.ticker ?? ''
   const name = position.instrument?.name ?? tickerLabel(ticker)
   const currency = position.instrument?.currency ?? accountCurrency
@@ -1179,7 +1070,6 @@ function HistorySummary({ kind, items }: { kind: HistoryKind; items: HistoryItem
   }
   const rows = items as Dividend[]
   const currency = rows[0]?.currency ?? 'EUR'
-  const total = rows.reduce((sum, item) => sum + item.amount, 0)
   const tickers = new Set(rows.map(item => item.ticker)).size
   const byAsset = new Map<string, { label: string; value: number; count: number }>()
   for (const item of rows) {
@@ -1468,7 +1358,7 @@ function OverviewPage({
       {/* 右侧深度 Cockpit 详情主屏 Right Main */}
       <main className="cockpit-main-pane">
         {activePosition ? (
-          <CockpitInstrumentView position={activePosition} accountCurrency={currency} portfolioTotal={analytics.totalValue} hideBalances={hideBalances} onSelect={onInstrument} />
+          <CockpitInstrumentView position={activePosition} accountCurrency={currency} portfolioTotal={analytics.totalValue} hideBalances={hideBalances} />
         ) : (
           <div className="empty-inline">{tx('目前没有持仓', 'No holdings yet')}</div>
         )}
