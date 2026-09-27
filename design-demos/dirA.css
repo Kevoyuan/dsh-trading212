@@ -1,0 +1,1018 @@
+/* =============================================================================
+   MERIDIAN — dsh × Trading 212 · institutional editorial (light)
+   One system, one file. Numbered sections; no override layers, no !important.
+   -----------------------------------------------------------------------------
+   01 · TOKENS            06 · HERO PLATE        11 · ALLOCATION MOSAIC
+   02 · RESET & BASE      07 · CONTEXT RAIL      12 · ASK BAND
+   03 · TYPE              08 · BODY GRID         13 · COLOPHON & RAIL
+   04 · RULES & ELEVATION 09 · LEDGER COLUMN     14 · CONTROLS
+   05 · MASTHEAD          10 · INSIGHT COLUMN    15 · MOTION · 16 · RESPONSIVE · 17 · DARK
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   01 · TOKENS
+   Type scale  ≈1.2 modular, base 14px:  12 · 12.5 · 14 · 15 · 18 · 28 · 46
+   Space scale 4px grid:                 4 · 8 · 12 · 16 · 24 · (32 · 40 gaps)
+   Radii 3 (3 / 6 / 999) · Hairlines 3 · Shadows 2 · Easing 1 · Durations 2
+--------------------------------------------------------------------------- */
+:root {
+  /* surface — warm porcelain, never cool grey */
+  --canvas:  #FAFAF7;
+  --plate:   #FFFFFF;
+  --wash:    #F3F2ED;
+
+  /* ink — warm near-black, not navy */
+  --ink:     #1A1915;
+  --ink-2:   #504C44;
+  --ink-3:   #6B665A;
+
+  /* one deep, desaturated accent (navy family, editorial not bright) */
+  --accent:  #123A5E;
+  --on-accent: #FFFFFF;
+
+  /* finance semantics — accessible on their own surface */
+  --pos:     #0F6B3F;
+  --neg:     #A32318;
+  --mark-sell: #8A5A12;
+  --positive-bright: #0F6B3F;   /* compat: inline style in shell markup */
+  --negative-bright: #A32318;   /* compat: inline style in shell markup */
+
+  /* hairlines + state washes */
+  --rule:        rgba(26, 25, 21, 0.10);
+  --rule-strong: rgba(26, 25, 21, 0.26);
+  --hover:       rgba(26, 25, 21, 0.045);
+  --selected:    rgba(18, 58, 94, 0.07);
+
+  /* type */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+  --fs-display: 46px;
+  --fs-h1:      28px;
+  --fs-h2:      18px;
+  --fs-lg:      15px;
+  --fs-body:    14px;
+  --fs-sm:      12.5px;
+  --fs-micro:   12px;
+
+  /* space */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* form */
+  --radius-ctl:   3px;
+  --radius-plate: 6px;
+  --radius-pill:  999px;
+  --shadow-plate:  0 1px 2px rgba(26, 25, 21, 0.05), 0 1px 1px rgba(26, 25, 21, 0.03);
+  --shadow-figure: 0 2px 6px rgba(26, 25, 21, 0.05), 0 18px 40px -24px rgba(26, 25, 21, 0.22);
+
+  /* motion — one curve, two durations */
+  --ease:      cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur:       380ms;
+  --dur-rise:  460ms;
+
+  /* measure: content never exceeds 1280px, gutters never below 24px */
+  --gutter: max(24px, calc((100% - 1280px) / 2));
+}
+
+/* ---------------------------------------------------------------------------
+   02 · RESET & BASE
+--------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  background: var(--canvas);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* form controls inherit the system instead of the UA's 13.3333px Arial */
+button, input, select, textarea {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  font-variant-numeric: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  appearance: none;
+}
+button { cursor: pointer; text-align: left; }
+
+h1, h2, h3, h4, p, figure { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+table { border-collapse: collapse; border-spacing: 0; }
+svg { display: block; }
+kbd { font-family: var(--font-mono); }
+
+.t212-native-app-root {
+  min-height: 100dvh;
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+/* figures are always tabular — money never shimmers */
+.js-balance,
+.account-hero-val,
+.pot-val,
+.sub-metric-block strong,
+.metric-card strong,
+.inv-metric-row strong,
+.pos-stream-num-col strong,
+.inst-price-main,
+.inst-price-sub,
+.holdings-table td,
+.exposure-summary span,
+.bar-row b,
+.tile-percent,
+.tile-weight,
+.tile-daypl,
+.invest-sum-val,
+.portfolio-context-strip b,
+.section-heading > strong,
+.chart-legend,
+.price-chart text {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* ---------------------------------------------------------------------------
+   03 · TYPE
+--------------------------------------------------------------------------- */
+h1, h2, h3 { font-weight: 600; letter-spacing: -0.011em; line-height: 1.25; }
+h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-h2); }
+p  { text-wrap: pretty; }
+
+.account-label,
+.pot-label,
+.sub-metric-block span,
+.section-caption,
+.bar-label small,
+.pot-sub,
+.t212-legal-disclaimer,
+.legal,
+.chart-count,
+.ask-banner span,
+.ai-strip-title,
+.exposure-summary small,
+.holdings-table small {
+  font-size: var(--fs-sm);
+  color: var(--ink-3);
+  letter-spacing: 0.03em;
+}
+
+.invest-title-text { font-size: var(--fs-sm); font-weight: 700; letter-spacing: 0.16em; color: var(--ink); }
+.invest-env-badge {
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+  background: var(--wash);
+  padding: 4px 8px;
+  border-radius: var(--radius-ctl);
+}
+.inst-ticker-tag,
+.tile-ticker {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+/* finance semantics — colour is never the only cue: every toned figure also
+   carries an explicit +/− sign, and the mosaic adds a ▲/▼ mark. */
+.tone-positive,
+.holdings-table td.positive { color: var(--pos); }
+.tone-negative,
+.holdings-table td.negative { color: var(--neg); }
+
+/* ---------------------------------------------------------------------------
+   04 · RULES, PLATES, ELEVATION
+   Plate = white sheet + hairline + soft shadow. Exactly two on this page.
+   Everything else sits directly on the canvas, separated by rule + rhythm.
+--------------------------------------------------------------------------- */
+.cockpit-account-card,
+.price-chart-panel {
+  background: var(--plate);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-plate);
+  padding: 28px 32px;
+}
+.cockpit-account-card { box-shadow: var(--shadow-plate); }
+.price-chart-panel   { box-shadow: var(--shadow-figure); }
+
+/* section rules: strong above a section, light between ledger rows */
+.your-investment-cockpit,
+.cockpit-holdings-preview,
+.cockpit-investments-section,
+.cockpit-treemap-section,
+.sub-panel,
+.cockpit-cash-summary,
+.cockpit-analytics-strip,
+.cockpit-colophon,
+.pro-shortcuts-hud {
+  border-top: 1px solid var(--rule-strong);
+  padding-top: var(--space-6);
+}
+.cockpit-analytics-strip,
+.cockpit-colophon,
+.pro-shortcuts-hud { border-top-color: var(--rule); }
+
+/* ---------------------------------------------------------------------------
+   05 · MASTHEAD — flat, canvas-coloured, one bottom hairline, static
+--------------------------------------------------------------------------- */
+.t212-native-topbar {
+  display: grid;
+  grid-template-columns: var(--gutter) auto minmax(0, 1fr) auto var(--gutter);
+  align-items: center;
+  column-gap: 24px;
+  height: 57px;
+  background: var(--canvas);
+  border-bottom: 1px solid var(--rule);
+}
+
+.topbar-left-zone  { grid-column: 2; display: flex; align-items: center; }
+.topbar-center-nav { grid-column: 3; }
+.topbar-right-zone { grid-column: 4; }
+
+.t212-invest-brand-pill {
+  display: inline-flex;
+  align-items: center;
+  column-gap: 8px;
+  height: 32px;
+  color: var(--ink);
+}
+.invest-triangle-glyph { font-size: var(--fs-micro); line-height: 1; color: var(--accent); }
+.t212-invest-brand-pill:hover .invest-title-text { color: var(--accent); }
+.t212-invest-brand-pill:active { transform: translateY(1px); }
+.invest-chevron-icon  { color: var(--ink-3); }
+
+.topbar-center-nav {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  column-gap: 4px;
+  justify-self: center;
+}
+.topbar-nav-tab {
+  display: inline-flex;
+  align-items: center;
+  column-gap: 8px;
+  height: 56px;
+  padding-inline: 12px;
+  font-size: var(--fs-body);
+  color: var(--ink-2);
+  border-bottom: 2px solid transparent;
+}
+.topbar-nav-tab svg { color: var(--ink-3); flex: none; }
+.topbar-nav-tab:hover { color: var(--ink); border-bottom-color: var(--rule-strong); }
+.topbar-nav-tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+.topbar-nav-tab.active svg { color: var(--accent); }
+
+.topbar-right-zone {
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+  justify-self: end;
+}
+.topbar-search-slot {
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+  height: 32px;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--rule);
+}
+.topbar-search-slot:focus-within { color: var(--accent); border-bottom-color: var(--accent); }
+.topbar-search-field { width: 168px; height: 31px; color: var(--ink); }
+.topbar-search-field::placeholder { color: var(--ink-3); }
+
+.topbar-tool-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: var(--ink-2);
+  border-radius: var(--radius-ctl);
+}
+.topbar-tool-btn:hover { background: var(--hover); color: var(--ink); }
+.topbar-tool-btn:active { transform: translateY(1px); }
+
+/* ---------------------------------------------------------------------------
+   06 · HERO PLATE — the 120% detail: biggest number on the page on the same
+   baseline as a ruled KPI rail
+--------------------------------------------------------------------------- */
+.t212-cockpit-layout {
+  margin-inline: var(--gutter);
+  padding-block: var(--space-6) var(--space-10);
+}
+
+.cockpit-account-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  grid-template-areas:
+    "head   head"
+    "figure rail";
+  grid-template-rows: auto auto;
+  column-gap: 56px;
+  row-gap: 12px;
+}
+.account-card-header {
+  grid-area: head;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 16px;
+}
+.icon-btn-ghost {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--ink-3);
+  border-radius: var(--radius-ctl);
+}
+.icon-btn-ghost:hover { background: var(--hover); color: var(--ink); }
+
+.account-hero-val {
+  grid-area: figure;
+  align-self: end;
+  font-size: var(--fs-display);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.022em;
+  color: var(--ink);
+}
+
+.account-sub-metrics-grid {
+  grid-area: rail;
+  align-self: start;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 48px;
+  border-top: 1px solid var(--rule-strong);
+  padding-top: var(--space-4);
+}
+.sub-metric-block { display: grid; row-gap: var(--space-1); align-content: start; }
+.sub-metric-block strong {
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  line-height: 1.2;
+}
+
+/* ---------------------------------------------------------------------------
+   07 · CONTEXT RAIL — full-width ledger tape between plate and body
+--------------------------------------------------------------------------- */
+.portfolio-context-strip {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: space-between;
+  column-gap: 32px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding-block: var(--space-4);
+  margin-top: var(--space-6);
+  color: var(--ink-3);
+}
+.portfolio-context-strip span { font-size: var(--fs-sm); letter-spacing: 0.03em; }
+.portfolio-context-strip b { color: var(--ink); font-weight: 600; }
+
+/* hide-balances (eye toggle) — a designed redaction, not a bug */
+.hide-balances .js-balance {
+  color: transparent;
+  background-color: var(--ink);
+  border-radius: var(--radius-ctl);
+  opacity: 0.86;
+}
+
+/* ---------------------------------------------------------------------------
+   08 · BODY GRID — the editorial split: ledger 8 / insight 4
+--------------------------------------------------------------------------- */
+.cockpit-body-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 40px;
+  row-gap: var(--space-6);
+  margin-top: var(--space-10);
+}
+.cockpit-ledger  { grid-column: 1 / span 8; }
+.cockpit-insight { grid-column: 9 / -1; }
+.cockpit-holdings-preview { grid-column: 1 / -1; min-width: 0; }
+.cockpit-ledger > *,
+.cockpit-insight > * { min-width: 0; }
+
+.cockpit-ledger,
+.cockpit-insight,
+.cockpit-instrument-container {
+  display: grid;
+  align-content: start;
+  row-gap: var(--space-6);
+  min-width: 0;
+}
+.cockpit-instrument-container > * { min-width: 0; }
+
+/* ---------------------------------------------------------------------------
+   09 · LEDGER COLUMN — identity, chart plate, metrics, holdings of record
+--------------------------------------------------------------------------- */
+.cockpit-inst-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  column-gap: 32px;
+  align-items: end;
+}
+.inst-profile { display: flex; align-items: center; column-gap: 16px; min-width: 0; }
+.inst-tag-row { display: inline-block; border-top: 1px solid var(--accent); padding-top: var(--space-2); }
+.inst-title { margin-top: 2px; }
+.inst-price-box { display: grid; row-gap: var(--space-1); justify-items: end; }
+.inst-price-main {
+  font-size: var(--fs-h1);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.inst-price-sub { font-size: var(--fs-sm); letter-spacing: 0.02em; }
+.inst-actions { align-self: start; }
+.read-only-status {
+  display: inline-block;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  background: var(--wash);
+  padding: 4px 8px;
+  border-radius: var(--radius-ctl);
+  white-space: nowrap;
+}
+
+/* ticker ring — the initials fallback is a designed monogram, not a fallback */
+.ticker-ring-logo { position: relative; flex: none; width: 34px; height: 34px; }
+.ring-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ring-track    { fill: none; stroke: var(--rule); stroke-width: 1.5; }
+.ring-progress { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round;
+                 transform: rotate(-90deg); transform-origin: 50% 50%; }
+.ticker-avatar {
+  position: absolute;
+  inset: 14%;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--wash);
+  color: var(--ink-2);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.ticker-ring-logo img { position: absolute; inset: 14%; width: 72%; height: 72%; border-radius: var(--radius-pill); object-fit: cover; }
+.cockpit-inst-head .ticker-ring-logo { width: 44px; height: 44px; }
+.cockpit-inst-head .ticker-avatar { font-size: var(--fs-body); }
+
+/* range switcher — text + a sliding 2px rule, not pills */
+.range-switcher {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  border-bottom: 1px solid var(--rule);
+  margin-top: var(--space-6);
+}
+.range-switcher button {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 36px;
+  font-size: var(--fs-body);
+  color: var(--ink-3);
+}
+.range-switcher button:hover { color: var(--ink-2); }
+.range-switcher button.active { color: var(--accent); font-weight: 600; }
+.range-thumb {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+}
+
+/* chart plate */
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: 24px;
+}
+.section-heading p { margin-top: 2px; }
+.section-heading > strong { font-size: var(--fs-h2); font-weight: 600; }
+.section-heading > strong small { font-size: var(--fs-sm); font-weight: 500; margin-left: 4px; }
+
+.chart-legend {
+  display: flex;
+  align-items: center;
+  column-gap: 16px;
+  margin-top: var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+.chart-legend span { display: inline-flex; align-items: center; column-gap: 6px; }
+.legend-dot { display: block; width: 10px; height: 10px; }
+.legend-dot.close { width: 14px; height: 2px; background: var(--accent); }
+.legend-dot.buy   { background: var(--pos); border-radius: var(--radius-ctl); }
+.legend-dot.sell  { background: var(--mark-sell); clip-path: polygon(50% 0%, 100% 100%, 0% 100%); }
+
+.chart-count { margin-top: var(--space-2); }
+.cockpit-chart-wrap { margin-top: var(--space-4); }
+
+.chart-scroll { margin-top: var(--space-2); }
+.price-chart {
+  width: 100%;
+  height: 300px;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+}
+.price-chart .timeline-grid line { stroke: var(--rule); stroke-width: 1; }
+.price-chart > line { stroke: var(--rule); stroke-width: 1; }
+.price-chart > path { stroke: var(--accent); }
+.price-chart > rect { fill: var(--pos); stroke: var(--plate); }
+.price-chart > polygon { fill: var(--mark-sell); stroke: var(--plate); }
+.price-chart text { fill: var(--ink-3); }
+
+/* position metrics — hairline ledger rows */
+.cockpit-section-title { padding-bottom: var(--space-3); }
+.inv-metric-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: 24px;
+  border-top: 1px solid var(--rule);
+  padding-block: var(--space-3);
+}
+.inv-metric-row span { font-size: var(--fs-body); color: var(--ink-2); }
+.inv-metric-row strong { font-size: var(--fs-lg); font-weight: 600; }
+
+/* holdings of record */
+.table-scroll { margin-top: var(--space-4); overflow-x: auto; }
+.holdings-table { width: 100%; }
+.holdings-table th {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  text-align: right;
+  white-space: nowrap;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--rule-strong);
+}
+.holdings-table td {
+  font-size: var(--fs-body);
+  text-align: right;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: middle;
+}
+.holdings-table th:first-child,
+.holdings-table td:first-child { text-align: left; padding-inline-start: 0; }
+.holdings-table td strong { display: block; font-size: var(--fs-body); font-weight: 600; }
+.holdings-table td small { display: block; margin-top: 2px; }
+.holdings-table tbody tr:hover td { background: var(--hover); }
+.asset-cell { display: flex; align-items: center; column-gap: 10px; }
+.asset-text { display: grid; row-gap: var(--space-1); }
+.asset-text strong { font-size: var(--fs-body); font-weight: 600; }
+.asset-text small { font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: 0.04em; }
+
+/* ---------------------------------------------------------------------------
+   10 · INSIGHT COLUMN — cash, positions, mosaic, contribution, exposure
+--------------------------------------------------------------------------- */
+.cockpit-cash-summary { display: grid; row-gap: var(--space-4); }
+.cockpit-main-pot-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  column-gap: 16px;
+}
+.pot-info { display: grid; row-gap: var(--space-1); }
+.pot-val { font-size: var(--fs-h1); font-weight: 600; line-height: 1.05; letter-spacing: -0.02em; }
+.t212-deposit-pill-btn {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  height: 32px;
+  padding-inline: 12px;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-ctl);
+}
+.t212-deposit-pill-btn:hover { border-color: var(--rule-strong); background: var(--hover); color: var(--ink); }
+
+.portfolio-stat-grid { display: grid; }
+.metric-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 104px 44px;
+  column-gap: 8px;
+  align-items: baseline;
+  border-top: 1px solid var(--rule);
+  padding-block: var(--space-3);
+}
+.metric-card > span { font-size: var(--fs-body); color: var(--ink-2); }
+.metric-card > strong { font-size: var(--fs-lg); font-weight: 600; text-align: right; }
+.metric-card > small { font-size: var(--fs-micro); text-align: right; }
+
+/* position stream — the ledger rows that drive the chart */
+.investments-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: 16px;
+  padding-bottom: var(--space-3);
+  cursor: pointer;
+}
+.investments-header:hover .collapse-arrow { color: var(--accent); }
+.investments-header:active { transform: translateY(1px); }
+.invest-head-title { display: flex; align-items: baseline; column-gap: 12px; }
+.invest-head-title h3 { font-size: var(--fs-h2); }
+.invest-sum-val { font-size: var(--fs-sm); color: var(--ink-3); }
+.collapse-arrow {
+  font-size: var(--fs-body);
+  color: var(--ink-3);
+  transform-origin: 50% 50%;
+}
+.collapse-arrow.collapsed { transform: rotate(180deg); }
+.investments-list-stream { display: block; }
+.pos-stream-item {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: center;
+  width: 100%;
+  border-top: 1px solid var(--rule);
+  padding: 12px 8px;
+}
+.pos-stream-item:hover { background: var(--hover); }
+.pos-stream-item.selected { border-top-color: var(--accent); background: var(--selected); }
+.pos-stream-ident { display: grid; row-gap: var(--space-1); min-width: 0; }
+.pos-stream-ident strong { font-size: var(--fs-body); font-weight: 600; }
+.pos-stream-ident small { font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: 0.03em; }
+.pos-stream-num-col { display: grid; row-gap: var(--space-1); justify-items: end; }
+.pos-stream-num-col strong { font-size: var(--fs-lg); font-weight: 600; }
+.pos-stream-num-col span { font-size: var(--fs-micro); }
+
+/* allocation mosaic — canvas + hairlines, area encodes weight */
+.pane-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  column-gap: 16px;
+  padding-bottom: var(--space-3);
+}
+.section-title { font-size: var(--fs-h2); }
+.section-caption { display: block; margin-top: 2px; }
+.treemap-mode-toggles { display: flex; align-items: center; column-gap: 4px; flex: none; }
+.treemap-mode-pill {
+  height: 26px;
+  padding-inline: 12px;
+  font-size: var(--fs-sm);
+  color: var(--ink-3);
+  border-radius: var(--radius-ctl);
+}
+.treemap-mode-pill:hover { color: var(--ink-2); background: var(--hover); }
+.treemap-mode-pill.is-active { color: var(--accent); background: var(--selected); }
+
+.dynamic-treemap-container { position: relative; width: 100%; aspect-ratio: 2 / 1; margin-top: var(--space-4); }
+.treemap-rect-slot { position: absolute; }
+.treemap-tile {
+  position: absolute;
+  inset: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 8px 8px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-ctl);
+  text-align: left;
+}
+.treemap-tile:hover { background: var(--hover); border-color: var(--rule-strong); }
+.treemap-tile.selected { background: var(--selected); border-color: var(--accent); }
+.tile-top-row { display: flex; align-items: center; column-gap: 8px; }
+.tile-ticker { color: var(--ink-2); }
+.tile-active-pip { width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--accent); }
+.tile-percent { font-size: var(--fs-h2); font-weight: 600; letter-spacing: -0.012em; line-height: 1.1; }
+.tile-percent.tone-positive::before,
+.tile-percent.tone-negative::before { font-size: 0.8em; margin-right: 4px; }
+.tile-percent.tone-positive::before { content: "▲"; }
+.tile-percent.tone-negative::before { content: "▼"; }
+.tile-subrow { display: flex; align-items: baseline; column-gap: 8px; font-size: var(--fs-micro); flex-wrap: wrap; }
+.tile-weight { color: var(--ink-3); }
+.tile-daypl { font-size: var(--fs-micro); }
+
+.cockpit-see-all-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 16px;
+  width: 100%;
+  margin-top: var(--space-4);
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--rule);
+  font-size: var(--fs-body);
+  color: var(--accent);
+}
+.cockpit-see-all-btn:hover { color: var(--ink); }
+.cockpit-see-all-btn:hover .btn-action-chevron { transform: translateX(2px); }
+
+/* contribution + exposure */
+.cockpit-sub-analytics-grid { display: grid; row-gap: var(--space-6); }
+.bar-list { margin-top: var(--space-4); }
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px 88px;
+  column-gap: 12px;
+  align-items: center;
+  border-top: 1px solid var(--rule);
+  padding-block: var(--space-3);
+}
+.bar-label { display: grid; row-gap: var(--space-1); min-width: 0; }
+.bar-label strong { font-size: var(--fs-body); font-weight: 600; }
+.bar-label small { font-family: var(--font-mono); letter-spacing: 0.03em; }
+.bar-measure { display: flex; align-items: center; height: 6px; background: var(--wash); }
+.bar-positive { display: block; height: 100%; background: var(--pos); margin-right: auto; }
+.bar-negative { display: block; height: 100%; background: var(--neg); margin-left: auto; }
+.bar-row b { font-size: var(--fs-lg); font-weight: 600; text-align: right; }
+.bar-row b.tone-positive::before,
+.bar-row b.tone-negative::before { font-size: 0.8em; margin-right: 5px; }
+.bar-row b.tone-positive::before { content: "▲"; }
+.bar-row b.tone-negative::before { content: "▼"; }
+
+.exposure-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 16px;
+  margin-top: var(--space-4);
+}
+.exposure-summary > div { display: grid; row-gap: var(--space-1); border-top: 1px solid var(--rule-strong); padding-top: var(--space-2); }
+.exposure-summary strong { font-family: var(--font-mono); font-size: var(--fs-micro); font-weight: 600; letter-spacing: 0.06em; color: var(--accent); }
+.exposure-summary span { font-size: var(--fs-lg); font-weight: 600; }
+
+/* ---------------------------------------------------------------------------
+   11 · ASK BAND — one closing ruled band, full measure
+--------------------------------------------------------------------------- */
+.cockpit-analytics-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  column-gap: 40px;
+  margin-top: var(--space-10);
+}
+.ai-analysis-header { display: flex; align-items: center; column-gap: 12px; }
+.ai-analysis-header h3 { font-size: var(--fs-h2); }
+.ai-badge {
+  display: inline-grid;
+  place-items: center;
+  height: 24px;
+  padding: 4px 8px;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.04em;
+  color: var(--on-accent);
+  background: var(--accent);
+  border-radius: var(--radius-ctl);
+}
+.ask-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 24px;
+  margin-top: var(--space-3);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding-block: var(--space-4);
+}
+.ask-banner > div { display: grid; row-gap: var(--space-1); min-width: 0; }
+.ask-banner strong { font-size: var(--fs-lg); font-weight: 500; color: var(--ink); }
+.ask-banner button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  column-gap: 8px;
+  height: 34px;
+  padding-inline: 12px;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-ctl);
+}
+.ask-banner button:hover { border-color: var(--rule-strong); background: var(--hover); color: var(--ink); }
+.cockpit-ai-prompt-strip { display: grid; row-gap: var(--space-3); align-content: start; }
+.ai-prompt-scroller { display: grid; row-gap: var(--space-2); }
+.ai-prompt-card-chip {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  min-height: 38px;
+  font-size: var(--fs-body);
+  color: var(--ink-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-ctl);
+}
+.ai-prompt-card-chip:hover { border-color: var(--rule-strong); background: var(--hover); color: var(--ink); }
+
+/* ---------------------------------------------------------------------------
+   12 · COLOPHON & KEYBOARD RAIL
+--------------------------------------------------------------------------- */
+.cockpit-colophon { margin-top: var(--space-10); }
+.cockpit-pane-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 24px;
+  flex-wrap: wrap;
+}
+.footer-action-pills-row { display: flex; align-items: center; column-gap: 8px; }
+.legal { margin-top: var(--space-3); }
+
+.pro-shortcuts-hud {
+  margin-inline: var(--gutter);
+  padding-block: var(--space-4);
+  margin-top: var(--space-8);
+  background: var(--canvas);
+}
+.shortcuts-hud-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  column-gap: 24px;
+  row-gap: var(--space-2);
+}
+.hud-pill { display: inline-flex; align-items: center; column-gap: 6px; font-size: var(--fs-micro); color: var(--ink-3); }
+.hud-pill kbd,
+.hud-help-btn kbd {
+  padding: 4px 8px;
+  font-size: var(--fs-micro);
+  color: var(--ink-2);
+  background: var(--wash);
+  border-radius: var(--radius-ctl);
+}
+.hud-help-btn { display: grid; place-items: center; color: var(--ink-3); }
+.hud-help-btn:hover { background: var(--hover); }
+
+/* ---------------------------------------------------------------------------
+   13 · CONTROLS — boxed, quiet, read-only honest
+--------------------------------------------------------------------------- */
+.t212-pill-action {
+  display: inline-flex;
+  align-items: center;
+  column-gap: 8px;
+  height: 32px;
+  padding-inline: 12px;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-ctl);
+}
+.t212-pill-action:hover { border-color: var(--rule-strong); background: var(--hover); color: var(--ink); }
+
+button:active { transform: translateY(1px); }
+
+:where(button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ---------------------------------------------------------------------------
+   14 · MOTION — one curve, one duration, declared once for the whole system
+--------------------------------------------------------------------------- */
+:where(button, input, .icon-btn-ghost, .topbar-search-slot, .range-thumb, .topbar-nav-tab,
+       .pos-stream-item, .treemap-tile, .treemap-mode-pill, .collapse-arrow,
+       .btn-action-chevron, .ticker-avatar, .metric-card, .inv-metric-row, .bar-row,
+       .t212-deposit-pill-btn, .t212-pill-action, .ai-prompt-card-chip, .hud-help-btn,
+       .cockpit-account-card, .price-chart-panel, .legal) {
+  transition:
+    color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+@keyframes meridian-rise {
+  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+.cockpit-account-card,
+.portfolio-context-strip,
+.cockpit-body-grid > * > *,
+.cockpit-analytics-strip > *,
+.cockpit-colophon,
+.pro-shortcuts-hud {
+  animation: meridian-rise var(--dur-rise) var(--ease) both;
+}
+.portfolio-context-strip { animation-delay: 45ms; }
+.cockpit-body-grid > * > *:nth-child(2) { animation-delay: 90ms; }
+.cockpit-body-grid > * > *:nth-child(3) { animation-delay: 135ms; }
+.cockpit-body-grid > * > *:nth-child(4) { animation-delay: 180ms; }
+.cockpit-body-grid > * > *:nth-child(5) { animation-delay: 225ms; }
+.cockpit-analytics-strip > * { animation-delay: 135ms; }
+.cockpit-analytics-strip > *:nth-child(2) { animation-delay: 180ms; }
+.cockpit-colophon { animation-delay: 225ms; }
+.pro-shortcuts-hud { animation-delay: 270ms; }
+
+/* ---------------------------------------------------------------------------
+   15 · RESPONSIVE — 1440 / 900 / 680 / 390. No horizontal overflow, ever.
+--------------------------------------------------------------------------- */
+@media (max-width: 1120px) {
+  .cockpit-body-grid { grid-template-columns: minmax(0, 1fr); }
+  .cockpit-ledger,
+  .cockpit-insight { grid-column: 1 / -1; }
+  .cockpit-analytics-strip { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-6); }
+}
+@media (min-width: 761px) and (max-width: 1120px) {
+  .cockpit-sub-analytics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; }
+}
+@media (max-width: 760px) {
+  .t212-native-topbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "brand tools" "nav nav";
+    grid-template-rows: 48px 44px;
+    height: auto;
+  }
+  .topbar-left-zone  { grid-area: brand; height: 48px; }
+  .topbar-center-nav { grid-area: nav; justify-self: stretch; justify-content: space-between; column-gap: 0; }
+  .topbar-right-zone { grid-area: tools; justify-self: end; height: 48px; }
+  .topbar-nav-tab { height: 44px; }
+  .topbar-nav-tab svg { display: none; }
+  .topbar-search-slot { display: none; }
+
+  .chart-scroll { overflow-x: auto; }
+  .price-chart { min-width: 660px; height: 200px; }
+
+  .cockpit-account-card {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "head" "figure" "rail";
+    column-gap: 0;
+    padding: 20px 20px;
+  }
+  .account-sub-metrics-grid { column-gap: 24px; }
+  .portfolio-context-strip { grid-template-columns: repeat(2, auto); row-gap: var(--space-2); }
+  .cockpit-inst-head { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-3); align-items: start; }
+  .inst-price-box { justify-items: start; }
+  .inst-actions { justify-self: start; }
+  .range-switcher { justify-content: flex-start; overflow-x: auto; }
+  .range-switcher button { width: 48px; }
+  .holdings-table { min-width: 520px; }
+  .dynamic-treemap-container { aspect-ratio: 1.7; }
+  .cockpit-see-all-btn { padding-block: var(--space-3); }
+  .price-chart { font-size: var(--fs-lg); }
+  .ask-banner { flex-direction: column; align-items: flex-start; row-gap: var(--space-3); }
+  .shortcuts-hud-pills { justify-content: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .t212-native-app-root * { animation: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   16 · DARK — a designed counterpart, token-for-token
+--------------------------------------------------------------------------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas:  #14130F;
+  --plate:   #1C1B17;
+  --wash:    #26251F;
+  --ink:     #F4F2EC;
+  --ink-2:   #C2BCB0;
+  --ink-3:   #9C9587;
+  --accent:  #8FB6DC;
+  --on-accent: #10161C;
+  --pos:     #5FC08C;
+  --neg:     #F0907F;
+  --mark-sell: #D8A85F;
+  --positive-bright: #5FC08C;
+  --negative-bright: #F0907F;
+  --rule:        rgba(244, 242, 236, 0.16);
+  --rule-strong: rgba(244, 242, 236, 0.32);
+  --hover:       rgba(244, 242, 236, 0.06);
+  --selected:    rgba(143, 182, 220, 0.12);
+  --shadow-plate:  0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-figure: 0 2px 6px rgba(0, 0, 0, 0.40), 0 18px 40px -24px rgba(0, 0, 0, 0.75);
+}
+

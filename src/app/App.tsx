@@ -1,21 +1,16 @@
-import { Children, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
-import * as echarts from 'echarts/core'
-import { LineChart, ScatterChart } from 'echarts/charts'
-import { AriaComponent, DataZoomComponent, GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import type { EChartsCoreOption } from 'echarts/core'
+import { Children, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
+import { createChart, createSeriesMarkers, CrosshairMode, LineSeries, LineStyle, type IChartApi, type LineData, type MouseEventParams, type SeriesMarker, type Time, type UTCTimestamp } from 'lightweight-charts'
 import {
   AlertTriangle, ArrowLeft, ArrowRight, BarChart3, Bell, BriefcaseBusiness, Check, ChevronDown, CircleDollarSign, CircleHelp, Clipboard, Eye, EyeOff,
-  History as HistoryIcon, Layers3, LayoutDashboard, LoaderCircle, Menu, Plus, RefreshCw, Search, Settings, ShieldCheck, SlidersHorizontal, Sparkles, Unplug, X,
+  History as HistoryIcon, Layers3, LayoutDashboard, LoaderCircle, Menu, Moon, Plus, RefreshCw, Search, Settings, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Unplug, X,
 } from 'lucide-react'
 import { ApiError, api, diagnosticText } from './api.ts'
 import { copyText } from './clipboard.ts'
 import { languageStore, localeCode, tx } from './i18n.ts'
+import { themeStore, type ThemePreference } from './theme.ts'
 import type { ConnectionStatus } from '../portfolio-service.ts'
 import type { MarketRange, MarketSeries } from '../market-data.ts'
 import type { CashTransaction, Dividend, HistoricalOrder, HistoryItem, HistoryKind, PortfolioSnapshot, Position, TradingEnvironment } from '../trading212.ts'
-
-echarts.use([LineChart, ScatterChart, AriaComponent, DataZoomComponent, GridComponent, LegendComponent, TooltipComponent, CanvasRenderer])
 
 type Page = 'overview' | 'holdings' | 'instrument' | 'history' | 'settings' | 'help' | 'setup'
 type CopyStatus = 'idle' | 'copied' | 'failed'
@@ -82,6 +77,8 @@ function TopNavBar({
         [CircleHelp, 'help', tx('帮助', 'Help')],
       ] as const
 
+  const theme = useSyncExternalStore(themeStore.subscribe, themeStore.getSnapshot)
+
   return (
     <header className="t212-native-topbar">
       <div className="topbar-left-zone">
@@ -138,6 +135,16 @@ function TopNavBar({
           onClick={onToggleHideBalances}
         >
           {hideBalances ? <EyeOff strokeWidth={1.5} size={16} /> : <Eye strokeWidth={1.5} size={16} />}
+        </button>
+
+        <button
+          type="button"
+          className="topbar-tool-btn"
+          aria-label={tx('切换主题 (T)', 'Toggle theme (T)')}
+          title={theme.active === 'dark' ? tx('切换为明亮主题 (T)', 'Switch to light theme (T)') : tx('切换为暗黑主题 (T)', 'Switch to dark theme (T)')}
+          onClick={() => themeStore.toggle()}
+        >
+          {theme.active === 'dark' ? <Sun strokeWidth={1.5} size={16} /> : <Moon strokeWidth={1.5} size={16} />}
         </button>
 
         {connected && (
@@ -208,7 +215,7 @@ function SetupPage({ onConnected }: { onConnected: (status: ConnectionStatus, sn
   return <main className="setup-page"><ConnectionForm onConnected={onConnected} /><aside className="setup-guide"><h2>{tx('创建密钥时请选择', 'Select these key permissions')}</h2><ol><li>{tx('账户摘要读取权限', 'Read account summary')}</li><li>{tx('投资组合读取权限', 'Read portfolio')}</li><li>{tx('订单读取权限', 'Read orders')}</li><li>{tx('历史数据读取权限', 'Read history')}</li></ol><p>{tx('不要授予下单、修改或取消订单权限。如果启用了 IP 限制，请允许当前运行 dsh 的设备。', 'Do not grant permissions to place, modify, or cancel orders. If IP restrictions are enabled, allow the device running dsh.')}</p></aside></main>
 }
 
-const palette = ['#1677ff', '#18a957', '#7e5bef', '#e78b28', '#e0524d', '#56b4c3', '#9aa8b8']
+const palette = ['#2563EB', '#10B981', '#8B5CF6', '#F59E0B', '#F43F5E', '#06B6D4', '#64748B']
 
 function TickerRingLogo({ ticker, weightPercent }: { ticker: string; weightPercent?: number }) {
   const clean = tickerLabel(ticker)
@@ -248,6 +255,8 @@ interface TreemapRect {
   returnPercent?: number
   unrealizedProfitLoss: number
   weightPercent: number
+  dailyChangePercent?: number
+  dailyProfitLoss?: number
   x: number
   y: number
   w: number
@@ -255,7 +264,15 @@ interface TreemapRect {
 }
 
 function computeTreemapLayout(
-  items: Array<{ ticker: string; name: string; returnPercent?: number; unrealizedProfitLoss: number; weightPercent: number }>,
+  items: Array<{
+    ticker: string
+    name: string
+    returnPercent?: number
+    unrealizedProfitLoss: number
+    weightPercent: number
+    dailyChangePercent?: number
+    dailyProfitLoss?: number
+  }>,
   x = 0,
   y = 0,
   w = 100,
@@ -306,13 +323,19 @@ function computeTreemapLayout(
   }
 }
 
+export type TreemapMetricMode = 'daily' | 'total'
+
 function DynamicTreemapGrid({
   allocation,
   activeTicker,
+  metricMode = 'daily',
+  currency,
   onSelect,
 }: {
   allocation: PortfolioSnapshot['analytics']['allocation']
   activeTicker?: string
+  metricMode?: TreemapMetricMode
+  currency?: string
   onSelect?: (ticker: string) => void
 }) {
   const topItems = allocation.slice(0, 6)
@@ -323,10 +346,15 @@ function DynamicTreemapGrid({
   return (
     <div className="dynamic-treemap-container">
       {rects.map(rect => {
-        const isPositive = rect.unrealizedProfitLoss > 0
-        const isNegative = rect.unrealizedProfitLoss < 0
+        const val = metricMode === 'daily'
+          ? rect.dailyChangePercent
+          : rect.returnPercent
+
+        const isPositive = val !== undefined && val > 0
+        const isNegative = val !== undefined && val < 0
         const isSelected = rect.ticker === activeTicker
-        const isCompact = rect.w < 30 || rect.h < 28
+        const dayPl = metricMode === 'daily' ? rect.dailyProfitLoss : rect.unrealizedProfitLoss
+        const displayVal = val === undefined ? (metricMode === 'daily' ? tx('同步中…', 'Syncing…') : '-') : percent(val)
 
         return (
           <div
@@ -341,14 +369,32 @@ function DynamicTreemapGrid({
           >
             <button
               type="button"
-              className={`treemap-tile dynamic-tile ${isPositive ? 'gain' : isNegative ? 'loss' : 'neutral'} ${isSelected ? 'selected' : ''} ${isCompact ? 'compact' : ''}`}
+              className={`treemap-tile dynamic-tile ${isPositive ? 'gain' : isNegative ? 'loss' : 'neutral'} ${isSelected ? 'selected' : ''}`}
               onClick={() => onSelect?.(rect.ticker)}
-              title={`${tickerLabel(rect.ticker)} · ${rect.name} · ${plainPercent(rect.weightPercent)}`}
+              title={`${tickerLabel(rect.ticker)} · ${rect.name} · ${metricMode === 'daily' ? tx('今日变化', 'Today') : tx('累计收益', 'Total')} ${val !== undefined ? percent(val) : tx('数据同步中', 'Syncing...')} · ${tx('权重', 'Weight')} ${plainPercent(rect.weightPercent)}${dayPl !== undefined && currency ? ` · ${signedMoney(dayPl, currency)}` : ''}`}
             >
-              <strong className="tile-ticker">{tickerLabel(rect.ticker)}</strong>
-              <span className={`tile-percent ${isPositive ? 'tone-positive' : isNegative ? 'tone-negative' : ''}`}>
-                {percent(rect.returnPercent)}
+              {/* Three rows, always, on every tile: ticker, the percentage, then
+                  weight and account-currency amount side by side. The smallest
+                  tile used to drop the last row through a JS test that compared
+                  a percentage against a pixel threshold, which hid the weight
+                  and the loss from exactly the tile that was losing money. The
+                  tight case is now a container query on type leading, not a
+                  missing row. */}
+              <div className="tile-top-row">
+                <strong className="tile-ticker">{tickerLabel(rect.ticker)}</strong>
+                {isSelected && <span className="tile-active-pip" aria-hidden="true" />}
+              </div>
+              <span className={`tile-percent ${isPositive ? 'tone-positive' : isNegative ? 'tone-negative' : 'tone-muted'}`}>
+                {displayVal}
               </span>
+              <div className="tile-subrow">
+                <span className="tile-weight">{plainPercent(rect.weightPercent)}</span>
+                {dayPl !== undefined && currency && (
+                  <span className={`tile-daypl ${dayPl >= 0 ? 'tone-positive' : 'tone-negative'}`}>
+                    {signedMoney(dayPl, currency)}
+                  </span>
+                )}
+              </div>
             </button>
           </div>
         )
@@ -357,13 +403,25 @@ function DynamicTreemapGrid({
   )
 }
 
-function AllocationTreemap({ portfolio, onHoldings, onSelect }: { portfolio: PortfolioSnapshot; onHoldings?: () => void; onSelect?: (position: Position) => void }) {
+function AllocationTreemap({
+  portfolio,
+  metricMode = 'daily',
+  onHoldings,
+  onSelect,
+}: {
+  portfolio: PortfolioSnapshot
+  metricMode?: TreemapMetricMode
+  onHoldings?: () => void
+  onSelect?: (position: Position) => void
+}) {
   const source = portfolio.analytics.allocation
   if (source.length === 0) return null
   return (
     <div className="treemap-wrapper">
       <DynamicTreemapGrid
         allocation={source}
+        metricMode={metricMode}
+        currency={portfolio.account.currency}
         onSelect={ticker => {
           const pos = portfolio.positions.find(p => p.instrument?.ticker === ticker)
           if (pos && onSelect) onSelect(pos)
@@ -371,8 +429,8 @@ function AllocationTreemap({ portfolio, onHoldings, onSelect }: { portfolio: Por
       />
       {onHoldings && (
         <button className="treemap-see-all" type="button" onClick={onHoldings}>
-          {tx('查看全部持仓', 'See all')}
-          <span className="btn-orb" aria-hidden="true"><ArrowRight size={13} strokeWidth={2} /></span>
+          <span>{tx('查看全部持仓', 'See all holdings')}</span>
+          <span className="btn-action-chevron" aria-hidden="true">›</span>
         </button>
       )}
     </div>
@@ -444,27 +502,62 @@ function Allocation({ portfolio, onHoldings, onSelect }: { portfolio: PortfolioS
 function BarList({ rows, currency, signed = false, ariaLabel }: { rows: Array<{ key: string; label: string; detail?: string; value: number }>; currency: string; signed?: boolean; ariaLabel: string }) {
   const max = Math.max(...rows.map(row => Math.abs(row.value)), 1)
   if (rows.length === 0) return <div className="empty-inline">{tx('暂无足够数据', 'Not enough data')}</div>
-  return <div className={`bar-list ${signed ? 'signed-bars' : ''}`} aria-label={ariaLabel}>{rows.map(row => <div className="bar-row" key={row.key}>
+  return <div className="bar-list" aria-label={ariaLabel}>{rows.map(row => <div className="bar-row" key={row.key}>
     <div className="bar-label"><strong>{row.label}</strong>{row.detail && <small>{row.detail}</small>}</div>
-    <div className="bar-measure"><i className={row.value < 0 ? 'bar-negative' : 'bar-positive'} style={{ width: `${Math.max(Math.abs(row.value) / max * 100, 2)}%` }} /></div>
+    <div className="bar-measure"><i className={signed ? row.value < 0 ? 'bar-negative' : 'bar-positive' : 'bar-accent'} style={{ width: `${Math.max(Math.abs(row.value) / max * 100, 2)}%` }} /></div>
     <b className={signed ? row.value >= 0 ? 'tone-positive' : 'tone-negative' : ''}>{signed ? signedMoney(row.value, currency) : money(row.value, currency)}</b>
   </div>)}</div>
 }
 
+/* Both panels below list a *ranked* subset of a longer series, and both used to
+   cut the list with `.slice(0, 6)` and print nothing about the cut. BarList sizes
+   every bar against the largest row, not against the total, so a truncated list
+   still looks complete - and in the exposure panel it printed a share column that
+   silently stopped adding up to 100%. The tail is now its own row, the same way
+   the allocation legend folds its tail into "其他 N 项". `allocation` and
+   `currencyExposure` both arrive sorted by size, so the head is genuinely the top
+   of the list and the tail is genuinely the rest. */
 function ProfitDrivers({ portfolio }: { portfolio: PortfolioSnapshot }) {
-  const rows = [...portfolio.analytics.allocation]
-    .sort((a, b) => Math.abs(b.unrealizedProfitLoss) - Math.abs(a.unrealizedProfitLoss))
-    .slice(0, 6)
-    .map(item => ({ key: item.ticker, label: item.name, detail: `${tickerLabel(item.ticker)} · ${percent(item.returnPercent)}`, value: item.unrealizedProfitLoss }))
+  const ranked = [...portfolio.analytics.allocation].sort((a, b) => Math.abs(b.unrealizedProfitLoss) - Math.abs(a.unrealizedProfitLoss))
+  const head = ranked.slice(0, 6)
+  const tail = ranked.slice(6)
+  const rows = [
+    ...head.map(item => ({ key: item.ticker, label: item.name, detail: `${tickerLabel(item.ticker)} · ${percent(item.returnPercent)}`, value: item.unrealizedProfitLoss })),
+    ...(tail.length ? [{
+      key: '__tail',
+      label: tx(`其他 ${tail.length} 项`, `${tail.length} others`),
+      detail: tx('其余持仓合计', 'Remaining holdings'),
+      value: tail.reduce((sum, item) => sum + item.unrealizedProfitLoss, 0),
+    }] : []),
+  ]
   return <BarList rows={rows} currency={portfolio.account.currency} signed ariaLabel={tx('未实现盈亏贡献排名', 'Unrealized return contributors')} />
 }
 
 function CurrencyExposureChart({ portfolio }: { portfolio: PortfolioSnapshot }) {
-  const exposure = portfolio.analytics.currencyExposure.slice(0, 6)
+  const exposure = portfolio.analytics.currencyExposure
+  /* Zero currencies fell through to the compact list below, which then rendered
+     an empty div under a live heading. BarList already has the right words for
+     this, so borrow them rather than inventing a second phrasing. */
+  if (exposure.length === 0) return <div className="empty-inline">{tx('暂无足够数据', 'Not enough data')}</div>
   if (exposure.length < 4) return <div className="exposure-summary">{exposure.map(item => <div key={item.currency}><strong>{item.currency}</strong><span>{money(item.currentValue, portfolio.account.currency)}</span><small>{tx(`${item.positions} 个持仓`, `${item.positions} holdings`)} · {plainPercent(item.weightPercent)}</small></div>)}</div>
-  const rows = exposure.map(item => ({
-    key: item.currency, label: item.currency, detail: `${tx(`${item.positions} 个持仓`, `${item.positions} holdings`)} · {plainPercent(item.weightPercent)}`, value: item.currentValue,
-  }))
+  const head = exposure.slice(0, 6)
+  const tail = exposure.slice(6)
+  const tailPositions = tail.reduce((sum, item) => sum + item.positions, 0)
+  /* The `detail` below is a template literal, not JSX: it used to read
+     `· {plainPercent(item.weightPercent)}` and would have printed that source
+     verbatim as the row's subtitle. Nothing caught it because nothing rendered
+     the component. */
+  const rows = [
+    ...head.map(item => ({
+      key: item.currency, label: item.currency, detail: `${tx(`${item.positions} 个持仓`, `${item.positions} holdings`)} · ${plainPercent(item.weightPercent)}`, value: item.currentValue,
+    })),
+    ...(tail.length ? [{
+      key: '__tail',
+      label: tx(`其他 ${tail.length} 种`, `${tail.length} others`),
+      detail: `${tx(`${tailPositions} 个持仓`, `${tailPositions} holdings`)} · ${plainPercent(tail.reduce((sum, item) => sum + item.weightPercent, 0))}`,
+      value: tail.reduce((sum, item) => sum + item.currentValue, 0),
+    }] : []),
+  ]
   return <BarList rows={rows} currency={portfolio.account.currency} ariaLabel={tx('按标的交易币种划分的持仓市值', 'Holding value by instrument currency')} />
 }
 
@@ -484,6 +577,20 @@ function HoldingTable({ positions, currency, limit, compact = false, selectedTic
   })}</tbody></table></div>
 }
 
+/* The API returns status as a bare uppercase token. It was rendered raw, so the
+   Chinese interface showed "FILLED" next to a localised 买入 / 卖出. Unknown
+   values still fall through to the token rather than being blanked. */
+const orderStatusLabel = (status: string) => ({
+  NEW: tx('待成交', 'New'),
+  FILLED: tx('已成交', 'Filled'),
+  PARTIALLY_FILLED: tx('部分成交', 'Partially filled'),
+  CANCELLED: tx('已取消', 'Cancelled'),
+  REJECTED: tx('已拒绝', 'Rejected'),
+  REPLACED: tx('已替换', 'Replaced'),
+  LOCAL: tx('本地待提交', 'Local'),
+  UNCONFIRMED: tx('待确认', 'Unconfirmed'),
+} as Record<string, string>)[status] ?? status
+
 function PendingOrders({ orders, currency }: { orders: PortfolioSnapshot['pendingOrders']; currency: string }) {
   if (orders.length === 0) return <div className="empty-inline order-empty">{tx('没有待处理订单', 'No pending orders')}</div>
   return <div className="table-scroll"><table><thead><tr><th>{tx('资产与时间', 'Asset and time')}</th><th>{tx('方向 / 类型', 'Side / type')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('限价 / 止损', 'Limit / stop')}</th><th>{tx('状态', 'Status')}</th></tr></thead><tbody>{orders.map(order => <tr key={order.id}>
@@ -491,7 +598,7 @@ function PendingOrders({ orders, currency }: { orders: PortfolioSnapshot['pendin
     <td data-label={tx('方向 / 类型', 'Side / type')}><span className={`history-side ${order.side.toLowerCase()}`}>{order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')}</span><small>{order.type}{order.extendedHours ? tx(' · 含延长交易时段', ' · Extended hours') : ''}</small></td>
     <td data-label={tx('数量', 'Quantity')}>{decimal(order.quantity, 4)}<small>{tx('已成交', 'Filled')} {decimal(order.filledQuantity, 4)}</small></td>
     <td data-label="限价 / 止损"><strong>{order.limitPrice === undefined ? '-' : money(order.limitPrice, order.instrument?.currency ?? order.currency ?? currency)}</strong><small>{order.stopPrice === undefined ? '-' : money(order.stopPrice, order.instrument?.currency ?? order.currency ?? currency)}</small></td>
-    <td data-label="状态"><strong>{order.status}</strong><small>{order.timeInForce ?? order.strategy ?? '-'}</small></td>
+    <td data-label="状态"><strong>{orderStatusLabel(order.status)}</strong><small>{order.timeInForce ?? order.strategy ?? '-'}</small></td>
   </tr>)}</tbody></table></div>
 }
 
@@ -506,7 +613,7 @@ function HistoryRows({ kind, items }: { kind: HistoryKind; items: HistoryItem[] 
   if (kind === 'orders') return <div className="table-scroll"><table><thead><tr><th>{tx('时间与资产', 'Time and asset')}</th><th>{tx('方向 / 状态', 'Side / status')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('成交价', 'Fill price')}</th><th>{tx('净额', 'Net value')}</th></tr></thead><tbody>{Children.toArray((items as HistoricalOrder[]).map((item, index) => {
     const date = item.fill?.filledAt ?? item.order.createdAt
     const currency = item.fill?.walletImpact?.currency ?? item.order.instrument?.currency ?? 'EUR'
-    return <tr key={`order:${item.order.id}:fill:${item.fill?.id ?? index}`}><td data-label={tx('时间与资产', 'Time and asset')}><strong>{item.order.instrument?.name ?? item.order.ticker}</strong><small>{date ? new Date(date).toLocaleString(localeCode()) : tx('时间未知', 'Unknown time')} · {item.order.ticker.replace(/_.*/, '')}</small></td><td data-label={tx('方向 / 状态', 'Side / status')}><span className={`history-side ${item.order.side.toLowerCase()}`}>{item.order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')}</span><small>{item.order.status}</small></td><td data-label={tx('数量', 'Quantity')}>{decimal(item.fill?.quantity ?? item.order.filledQuantity ?? item.order.quantity, 4)}</td><td data-label={tx('成交价', 'Fill price')}>{item.fill?.price === undefined ? '-' : money(item.fill.price, item.order.instrument?.currency ?? currency)}</td><td data-label={tx('净额', 'Net value')}>{item.fill?.walletImpact?.netValue === undefined ? '-' : money(item.fill.walletImpact.netValue, currency)}</td></tr>
+    return <tr key={`order:${item.order.id}:fill:${item.fill?.id ?? index}`}><td data-label={tx('时间与资产', 'Time and asset')}><strong>{item.order.instrument?.name ?? item.order.ticker}</strong><small>{date ? new Date(date).toLocaleString(localeCode()) : tx('时间未知', 'Unknown time')} · {item.order.ticker.replace(/_.*/, '')}</small></td><td data-label={tx('方向 / 状态', 'Side / status')}><span className={`history-side ${item.order.side.toLowerCase()}`}>{item.order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')}</span><small>{orderStatusLabel(item.order.status)}</small></td><td data-label={tx('数量', 'Quantity')}>{decimal(item.fill?.quantity ?? item.order.filledQuantity ?? item.order.quantity, 4)}</td><td data-label={tx('成交价', 'Fill price')}>{item.fill?.price === undefined ? '-' : money(item.fill.price, item.order.instrument?.currency ?? currency)}</td><td data-label={tx('净额', 'Net value')}>{item.fill?.walletImpact?.netValue === undefined ? '-' : money(item.fill.walletImpact.netValue, currency)}</td></tr>
   }))}</tbody></table></div>
   if (kind === 'dividends') return <div className="table-scroll"><table><thead><tr><th>{tx('日期与资产', 'Date and asset')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('每股', 'Per share')}</th><th>{tx('到账金额', 'Amount')}</th></tr></thead><tbody>{Children.toArray((items as Dividend[]).map(item => <tr key={item.reference}><td data-label={tx('日期与资产', 'Date and asset')}><strong>{item.instrument?.name ?? item.ticker}</strong><small>{new Date(item.paidOn).toLocaleDateString(localeCode())} · {item.ticker.replace(/_.*/, '')}</small></td><td data-label={tx('数量', 'Quantity')}>{decimal(item.quantity, 4)}</td><td data-label={tx('每股', 'Per share')}>{item.grossAmountPerShare === undefined ? '-' : decimal(item.grossAmountPerShare, 4)}</td><td data-label={tx('到账金额', 'Amount')} className="positive">+{money(item.amount, item.currency)}</td></tr>))}</tbody></table></div>
   return <div className="table-scroll"><table><thead><tr><th>{tx('时间与类型', 'Time and type')}</th><th>{tx('编号', 'Reference')}</th><th>{tx('金额', 'Amount')}</th></tr></thead><tbody>{Children.toArray((items as CashTransaction[]).map(item => <tr key={item.reference}><td data-label={tx('时间与类型', 'Time and type')}><strong>{transactionLabel(item.type)}</strong><small>{new Date(item.dateTime).toLocaleString(localeCode())}</small></td><td data-label={tx('编号', 'Reference')}><span className="history-reference">{item.reference}</span></td><td data-label={tx('金额', 'Amount')} className={item.amount >= 0 ? 'positive' : 'negative'}>{item.amount >= 0 ? '+' : ''}{money(item.amount, item.currency)}</td></tr>))}</tbody></table></div>
@@ -644,97 +751,208 @@ function RangeSwitcher({ value, onChange, labels }: { value: MarketRange; onChan
   )
 }
 
+/* PriceHistoryChart — 由 TradingView Lightweight Charts（v5）渲染，取代旧 ECharts 实现。
+   对外契约不变：props、.price-chart 容器、aria 标签、买卖成交点清单与双语图例。
+   时间轴：日线用交易日字符串（避免跨时区偏一天）；日内把 UTC 秒整体平移本地时差，
+   让坐标轴刻度等于交易所本地时间，tooltip 再平移回来显示真实成交时间。 */
+interface ChartHover {
+  key: string
+  x: number
+  y: number
+  flipX: boolean
+  flipY: boolean
+  label: string
+  close?: number
+  trades: TradePoint[]
+}
+
+/* One legend, two placements. DESIGN.md's chart contract requires the series,
+   the marker meanings and the fill count to stay readable next to the chart,
+   so the compact cockpit chart gets the legend too - it is the only thing on
+   that chart a reader cannot infer from the axis.
+   The swatches are drawn by CSS (`.chart-legend span::before`) off --accent /
+   --pos / --warn, so the legend and the series can never drift apart. Each span
+   used to carry an inline <i> as well, which painted every swatch twice. */
+function ChartLegend() {
+  return <div className="chart-legend" aria-hidden="true">
+    <span>{tx('收盘价', 'Close')}</span>
+    <span>{tx('买入', 'Buy')}</span>
+    <span>{tx('卖出', 'Sell')}</span>
+  </div>
+}
+
 function PriceHistoryChart({ series, orders, name, compact = false }: { series: MarketSeries; orders: HistoricalOrder[]; name: string; compact?: boolean }) {
   const chartRef = useRef<HTMLDivElement>(null)
-  const candles = [...series.candles].sort((a, b) => Date.parse(a.time) - Date.parse(b.time))
+  const chartApiRef = useRef<IChartApi | null>(null)
+  const theme = useSyncExternalStore(themeStore.subscribe, themeStore.getSnapshot)
+  const isDark = theme.active === 'dark'
+  const [hover, setHover] = useState<ChartHover | null>(null)
+  const candles = useMemo(() => [...series.candles].sort((a, b) => Date.parse(a.time) - Date.parse(b.time)), [series])
   const start = Date.parse(candles[0]!.time)
   const end = Date.parse(candles[candles.length - 1]!.time)
-  const trades = orders.flatMap((item, index): TradePoint[] => {
+  const trades = useMemo(() => orders.flatMap((item, index): TradePoint[] => {
     const filledAt = item.fill?.filledAt
     const price = item.fill?.price
     const time = filledAt === undefined ? Number.NaN : Date.parse(filledAt)
     if (filledAt === undefined || price === undefined || !Number.isFinite(time) || time < start || time > end) return []
     return [{ key: `${item.order.id}:${item.fill?.id ?? index}`, ticker: item.order.ticker, name, side: item.order.side, time, filledAt, price, quantity: item.fill?.quantity ?? item.order.filledQuantity ?? item.order.quantity ?? 0, currency: series.currency }]
-  })
+  }), [name, orders, series.currency, start, end])
   const first = candles[0]!.close; const last = candles[candles.length - 1]!.close
   const change = first === 0 ? undefined : (last - first) / first * 100
+
+  /* Chart colours are read from the design tokens, never from a parallel
+     palette. The literals that used to sit here were TradingView's defaults -
+     a #1677ff line with #18a957 / #d88a15 markers - which put a second blue and
+     a second green on a product whose first rule is one accent for the whole
+     surface, and left the legend swatch disagreeing with the line it labelled.
+     Memoised on `isDark` because the crosshair re-renders on every mouse move. */
+  const palette = useMemo(() => {
+    const token = (name: string, fallback: string) => {
+      if (typeof window === 'undefined') return fallback
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback
+    }
+    const withAlpha = (color: string, alpha: number) => {
+      const hex = color.trim().replace('#', '')
+      const full = hex.length === 3 ? hex.split('').map(part => part + part).join('') : hex
+      const value = Number.parseInt(full, 16)
+      return full.length === 6 && !Number.isNaN(value)
+        ? `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`
+        : color
+    }
+    const accent = token('--accent', isDark ? '#60A5FA' : '#2563EB')
+    return {
+      accent,
+      buyColor: token('--pos', isDark ? '#10B981' : '#059669'),
+      sellColor: token('--warn', isDark ? '#FBBF24' : '#D97706'),
+      axisColor: token('--ink-3', isDark ? '#8290A4' : '#64748B'),
+      gridColor: withAlpha(token('--hair', isDark ? '#232C3B' : '#E2E8F0'), 0.75),
+      crosshairColor: withAlpha(accent, 0.6),
+      priceLineColor: withAlpha(accent, 0.55),
+      /* The axis type is canvas text, so the 12px floor in DESIGN.md is not
+         enforced by the DOM audit. It was 10.5px in a font stack the product
+         does not otherwise use; both are now the tokens. */
+      fontFamily: token('--font-mono', 'ui-monospace, "SF Mono", Menlo, monospace'),
+    }
+  }, [isDark])
+  const { accent, buyColor, sellColor, axisColor, gridColor, crosshairColor, priceLineColor, fontFamily: chartFont } = palette
+
+  /* 价格点与成交点统一转成图表时间基；日内另建时间桶索引，供 tooltip 命中同一根 K 线的成交。 */
+  const model = useMemo(() => {
+    const intraday = series.interval !== '1d'
+    const bucketSeconds = series.interval === '1m' ? 60 : 300
+    const shift = intraday ? -new Date(start).getTimezoneOffset() * 60 : 0
+    const day = (ms: number) => new Date(ms).toISOString().slice(0, 10)
+    const toChartTime = (ms: number): Time => intraday ? Math.floor(ms / 1000) + shift as UTCTimestamp : day(ms)
+    const toRealMs = (time: Time): number => typeof time === 'number' ? (time - shift) * 1000 : Date.parse(String(time))
+    const buckets = new Map<string | number, TradePoint[]>()
+    for (const trade of trades) {
+      const key = intraday ? Math.floor(Math.floor(trade.time / 1000) / bucketSeconds) : day(trade.time)
+      const bucket = buckets.get(key)
+      if (bucket === undefined) buckets.set(key, [trade]); else bucket.push(trade)
+    }
+    return {
+      intraday, toRealMs, buckets,
+      /* 十字光标吸附到 K 线后，用它的 time 反查同一时间桶的成交。 */
+      hoverBucket: (time: Time) => intraday ? Math.floor(((time as number) - shift) / bucketSeconds) : String(time),
+      points: candles.map(item => ({ time: toChartTime(Date.parse(item.time)), value: item.close })),
+      markers: trades.map((trade): SeriesMarker<Time> => ({
+        time: toChartTime(trade.time),
+        position: trade.side === 'BUY' ? 'belowBar' : 'aboveBar',
+        shape: trade.side === 'BUY' ? 'arrowUp' : 'arrowDown',
+        color: trade.side === 'BUY' ? buyColor : sellColor,
+        size: compact ? 0.35 : 0.4,
+      })),
+    }
+  }, [buyColor, candles, compact, sellColor, series.interval, start, trades])
+
   useEffect(() => {
     const element = chartRef.current
     if (element === null) return
+    /* jsdom（单测）没有 canvas：与旧 ECharts 版一致地短路，只留下静态容器与 aria 标签。 */
     if (/jsdom/i.test(navigator.userAgent)) return
-    const chart = echarts.init(element, undefined, { renderer: 'canvas' })
-    const formatPrice = (value: number) => money(value, series.currency)
-    const buyData = trades.filter(item => item.side === 'BUY').map(item => ({
-      value: [item.time, item.price], quantity: item.quantity, filledAt: item.filledAt,
-    }))
-    const sellData = trades.filter(item => item.side === 'SELL').map(item => ({
-      value: [item.time, item.price], quantity: item.quantity, filledAt: item.filledAt,
-    }))
-    const closeName = tx('收盘价', 'Close')
-    const buyName = tx('买入', 'Buy')
-    const sellName = tx('卖出', 'Sell')
-    const option: EChartsCoreOption = {
-      animation: typeof window.matchMedia !== 'function' || !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-      aria: { enabled: true, decal: { show: false }, description: tx(`${name} 走势图`, `${name} price chart`) },
-      color: ['#1677ff', '#18a957', '#d88a15'],
-      grid: { left: 10, right: 60, top: 20, bottom: compact ? 26 : 56, containLabel: true },
-      legend: { show: !compact, top: 0, left: 0, itemWidth: 14, itemHeight: 6, textStyle: { color: '#708196', fontSize: 11, fontFamily: 'SF Mono, IBM Plex Mono, Menlo, monospace' }, data: [closeName, buyName, sellName] },
-      tooltip: {
-        trigger: 'axis', renderMode: 'richText', confine: true, axisPointer: { type: 'cross', snap: false, lineStyle: { color: 'rgba(112, 129, 150, 0.45)', type: 'dashed' } },
-        backgroundColor: 'rgba(255, 255, 255, 0.98)', borderColor: '#dce3eb', borderWidth: 1, padding: [10, 14],
-        textStyle: { color: '#15263a', fontSize: 11.5 },
-        extraCssText: 'box-shadow: 0 5px 16px rgba(20, 45, 72, 0.14); border-radius: 8px;',
-        formatter: (params: unknown) => {
-          const rows = Array.isArray(params) ? params as Array<Record<string, unknown>> : []
-          const firstRow = rows[0]
-          const axisValue = typeof firstRow?.axisValue === 'number' ? firstRow.axisValue : Number(firstRow?.axisValue)
-          const lines = Number.isFinite(axisValue) ? [new Date(axisValue).toLocaleString(localeCode())] : []
-          for (const row of rows) {
-            const data = row.data as { value?: unknown[]; quantity?: number; filledAt?: string } | undefined
-            const value = Array.isArray(data?.value) ? Number(data.value[1]) : Number(row.value)
-            if (!Number.isFinite(value)) continue
-            const seriesName = String(row.seriesName ?? '')
-            lines.push(`${String(row.marker ?? '')}${seriesName}  ${formatPrice(value)}`)
-            if (data?.quantity !== undefined) lines.push(`${tx('数量', 'Quantity')}  ${decimal(data.quantity, 4)}${tx(' 股', ' shares')}${data.filledAt ? ` · ${new Date(data.filledAt).toLocaleTimeString(localeCode())}` : ''}`)
-          }
-          return lines.join('\n')
-        },
+    setHover(null)
+    const chart = createChart(element, {
+      autoSize: true,
+      layout: {
+        background: { color: 'transparent' },
+        textColor: axisColor,
+        fontFamily: chartFont,
+        fontSize: 12,
+        /* 保留 TradingView 归属标记：Lightweight Charts 的许可要求。 */
+        attributionLogo: true,
       },
-      xAxis: { type: 'time', min: start, max: end, boundaryGap: false, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: '#8b9aab', fontSize: 10.5, hideOverlap: true }, splitLine: { show: false } },
-      yAxis: { position: 'right', type: 'value', scale: true, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: '#8b9aab', fontSize: 10.5, formatter: (value: number) => formatPrice(value) }, splitLine: { show: true, lineStyle: { color: 'rgba(21, 38, 58, 0.08)' } } },
-      dataZoom: compact ? [] : [{ type: 'inside', filterMode: 'none', minSpan: 8 }, { type: 'slider', height: 18, bottom: 10, borderColor: '#dce3eb', fillerColor: 'rgba(22, 119, 255, 0.14)', handleStyle: { color: '#1677ff', borderColor: '#ffffff', borderWidth: 1.5, shadowBlur: 0 }, textStyle: { color: '#708196', fontSize: 9.5 }, brushSelect: false }],
-      series: [
-        {
-          name: closeName,
-          type: 'line',
-          data: candles.map(item => [Date.parse(item.time), item.close]),
-          showSymbol: false,
-          sampling: 'lttb',
-          smooth: false,
-          lineStyle: { color: '#1677ff', width: 2 },
-          markLine: {
-            symbol: ['none', 'none'],
-            data: [{ yAxis: last, lineStyle: { color: 'rgba(22, 119, 255, 0.55)', type: 'dashed' }, label: { show: true, position: 'end', formatter: () => formatPrice(last), color: '#ffffff', backgroundColor: '#1677ff', padding: [3, 6], borderRadius: 5, borderWidth: 0 } }],
-          },
-          z: 2,
-        },
-        { name: buyName, type: 'scatter', data: buyData, symbol: 'rect', symbolSize: 9, itemStyle: { color: '#18a957', borderColor: '#ffffff', borderWidth: 1.5 }, z: 5 },
-        { name: sellName, type: 'scatter', data: sellData, symbol: 'triangle', symbolSize: 11, itemStyle: { color: '#d88a15', borderColor: '#ffffff', borderWidth: 1.5 }, z: 5 },
-      ],
+      grid: { vertLines: { visible: false }, horzLines: { color: gridColor } },
+      crosshair: {
+        mode: CrosshairMode.Magnet,
+        vertLine: { color: crosshairColor, width: 1, style: LineStyle.Dashed, labelBackgroundColor: isDark ? '#171E2B' : '#0F172A' },
+        horzLine: { color: crosshairColor, width: 1, style: LineStyle.Dashed, labelBackgroundColor: isDark ? '#171E2B' : '#0F172A' },
+      },
+      rightPriceScale: { borderVisible: false, entireTextOnly: true, scaleMargins: { top: 0.12, bottom: 0.14 } },
+      timeScale: { borderVisible: false, timeVisible: model.intraday, secondsVisible: false, rightOffset: 1, minBarSpacing: 0.4, lockVisibleTimeRangeOnResize: true, fixLeftEdge: true, fixRightEdge: true },
+      localization: {
+        locale: localeCode(),
+        priceFormatter: (value: number) => money(value, series.currency),
+        timeFormatter: (time: Time) => new Date(model.toRealMs(time)).toLocaleString(localeCode(), { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      },
+      handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
+      handleScale: { axisPressedMouseMove: false, mouseWheel: true, pinch: true },
+    })
+    const priceLine = chart.addSeries(LineSeries, {
+      color: accent,
+      lineWidth: 2,
+      /* 最新价：虚线 + 轴端价格牌，对应旧 ECharts 的 markLine 展示。 */
+      priceLineVisible: true,
+      priceLineStyle: LineStyle.Dashed,
+      priceLineColor,
+      lastValueVisible: true,
+      crosshairMarkerVisible: true,
+      crosshairMarkerRadius: 4,
+      priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
+    })
+    priceLine.setData(model.points)
+    createSeriesMarkers(priceLine, model.markers, { zOrder: 'aboveSeries' })
+    chart.timeScale().fitContent()
+    chartApiRef.current = chart
+
+    const onCrosshair = (param: MouseEventParams<Time>) => {
+      const time = param.time
+      const point = param.point
+      if (time === undefined || point === undefined) { setHover(null); return }
+      const data = param.seriesData.get(priceLine) as LineData<Time> | undefined
+      const close = data?.value
+      const bucket = model.hoverBucket(time)
+      const x = chart.timeScale().timeToCoordinate(time) ?? point.x
+      setHover(previous => previous !== null && previous.key === String(bucket) && previous.x === x && previous.close === close ? previous : {
+        key: String(bucket), x, y: point.y, close,
+        flipX: x > element.clientWidth * 0.62,
+        flipY: point.y > element.clientHeight * 0.66,
+        label: new Date(model.toRealMs(time)).toLocaleString(localeCode()),
+        trades: model.buckets.get(bucket) ?? [],
+      })
     }
-    chart.setOption(option)
-    const resize = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(() => chart.resize())
-    resize?.observe(element)
-    return () => { resize?.disconnect(); chart.dispose() }
-  }, [candles, compact, end, name, series.currency, series.range, start, trades])
+    chart.subscribeCrosshairMove(onCrosshair)
+    return () => { chartApiRef.current = null; chart.unsubscribeCrosshairMove(onCrosshair); chart.remove() }
+  }, [accent, axisColor, buyColor, chartFont, crosshairColor, gridColor, isDark, model, priceLineColor, series.currency, sellColor])
+
   return <section className="price-chart-panel" aria-labelledby="price-chart-title">
     {!compact && <div className="section-heading"><div><h2 id="price-chart-title">{tx('历史价格与买卖点', 'Price history and trade markers')}</h2><p>{series.symbol} · {intervalLabel(series)} · {new Date(start).toLocaleDateString(localeCode())} - {new Date(end).toLocaleDateString(localeCode())} · {tx('纵轴聚焦价格区间', 'Scaled price axis')}</p></div><strong className={(change ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{money(last, series.currency)} <small>{percent(change)}</small></strong></div>}
-    {!compact && <p className="chart-count">{tx(`区间内 ${trades.length} 个 Trading 212 成交点 · 可拖动底部滑块或双指缩放`, `${trades.length} Trading 212 trades in range · Drag the slider or pinch to zoom`)}</p>}
-    <div ref={chartRef} className="price-chart" role="img" aria-label={compact ? tx(`${name} ${rangeLabel(series.range)}历史价格曲线`, `${name} price chart`) : tx(`${name} ${rangeLabel(series.range)}历史价格曲线，包含 ${trades.length} 个买卖成交点`, `${name} ${rangeLabel(series.range)} price chart with ${trades.length} trade markers`)} />
+    {!compact && <div className="chart-meta"><p className="chart-count">{tx(`区间内 ${trades.length} 个 Trading 212 成交点 · 滚轮或双指缩放，拖动平移`, `${trades.length} Trading 212 trades in range · Scroll or pinch to zoom, drag to pan`)}</p><button type="button" className="chart-reset" onClick={() => chartApiRef.current?.timeScale().fitContent()}>{tx('重置缩放', 'Reset zoom')}</button></div>}
+    {compact && <div className="chart-compact-meta">
+      <ChartLegend />
+      <p className="chart-count">{tx(`${intervalLabel(series)} · 区间内 ${trades.length} 个成交点`, `${intervalLabel(series)} · ${trades.length} trades in range`)}</p>
+    </div>}
+    {!compact && <ChartLegend />}
+    <div className="price-chart-wrap">
+      <div ref={chartRef} className="price-chart" role="img" aria-label={compact ? tx(`${name} ${rangeLabel(series.range)}历史价格曲线`, `${name} price chart`) : tx(`${name} ${rangeLabel(series.range)}历史价格曲线，包含 ${trades.length} 个买卖成交点`, `${name} ${rangeLabel(series.range)} price chart with ${trades.length} trade markers`)} />
+      {hover !== null && <div className="chart-tooltip" style={{ left: hover.x, top: hover.y, transform: `${hover.flipX ? 'translateX(calc(-100% - 13px))' : 'translateX(13px)'} ${hover.flipY ? 'translateY(calc(-100% - 13px))' : 'translateY(13px)'}` }}>
+        <span className="chart-tooltip-time">{hover.label}</span>
+        {hover.close !== undefined && <span className="chart-tooltip-row"><i className="legend-line" style={{ background: accent }} />{tx('收盘价', 'Close')}<b>{money(hover.close, series.currency)}</b></span>}
+        {hover.trades.map(trade => <span key={trade.key} className="chart-tooltip-row"><i className={trade.side === 'BUY' ? 'legend-marker' : 'legend-marker sell'} style={{ background: trade.side === 'BUY' ? buyColor : sellColor }} />{trade.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} {decimal(trade.quantity, 4)}{tx(' 股', ' shares')}<b>{money(trade.price, series.currency)}</b><small className="chart-tooltip-time">{new Date(trade.filledAt).toLocaleTimeString(localeCode())}</small></span>)}
+      </div>}
+    </div>
     <div className="sr-only" aria-label="成交点明细">{trades.map(trade => <span key={trade.key}>{trade.side === 'BUY' ? '买入' : '卖出'}，{new Date(trade.filledAt).toLocaleString('zh-CN')}，成交价 {money(trade.price, series.currency)}，{decimal(trade.quantity, 4)} 股</span>)}</div>
   </section>
 }
-
 function Metric({ label, value, note, tone }: { label: string; value: string; note?: string; tone?: 'positive' | 'negative' }) {
   return <div className="metric-card"><span>{label}</span><strong className={tone === 'positive' ? 'tone-positive' : tone === 'negative' ? 'tone-negative' : ''}>{value}</strong>{note && <small>{note}</small>}</div>
 }
@@ -743,7 +961,7 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hide
   const ticker = position.instrument?.ticker ?? ''
   const name = position.instrument?.name ?? tickerLabel(ticker)
   const currency = position.instrument?.currency ?? accountCurrency
-  const [range, setRange] = useState<MarketRange>('1y')
+  const [range, setRange] = useState<MarketRange>('1w')
   const [series, setSeries] = useState<MarketSeries>()
   const [marketLoading, setMarketLoading] = useState(true)
   const [orders, setOrders] = useState<HistoricalOrder[]>([])
@@ -768,6 +986,12 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hide
   const cost = position.walletImpact?.totalCost ?? 0
   const returnPct = cost ? profit / cost * 100 : undefined
 
+  const currentMarketPrice = series?.regularMarketPrice ?? position.currentPrice
+  const prevClose = series?.previousClose
+  const intradayChangePct = currentMarketPrice !== undefined && prevClose !== undefined && prevClose > 0
+    ? ((currentMarketPrice - prevClose) / prevClose) * 100
+    : undefined
+
   return (
     <div className="cockpit-instrument-container">
       {/* 标的头部 */}
@@ -784,7 +1008,12 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hide
         <div className="inst-price-box">
           <strong className="inst-price-main">{money(position.currentPrice, currency)}</strong>
           <span className={`inst-price-sub ${profit >= 0 ? 'tone-positive' : 'tone-negative'}`}>
-            {hideBalances ? '••••' : `${signedMoney(profit, accountCurrency)} (${percent(returnPct)})`}
+            {intradayChangePct !== undefined && (
+              <strong className={intradayChangePct >= 0 ? 'tone-positive' : 'tone-negative'} style={{ marginRight: '6px' }}>
+                {percent(intradayChangePct)} {tx('今日', 'Today')} ·
+              </strong>
+            )}
+            {hideBalances ? '••••' : `${signedMoney(profit, accountCurrency)} (${percent(returnPct)} ${tx('累计', 'Total')})`}
           </span>
         </div>
         <div className="inst-actions">
@@ -846,7 +1075,7 @@ function InstrumentDetailPage({ position, accountCurrency, hideBalances = false,
   const ticker = position.instrument?.ticker ?? ''
   const name = position.instrument?.name ?? tickerLabel(ticker)
   const currency = position.instrument?.currency ?? accountCurrency
-  const [range, setRange] = useState<MarketRange>('1y')
+  const [range, setRange] = useState<MarketRange>('1w')
   const [series, setSeries] = useState<MarketSeries>()
   const [marketLoading, setMarketLoading] = useState(true)
   const [marketError, setMarketError] = useState<ApiError>()
@@ -997,20 +1226,78 @@ function OverviewPage({
   portfolio,
   hideBalances,
   searchQuery,
+  selectedTicker: externalSelectedTicker,
   onHoldings,
   onInstrument,
   onNavigate,
+  onSelectTicker,
 }: {
   portfolio: PortfolioSnapshot
   hideBalances: boolean
   searchQuery: string
+  selectedTicker?: string
   onHoldings: () => void
   onInstrument: (position: Position) => void
   onNavigate: (page: Page) => void
+  onSelectTicker?: (ticker: string) => void
 }) {
   const currency = portfolio.account.currency
   const analytics = portfolio.analytics
-  const [selectedTicker, setSelectedTicker] = useState<string>(() => portfolio.positions[0]?.instrument?.ticker ?? '')
+  const [internalSelectedTicker, setInternalSelectedTicker] = useState<string>(() => portfolio.positions[0]?.instrument?.ticker ?? '')
+  const selectedTicker = externalSelectedTicker ?? internalSelectedTicker
+  const setSelectedTicker = (ticker: string) => {
+    setInternalSelectedTicker(ticker)
+    onSelectTicker?.(ticker)
+  }
+  const [treemapMode, setTreemapMode] = useState<TreemapMetricMode>('daily')
+  const [dailyQuotes, setDailyQuotes] = useState<Record<string, {
+    currentPrice?: number
+    previousClose?: number
+    dailyChangePercent?: number
+    dailyProfitLoss?: number
+  }>>({})
+  const [dailyQuotesLoading, setDailyQuotesLoading] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    setDailyQuotesLoading(true)
+    const tickers = portfolio.positions.map(p => p.instrument?.ticker).filter(Boolean) as string[]
+    api.quotes(tickers)
+      .then(res => {
+        if (active) setDailyQuotes(res)
+      })
+      .catch(() => {
+        if (active) setDailyQuotes({})
+      })
+      .finally(() => {
+        if (active) setDailyQuotesLoading(false)
+      })
+    return () => { active = false }
+  }, [portfolio.fetchedAt, portfolio.positions])
+
+  const enrichedAllocation = useMemo(() => {
+    return portfolio.analytics.allocation.map(item => {
+      const quote = dailyQuotes[item.ticker]
+      if (!quote) return item
+      const dailyChangePercent = quote.dailyChangePercent ?? item.dailyChangePercent
+      const dailyProfitLoss = quote.dailyProfitLoss ?? (dailyChangePercent !== undefined ? item.currentValue * (dailyChangePercent / 100) : undefined)
+      return {
+        ...item,
+        dailyChangePercent,
+        dailyProfitLoss,
+      }
+    })
+  }, [portfolio.analytics.allocation, dailyQuotes])
+
+  const { todayProfitLoss, todayReturnPercent } = useMemo(() => {
+    const quotedPositions = portfolio.positions.filter(p => p.instrument?.ticker && dailyQuotes[p.instrument.ticker]?.dailyProfitLoss !== undefined)
+    if (quotedPositions.length === 0) return { todayProfitLoss: undefined, todayReturnPercent: undefined }
+    const totalDailyPl = quotedPositions.reduce((sum, p) => sum + (dailyQuotes[p.instrument!.ticker!]?.dailyProfitLoss ?? 0), 0)
+    const totalCurrentVal = quotedPositions.reduce((sum, p) => sum + (p.walletImpact?.currentValue ?? 0), 0)
+    const prevVal = totalCurrentVal - totalDailyPl
+    const returnPct = prevVal > 0 ? (totalDailyPl / prevVal) * 100 : undefined
+    return { todayProfitLoss: totalDailyPl, todayReturnPercent: returnPct }
+  }, [portfolio.positions, dailyQuotes])
 
   const filteredPositions = useMemo(() => {
     if (!searchQuery.trim()) return portfolio.positions
@@ -1038,15 +1325,21 @@ function OverviewPage({
           <strong className="account-hero-val">{hideBalances ? '••••••••' : money(analytics.totalValue, currency)}</strong>
           <div className="account-sub-metrics-grid">
             <div className="sub-metric-block">
-              <span>{tx('24小时变动', 'LAST 24H')}</span>
-              <strong className={analytics.unrealizedProfitLoss >= 0 ? 'tone-positive' : 'tone-negative'}>
-                {hideBalances ? '••••' : signedMoney(analytics.unrealizedProfitLoss, currency)}
-              </strong>
+              <span>{tx('今日盈亏', 'TODAY P/L')}</span>
+              {todayProfitLoss !== undefined ? (
+                <strong className={todayProfitLoss >= 0 ? 'tone-positive' : 'tone-negative'}>
+                  {hideBalances ? '••••' : signedMoney(todayProfitLoss, currency)}
+                  {todayReturnPercent !== undefined && <small className="sub-metric-pct"> ({percent(todayReturnPercent)})</small>}
+                </strong>
+              ) : (
+                <strong className="tone-muted">{dailyQuotesLoading ? tx('同步中…', 'Syncing…') : '--'}</strong>
+              )}
             </div>
             <div className="sub-metric-block">
-              <span>{tx('收益率', 'RATE OF RETURN')}</span>
-              <strong className={(analytics.unrealizedReturnPercent ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>
-                {percent(analytics.unrealizedReturnPercent)}
+              <span>{tx('累计未实现', 'TOTAL UNREALIZED')}</span>
+              <strong className={analytics.unrealizedProfitLoss >= 0 ? 'tone-positive' : 'tone-negative'}>
+                {hideBalances ? '••••' : signedMoney(analytics.unrealizedProfitLoss, currency)}
+                <small className="sub-metric-pct"> ({percent(analytics.unrealizedReturnPercent)})</small>
               </strong>
             </div>
           </div>
@@ -1119,22 +1412,40 @@ function OverviewPage({
           </section>
         )}
 
-        {/* 资产配置：按市值面积显示，颜色表达收益方向 */}
+        {/* 资产配置：按市值面积显示，颜色与数值优先表达今日变化 */}
         <section className="cockpit-treemap-section">
           <div className="pane-section-header">
             <div>
               <h3>{tx('资产配置', 'Asset allocation')}</h3>
-              <p className="pane-section-sub">{tx('按持仓市值排序', 'Ranked by market value')}</p>
+              <p className="pane-section-sub">{tx('面积代表持仓市值，数值与颜色代表今日涨跌', 'Area reflects market value, value & tone reflect today’s movement')}</p>
+            </div>
+            <div className="treemap-mode-toggles" role="group" aria-label={tx('拼盘维度切换', 'Treemap view mode')}>
+              <button
+                type="button"
+                className={`treemap-mode-pill ${treemapMode === 'daily' ? 'is-active' : ''}`}
+                onClick={() => setTreemapMode('daily')}
+              >
+                {tx('今日变化', 'Today')}
+              </button>
+              <button
+                type="button"
+                className={`treemap-mode-pill ${treemapMode === 'total' ? 'is-active' : ''}`}
+                onClick={() => setTreemapMode('total')}
+              >
+                {tx('累计收益', 'Total')}
+              </button>
             </div>
           </div>
           <DynamicTreemapGrid
-            allocation={portfolio.analytics.allocation}
+            allocation={enrichedAllocation}
             activeTicker={activePosition?.instrument?.ticker}
+            metricMode={treemapMode}
+            currency={currency}
             onSelect={setSelectedTicker}
           />
           <button className="cockpit-see-all-btn" type="button" onClick={onHoldings}>
-            {tx('查看全部', 'See all')}
-            <span className="btn-orb" aria-hidden="true"><ArrowRight size={13} strokeWidth={2} /></span>
+            <span>{tx('查看全部持仓', 'View all holdings')}</span>
+            <span className="btn-action-chevron" aria-hidden="true">›</span>
           </button>
         </section>
 
@@ -1159,7 +1470,32 @@ function OverviewPage({
           <div className="empty-inline">{tx('目前没有持仓', 'No holdings yet')}</div>
         )}
 
-        <section className="cockpit-overview-holdings">
+        {/* Portfolio-level analytics, between the instrument cockpit above and the
+            holdings ledger below: the reader has just read one asset's numbers and
+            now needs the portfolio's. Two read-only panels, one hairline divider,
+            no card chrome - the plate below is the only boxed thing in the strip. */}
+        <section className="cockpit-analytics-strip">
+          <div className="cockpit-sub-analytics-grid">
+            <section className="sub-panel">
+              <div className="section-heading">
+                <div>
+                  <h2>{tx('未实现盈亏贡献', 'Unrealized return contributors')}</h2>
+                  <p>{tx('按绝对影响排序 · 账户币种', 'Ranked by absolute impact · account currency')}</p>
+                </div>
+              </div>
+              <ProfitDrivers portfolio={portfolio} />
+            </section>
+            <section className="sub-panel">
+              <div className="section-heading">
+                <div>
+                  <h2>{tx('标的交易币种暴露', 'Exposure by instrument currency')}</h2>
+                  <p>{tx('逐仓快照 · 标的币种分布', 'Per-position snapshot · by instrument currency')}</p>
+                </div>
+              </div>
+              <CurrencyExposureChart portfolio={portfolio} />
+            </section>
+          </div>
+
           <section className="cockpit-holdings-preview">
             <div className="section-heading">
               <h2>{tx('主要持仓', 'Top holdings')}</h2>
@@ -1183,11 +1519,24 @@ function HelpPage() {
     ['connection-read-only', tx('连接为只读来源', 'Read-only credential source'), tx('在提供凭据的环境变量或外部配置中修改，插件不会覆盖遮蔽值。', 'Change the environment or external source that provides the credentials; the plugin will not overwrite it.')],
     ['client-load-failed', tx('侧栏入口未加载', 'Sidebar entry did not load'), tx('重新安装准确版本的插件并完全重启 dsh。', 'Reinstall the exact plugin version and fully restart dsh.')],
   ]
-  return <section className="content-page help-page"><h1>{tx('帮助', 'Help')}</h1><p>{tx('Trading 212 连接是只读的。模型会看到工具返回的投资组合快照，但诊断信息不会包含凭据、持仓或金额。', 'The Trading 212 connection is read-only. The model can use portfolio snapshots returned by tools, while diagnostics exclude credentials, holdings, and values.')}</p><div className="help-list">{entries.map(([id, title, body]) => <article id={`help-${id}`} key={id}><h2>{title}</h2><p>{body}</p></article>)}</div><h2>{tx('在 dsh 中提问', 'Ask in dsh')}</h2><ul><li>{tx('总结我最大的三个持仓', 'Summarize my three largest holdings')}</li><li>{tx('我的组合有哪些货币敞口？', 'What currency exposure does my portfolio have?')}</li><li>{tx('哪些仓位正在拖累未实现收益？', 'Which positions are dragging down unrealized returns?')}</li></ul></section>
+  return <section className="content-page help-page"><h1>{tx('帮助', 'Help')}</h1><p>{tx('Trading 212 连接是只读的。模型会看到工具返回的投资组合快照，但诊断信息不会包含凭据、持仓或金额。', 'The Trading 212 connection is read-only. The model can use portfolio snapshots returned by tools, while diagnostics exclude credentials, holdings, and values.')}</p><div className="help-list">{entries.map(([id, title, body]) => <article id={`help-${id}`} key={id}><h2>{title}</h2><p>{body}</p></article>)}</div><h2>{tx('键盘快捷键', 'Keyboard shortcuts')}</h2><ul><li><kbd>1</kbd>-<kbd>5</kbd> {tx('切换页面', 'Switch page')}</li><li><kbd>J</kbd> / <kbd>K</kbd> {tx('上下漫游持仓', 'Roam holdings')}</li><li><kbd>/</kbd> {tx('聚焦搜索', 'Focus search')}</li><li><kbd>P</kbd> {tx('隐藏金额', 'Hide balances')}</li><li><kbd>T</kbd> {tx('切换主题', 'Switch theme')}</li><li><kbd>?</kbd> {tx('打开完整快捷键指南', 'Open the full shortcuts guide')}</li></ul><h2>{tx('在 dsh 中提问', 'Ask in dsh')}</h2><ul><li>{tx('总结我最大的三个持仓', 'Summarize my three largest holdings')}</li><li>{tx('我的组合有哪些货币敞口？', 'What currency exposure does my portfolio have?')}</li><li>{tx('哪些仓位正在拖累未实现收益？', 'Which positions are dragging down unrealized returns?')}</li></ul></section>
 }
 
 function DisconnectDialog({ pending, error, onCancel, onConfirm }: { pending: boolean; error?: ApiError; onCancel: () => void; onConfirm: () => void }) {
   return <div className="dialog-backdrop"><section className="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="disconnect-title"><Unplug strokeWidth={1.5} /><h2 id="disconnect-title">{tx('断开 Trading 212？', 'Disconnect Trading 212?')}</h2><p>{tx('这会停用当前连接并清除本次运行中的投资组合缓存。插件不会删除 Trading 212 网站上的密钥。', 'This disables the current connection and clears the in-memory portfolio cache. It does not delete the key on Trading 212.')}</p>{error && <ErrorPanel error={error} compact />}<div><button type="button" onClick={onCancel} disabled={pending}>{tx('取消', 'Cancel')}</button><button className="danger" type="button" onClick={onConfirm} disabled={pending}>{pending ? tx('正在断开…', 'Disconnecting…') : tx('确认断开', 'Disconnect')}</button></div></section></div>
+}
+
+function ThemeSetting() {
+  const theme = useSyncExternalStore(themeStore.subscribe, themeStore.getSnapshot)
+  const choices = [
+    ['auto', tx('自动（跟随系统）', 'Auto (follow system)')],
+    ['light', tx('蓝白私行', 'Haute-Banque (Light)')],
+    ['dark', tx('黑曜石终端', 'Obsidian (Dark)')],
+  ] as const
+  return <section className="language-setting" aria-labelledby="theme-title">
+    <div><span>{tx('界面', 'Interface')}</span><h2 id="theme-title">{tx('主题', 'Theme')}</h2><p>{theme.preference === 'auto' ? tx(`当前跟随系统：${theme.active === 'dark' ? '黑曜石终端（暗黑）' : '苏黎世私行（明亮）'}`, `Following system: ${theme.active === 'dark' ? 'Obsidian terminal (Dark)' : 'Zurich Haute-Banque (Light)'}`) : theme.preference === 'dark' ? tx('固定模式：黑曜石暗黑量化终端', 'Fixed mode: Obsidian quantitative terminal') : tx('固定模式：苏黎世私行蓝白典雅', 'Fixed mode: Zurich Haute-Banque')}</p></div>
+    <div className="language-options" role="radiogroup" aria-label={tx('界面主题', 'Interface theme')}>{choices.map(([value, label]) => <button key={value} type="button" role="radio" aria-checked={theme.preference === value} className={theme.preference === value ? 'active' : ''} onClick={() => themeStore.setPreference(value as ThemePreference)}>{label}</button>)}</div>
+  </section>
 }
 
 function LanguageSetting() {
@@ -1215,7 +1564,7 @@ function SettingsPage({ status, onConnected, onDisconnected }: { status: Connect
     finally { setPending(false) }
   }
   if (reconnect) return <section className="content-page"><button className="back-button" type="button" onClick={() => setReconnect(false)}>← {tx('返回设置', 'Back to settings')}</button><ConnectionForm title={tx('重新连接 Trading 212', 'Reconnect Trading 212')} onConnected={onConnected} /></section>
-  return <section className="content-page settings-page"><h1>{tx('设置', 'Settings')}</h1><LanguageSetting /><div className="settings-row"><div><span>{tx('连接状态', 'Connection')}</span><strong><i className="status-dot" />{tx('已连接', 'Connected')}</strong></div><div><span>{tx('环境', 'Environment')}</span><strong>{status.environment === 'live' ? 'Live' : 'Demo'}</strong></div><div><span>{tx('凭据来源', 'Credential source')}</span><strong>{status.source === 'record' ? tx('dsh 凭据记录', 'dsh credential record') : status.source === 'reference' ? tx('兼容凭据引用', 'Credential reference') : status.source}</strong></div></div>{status.writable ? <div className="settings-actions"><button type="button" onClick={() => setReconnect(true)}>{tx('更换密钥或环境', 'Change key or environment')}</button><button className="danger-outline" type="button" onClick={() => setConfirm(true)}>{tx('断开连接', 'Disconnect')}</button></div> : <div className="read-only-note"><ShieldCheck strokeWidth={1.5} /><span><strong>{tx('此连接由只读来源管理', 'This connection is managed by a read-only source')}</strong><br />{tx('请在环境变量或外部凭据配置中修改；插件不会覆盖它。', 'Change it in the environment or external credential configuration; the plugin will not overwrite it.')}</span></div>}{confirm && <DisconnectDialog pending={pending} error={error} onCancel={() => { if (!pending) { setConfirm(false); setError(undefined) } }} onConfirm={() => void disconnect()} />}</section>
+  return <section className="content-page settings-page"><h1>{tx('设置', 'Settings')}</h1><ThemeSetting /><LanguageSetting /><div className="settings-row"><div><span>{tx('连接状态', 'Connection')}</span><strong><i className="status-dot" />{tx('已连接', 'Connected')}</strong></div><div><span>{tx('环境', 'Environment')}</span><strong>{status.environment === 'live' ? 'Live' : 'Demo'}</strong></div><div><span>{tx('凭据来源', 'Credential source')}</span><strong>{status.source === 'record' ? tx('dsh 凭据记录', 'dsh credential record') : status.source === 'reference' ? tx('兼容凭据引用', 'Credential reference') : status.source}</strong></div></div>{status.writable ? <div className="settings-actions"><button type="button" onClick={() => setReconnect(true)}>{tx('更换密钥或环境', 'Change key or environment')}</button><button className="danger-outline" type="button" onClick={() => setConfirm(true)}>{tx('断开连接', 'Disconnect')}</button></div> : <div className="read-only-note"><ShieldCheck strokeWidth={1.5} /><span><strong>{tx('此连接由只读来源管理', 'This connection is managed by a read-only source')}</strong><br />{tx('请在环境变量或外部凭据配置中修改；插件不会覆盖它。', 'Change it in the environment or external credential configuration; the plugin will not overwrite it.')}</span></div>}{confirm && <DisconnectDialog pending={pending} error={error} onCancel={() => { if (!pending) { setConfirm(false); setError(undefined) } }} onConfirm={() => void disconnect()} />}</section>
 }
 
 function Workspace({
@@ -1229,6 +1578,7 @@ function Workspace({
   searchQuery,
   onNavigate,
   onInstrument,
+  onSelectTicker,
   onRefresh,
   onConnected,
   onDisconnected,
@@ -1243,6 +1593,7 @@ function Workspace({
   searchQuery: string
   onNavigate: (page: Page) => void
   onInstrument: (position: Position) => void
+  onSelectTicker?: (ticker: string) => void
   onRefresh: () => void
   onConnected: (status: ConnectionStatus, snapshot: PortfolioSnapshot) => void
   onDisconnected: () => void
@@ -1259,13 +1610,14 @@ function Workspace({
     content = position ? <InstrumentDetailPage position={position} accountCurrency={portfolio.account.currency} hideBalances={hideBalances} onBack={() => onNavigate('holdings')} /> : <section className="content-page"><button className="back-button" type="button" onClick={() => onNavigate('holdings')}><ArrowLeft strokeWidth={1.5} />{tx('返回持仓', 'Back to holdings')}</button><div className="empty-state"><AlertTriangle strokeWidth={1.5} /><strong>{tx('找不到这项持仓', 'Holding not found')}</strong><span>{tx('刷新后该持仓可能已经变化。', 'It may have changed since the last refresh.')}</span></div></section>
   }
   else if (page === 'holdings') content = <section className="content-page"><h1>{tx('持仓', 'Holdings')}</h1><p>{tx(`${portfolio.positions.length} 个持仓 · 点击任意资产查看价格曲线和买卖历史`, `${portfolio.positions.length} holdings · Select an asset to view its price chart and trade history`)}</p>{error && <ErrorPanel error={error} status={status} onRetry={onRefresh} compact />}<HoldingTable positions={portfolio.positions} currency={portfolio.account.currency} hideBalances={hideBalances} onSelect={onInstrument} /></section>
-  else content = <>{error && <ErrorPanel error={error} status={status} onRetry={onRefresh} compact />}<OverviewPage portfolio={portfolio} hideBalances={hideBalances} searchQuery={searchQuery} onHoldings={() => onNavigate('holdings')} onInstrument={onInstrument} onNavigate={onNavigate} /></>
+  else content = <>{error && <ErrorPanel error={error} status={status} onRetry={onRefresh} compact />}<OverviewPage portfolio={portfolio} hideBalances={hideBalances} searchQuery={searchQuery} selectedTicker={selectedTicker} onHoldings={() => onNavigate('holdings')} onInstrument={onInstrument} onNavigate={onNavigate} onSelectTicker={onSelectTicker} /></>
   
   return <main className="workspace">{content}<footer className="legal">{tx('持仓和成交来自 Trading 212；个股历史价格来自 Yahoo Finance。仅供参考，不构成投资建议。', 'Holdings and trades come from Trading 212; historical prices come from Yahoo Finance. For information only, not investment advice.')}</footer></main>
 }
 
 export function App() {
   useSyncExternalStore(languageStore.subscribe, languageStore.getSnapshot)
+  useSyncExternalStore(themeStore.subscribe, themeStore.getSnapshot)
   const [boot, setBoot] = useState<BootState>({ kind: 'loading' })
   const [page, setPage] = useState<Page>('overview')
   const [selectedTicker, setSelectedTicker] = useState<string>()
@@ -1274,6 +1626,7 @@ export function App() {
   const [loadingPortfolio, setLoadingPortfolio] = useState(false)
   const [hideBalances, setHideBalances] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
 
   const loadPortfolio = async (refresh = false) => {
     setLoadingPortfolio(true); setPortfolioError(undefined)
@@ -1295,13 +1648,106 @@ export function App() {
 
   const connected = boot.kind === 'ready' && boot.status.connected
   const activePage = useMemo<Page>(() => connected ? page : page === 'help' ? 'help' : 'setup', [connected, page])
+
+  const navigate = useCallback((next: Page) => {
+    if (next !== 'instrument') setSelectedTicker(undefined)
+    setPage(next)
+  }, [])
+
+  const openInstrument = useCallback((position: Position) => {
+    setSelectedTicker(position.instrument?.ticker)
+    setPage('instrument')
+  }, [])
+
+  // Pro Institutional Keyboard Navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      const tagName = target?.tagName?.toUpperCase()
+      if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT' || target?.isContentEditable) {
+        if (e.key === 'Escape') {
+          target?.blur()
+        }
+        return
+      }
+
+      // ⌘K or '/' -> Focus search input
+      if (((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') || e.key === '/') {
+        e.preventDefault()
+        const searchInput = document.querySelector<HTMLInputElement>('.topbar-search-field, input[type="text"]')
+        searchInput?.focus()
+        return
+      }
+
+      // 'p' or 'h' -> toggle privacy hide balances
+      if (e.key.toLowerCase() === 'p' || e.key.toLowerCase() === 'h') {
+        e.preventDefault()
+        setHideBalances(v => !v)
+        return
+      }
+
+      // 't' -> toggle theme
+      if (e.key.toLowerCase() === 't') {
+        e.preventDefault()
+        themeStore.toggle()
+        return
+      }
+
+      // '?' -> toggle shortcut HUD help
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        e.preventDefault()
+        setShowShortcutsHelp(v => !v)
+        return
+      }
+
+      // 'Escape' -> close shortcut help or reset selection
+      if (e.key === 'Escape') {
+        setShowShortcutsHelp(false)
+        return
+      }
+
+      // 1-5 -> switch primary tabs
+      if (connected) {
+        if (e.key === '1') { e.preventDefault(); navigate('overview') }
+        else if (e.key === '2') { e.preventDefault(); navigate('holdings') }
+        else if (e.key === '3') { e.preventDefault(); navigate('history') }
+        else if (e.key === '4') { e.preventDefault(); navigate('settings') }
+        else if (e.key === '5') { e.preventDefault(); navigate('help') }
+      }
+
+      // j / k / ArrowDown / ArrowUp -> roam positions
+      if (portfolio && portfolio.positions.length > 0) {
+        const positions = portfolio.positions
+        if (e.key === 'j' || e.key === 'ArrowDown') {
+          e.preventDefault()
+          const currentIndex = positions.findIndex(p => p.instrument?.ticker === selectedTicker)
+          const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % positions.length
+          const nextPos = positions[nextIndex]
+          if (nextPos?.instrument?.ticker) {
+            setSelectedTicker(nextPos.instrument.ticker)
+          }
+        } else if (e.key === 'k' || e.key === 'ArrowUp') {
+          e.preventDefault()
+          const currentIndex = positions.findIndex(p => p.instrument?.ticker === selectedTicker)
+          const prevIndex = currentIndex <= 0 ? positions.length - 1 : currentIndex - 1
+          const prevPos = positions[prevIndex]
+          if (prevPos?.instrument?.ticker) {
+            setSelectedTicker(prevPos.instrument.ticker)
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [connected, navigate, portfolio, selectedTicker])
+
   if (boot.kind === 'loading') return <div className="loading-screen"><Brand /><LoaderCircle strokeWidth={1.5} className="spin" /><span>{tx('正在读取连接状态…', 'Checking connection…')}</span></div>
   if (boot.kind === 'error') return <div className="fatal-screen"><Brand /><ErrorPanel error={boot.error} onRetry={() => void bootstrap()} /></div>
 
   const onConnected = (status: ConnectionStatus, snapshot: PortfolioSnapshot) => { setBoot({ kind: 'ready', status }); setPortfolio(snapshot); setPortfolioError(undefined); setPage('overview') }
   const onDisconnected = () => { setBoot({ kind: 'ready', status: { connected: false, environment: 'demo', writable: true, source: 'none' } }); setPortfolio(undefined); setPortfolioError(undefined); setPage('setup') }
-  const navigate = (next: Page) => { if (next !== 'instrument') setSelectedTicker(undefined); setPage(next) }
-  const openInstrument = (position: Position) => { setSelectedTicker(position.instrument?.ticker); setPage('instrument') }
+
   return (
     <div className={`t212-native-app-root ${hideBalances ? 'hide-balances' : ''}`}>
       <TopNavBar
@@ -1329,6 +1775,7 @@ export function App() {
             searchQuery={searchQuery}
             onNavigate={navigate}
             onInstrument={openInstrument}
+            onSelectTicker={setSelectedTicker}
             onRefresh={() => void loadPortfolio(true)}
             onConnected={onConnected}
             onDisconnected={onDisconnected}
@@ -1339,6 +1786,37 @@ export function App() {
           <SetupPage onConnected={onConnected} />
         )}
       </div>
+
+      {/* Shortcuts Guide Modal */}
+      {showShortcutsHelp && (
+        <div className="shortcuts-modal-backdrop" onClick={() => setShowShortcutsHelp(false)}>
+          <div className="shortcuts-modal-card" onClick={e => e.stopPropagation()}>
+            <div className="shortcuts-modal-header">
+              <h3>{tx('瑞士私行终端 · 快捷键指南', 'Swiss Private Terminal · Shortcuts')}</h3>
+              <button type="button" className="close-modal-btn" onClick={() => setShowShortcutsHelp(false)}>×</button>
+            </div>
+            <div className="shortcuts-modal-grid">
+              <div className="shortcut-group">
+                <h4>{tx('导航与视图', 'Navigation')}</h4>
+                <div className="shortcut-row"><span><kbd>1</kbd></span><label>{tx('总览控制台', 'Overview cockpit')}</label></div>
+                <div className="shortcut-row"><span><kbd>2</kbd></span><label>{tx('全部持仓', 'Holdings list')}</label></div>
+                <div className="shortcut-row"><span><kbd>3</kbd></span><label>{tx('成交与派息历史', 'History')}</label></div>
+                <div className="shortcut-row"><span><kbd>4</kbd></span><label>{tx('设置与环境', 'Settings')}</label></div>
+                <div className="shortcut-row"><span><kbd>5</kbd></span><label>{tx('帮助指南', 'Help')}</label></div>
+              </div>
+              <div className="shortcut-group">
+                <h4>{tx('交易与漫游', 'Trading & Roaming')}</h4>
+                <div className="shortcut-row"><span><kbd>J</kbd> / <kbd>↓</kbd></span><label>{tx('下一项持仓资产', 'Next position')}</label></div>
+                <div className="shortcut-row"><span><kbd>K</kbd> / <kbd>↑</kbd></span><label>{tx('上一项持仓资产', 'Previous position')}</label></div>
+                <div className="shortcut-row"><span><kbd>/</kbd> 或 <kbd>⌘K</kbd></span><label>{tx('聚焦搜索标的', 'Focus search')}</label></div>
+                <div className="shortcut-row"><span><kbd>P</kbd> 或 <kbd>H</kbd></span><label>{tx('遮罩/显示资产金额', 'Toggle privacy mask')}</label></div>
+                <div className="shortcut-row"><span><kbd>T</kbd></span><label>{tx('一键切换深浅主题', 'Toggle dark/light theme')}</label></div>
+                <div className="shortcut-row"><span><kbd>Esc</kbd></span><label>{tx('关闭弹窗 / 取消聚焦', 'Dismiss / Blur')}</label></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

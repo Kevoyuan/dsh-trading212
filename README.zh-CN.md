@@ -125,4 +125,4 @@ pnpm harness:dev
 
 ## 许可证
 
-本项目采用 [MIT License](LICENSE) 开源。
+本项目采用 [MIT License](LICENSE) 开源。图表使用 [TradingView Lightweight Charts](https://www.tradingview.com/lightweight-charts/)（Apache-2.0），并保留图内 TradingView 标记。

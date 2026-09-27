@@ -19,7 +19,7 @@ const useHostLanguage = () => useSyncExternalStore(
 )
 
 /**
- * Trading 212 dashboard — a native 'conversation.view' tab (next to Chat /
+ * Trading 212 dashboard: a native 'conversation.view' tab (next to Chat /
  * Trajectory). The app renders in an isolated iframe confined to the chat
  * panel; CSS never leaks into the host, and the host never sees the iframe
  * content's styles either.

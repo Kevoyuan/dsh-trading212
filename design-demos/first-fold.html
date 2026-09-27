@@ -1,0 +1,67 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>首屏构图对比 · 1440x900</title><style>
+:root{color-scheme:dark;--bg:#0a0b0c;--fg:#f2f3f5;--dim:#99a1a9;--line:#232527;--card:#111214}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font:14px/1.65 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;padding:40px clamp(16px,3.5vw,52px) 80px}
+h1{font-size:clamp(22px,2.4vw,32px);font-weight:640;letter-spacing:-.03em}
+.lead{color:var(--dim);margin-top:12px;max-width:86ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:26px;margin-top:34px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.card header{padding:20px 22px;border-bottom:1px solid var(--line)}
+.card h2{font-size:16px;font-weight:640;letter-spacing:-.02em}
+.card header p{color:var(--dim);font-size:13px;margin-top:8px}
+.shot{background:#0e0f11;border-bottom:1px solid var(--line)}
+.shot img{display:block;width:100%}
+dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:1px;background:var(--line);margin-top:auto}
+dl>div{background:var(--card);padding:12px 14px}
+dt{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim)}
+dd{font-size:14px;font-family:ui-monospace,Menlo,monospace;margin-top:4px}
+.note{margin-top:34px;padding:22px 24px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--dim)}
+.note b{color:var(--fg)} .note+.note{margin-top:12px}
+</style></head><body>
+<h1>首屏构图对比 · 1440 × 900</h1>
+<p class="lead">四版都是同一份 <code>src/app/styles.css</code> + 同一个概览 DOM，只改构图。截图是<b>首屏视口</b>，不是整页 —— 这次要解的就是首屏的层级。四版都通过同一套系统审计：对比度、横向溢出、元素重叠、字号/圆角/发丝线/阴影数量。</p>
+<div class="grid"><section class="card">
+  <header><h2>现状 BASELINE</h2><p>双栏：组合摘要侧栏 336px，图表主画布 990px。字号阶梯 7 档，其中 31px 只服务标的现价，与 hero 的 40px 仅差 1.3 倍 —— 两个不同币种、不同量级的数字在互相抢注意力。</p></header>
+  <div class="shot"><img src="shots/fold-base.png" alt="现状 BASELINE first viewport"></div>
+  <dl>
+    <div><dt>账户总值宽</dt><dd>294×56</dd></div>
+    <div><dt>图表尺寸</dt><dd>990×450</dd></div>
+    <div><dt>标的现价</dt><dd>31px</dd></div>
+    <div><dt>首屏完整区块</dt><dd>5 / 10</dd></div>
+    <div><dt>整页高度</dt><dd>2109</dd></div>
+  </dl>
+</section><section class="card">
+  <header><h2>V1 · BALANCED（推荐）</h2><p>结构不动，只修层级。退掉 31px 中间档 → 阶梯变成 6 档，hero 的 40px 成为唯一最高层；标签与数值至少相隔两级，用字重 + 字距承载层级。零结构风险，是四版里唯一「没有代价」的一个。</p></header>
+  <div class="shot"><img src="shots/fold-v1.png" alt="V1 · BALANCED（推荐） first viewport"></div>
+  <dl>
+    <div><dt>账户总值宽</dt><dd>286×56</dd></div>
+    <div><dt>图表尺寸</dt><dd>990×420</dd></div>
+    <div><dt>标的现价</dt><dd>25.5px</dd></div>
+    <div><dt>首屏完整区块</dt><dd>5 / 10</dd></div>
+    <div><dt>整页高度</dt><dd>2096</dd></div>
+  </dl>
+</section><section class="card">
+  <header><h2>V2 · PORTFOLIO CANVAS</h2><p>栏位对调：组合拿到 1fr 主画布（账户 902px 宽、KPI 四列、持仓流两列、拼盘放大），标的收成 396px 侧栏。代价可量化：图表从 990 缩到 382，标的详情需要整套重新排版（含 KPI / 条形 / 暴露行），页面反而变长 34%。</p></header>
+  <div class="shot"><img src="shots/fold-v2.png" alt="V2 · PORTFOLIO CANVAS first viewport"></div>
+  <dl>
+    <div><dt>账户总值宽</dt><dd>902×56</dd></div>
+    <div><dt>图表尺寸</dt><dd>382×351</dd></div>
+    <div><dt>标的现价</dt><dd>21px</dd></div>
+    <div><dt>首屏完整区块</dt><dd>4 / 10</dd></div>
+    <div><dt>整页高度</dt><dd>2830</dd></div>
+  </dl>
+</section><section class="card">
+  <header><h2>V3 · LEDGER BAND</h2><p>单栏：账户与现金占四列中的两列，四个组合卫星共占一行，标的全宽跟随。整个组合进入首屏，图表拿到 1354px 全宽。代价：页面从 2109 涨到 3036（+44%），标的与图表要在首屏之下才看到。</p></header>
+  <div class="shot"><img src="shots/fold-v3.png" alt="V3 · LEDGER BAND first viewport"></div>
+  <dl>
+    <div><dt>账户总值宽</dt><dd>632×56</dd></div>
+    <div><dt>图表尺寸</dt><dd>1354×482</dd></div>
+    <div><dt>标的现价</dt><dd>首屏之下</dd></div>
+    <div><dt>首屏完整区块</dt><dd>6 / 10</dd></div>
+    <div><dt>整页高度</dt><dd>3036</dd></div>
+  </dl>
+</section></div>
+<div class="note"><b>要读的那一行：</b>「账户总值宽」与「图表尺寸」是一组跷跷板。现状把 990px 给了图表、336px 给了组合；V2 反过来；V3 让两者都变大但把页面拉长了 44%。<b>没有一版是纯粹更好的</b>，它们服务不同的首要任务。</div>
+<div class="note"><b>一次失败的尝试（如实记录）：</b>我试过给侧栏加 <code>order</code>，把 AI 提问条挪到拼盘之后，想让拼盘进首屏。实测<b>更差</b>：首屏完整区块从 5/10 掉到 4/10。原因是账户卡 254px + 现金块 231px = 548px 已经吃掉 900px 首屏的六成，只剩约 190px，而持仓流 341px、拼盘 311px 都塞不进去 —— 短小的 AI 条恰恰是唯一放得下的。<b>这是尺寸问题，不是排序问题</b>，所以回滚了，没有上线。</div>
+</body></html>

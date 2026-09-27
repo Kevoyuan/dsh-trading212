@@ -70,6 +70,15 @@ export const api = {
     return request<HistoryPage>(`/history?${query}`)
   },
   market: (ticker: string, range: MarketRange) => request<MarketSeries>(`/market?${new URLSearchParams({ ticker, range })}`),
+  quotes: (tickers?: string[]) => {
+    const query = tickers && tickers.length > 0 ? `?tickers=${encodeURIComponent(tickers.join(','))}` : ''
+    return request<Record<string, {
+      currentPrice?: number
+      previousClose?: number
+      dailyChangePercent?: number
+      dailyProfitLoss?: number
+    }>>(`/quotes${query}`)
+  },
   connect: (body: { apiKey: string; apiSecret: string; environment: TradingEnvironment }) =>
     request<{ status: ConnectionStatus; snapshot: PortfolioSnapshot }>('/connect', { method: 'POST', body: JSON.stringify(body) }),
   disconnect: () => request<{ connected: false }>('/disconnect', { method: 'POST', body: '{}' }),

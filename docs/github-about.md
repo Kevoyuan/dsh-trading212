@@ -16,7 +16,7 @@ trading-212
 portfolio
 investment
 fintech
-echarts
+lightweight-charts
 yahoo-finance
 ```
 

@@ -1,6 +1,6 @@
 {
   "name": "dsh-trading212",
-  "version": "0.8.8",
+  "version": "0.9.0",
   "description": "Read-only Trading 212 portfolio workspace for dsh",
   "keywords": [
     "dsh-plugin",
@@ -68,7 +68,12 @@
     "prepack": "pnpm build",
     "prepare": "pnpm build",
     "harness:patch": "node scripts/make-local-patch.mjs",
-    "harness:dev": "pnpm harness:patch && pnpm dsh web --patch ./cordis.local.patch.yml"
+    "harness:dev": "pnpm harness:patch && pnpm dsh web --patch ./cordis.local.patch.yml",
+    "skills:list": "node scripts/link-agent-skills.mjs list",
+    "skills:search": "node scripts/link-agent-skills.mjs search",
+    "skills:add": "node scripts/link-agent-skills.mjs add",
+    "skills:remove": "node scripts/link-agent-skills.mjs remove",
+    "skills:status": "node scripts/link-agent-skills.mjs status"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh-client-locale": ">=0.1.0-rc.5 <0.2.0-0",
@@ -108,7 +113,7 @@
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "^3.18.1",
-    "echarts": "^6.1.0"
+    "lightweight-charts": "5.2.1"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",

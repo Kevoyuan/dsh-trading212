@@ -1,0 +1,1855 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="light dark" />
+<title>dsh × Trading 212 - Cartographer 预览</title>
+<style>
+/* ============================================================
+   Cartographer — design tokens
+   ============================================================ */
+:root {
+  /* surfaces — warm paper */
+  --paper:    #F4F1EA;
+  --card:     #FBFAF6;
+  --well:     #ECE7DC;
+  --well-2:   #E5DFD1;
+
+  /* ink */
+  --ink-1: #15171A;
+  --ink-2: #3F4651;
+  --ink-3: #6E7682;
+  --ink-4: #9AA0AA;
+  --hair:  #DAD3C5;
+  --hair-2:#C9C0AD;
+
+  /* single focus */
+  --focus:    #2F4D7A;
+  --focus-2:  #243E66;
+  --focus-soft:#E3E9F1;
+
+  /* signed finance */
+  --pos:  #166534;
+  --pos-soft:#E1EFE5;
+  --neg:  #B03325;
+  --neg-soft:#F7E6E2;
+  --warn: #8A6212;
+  --warn-soft:#F4ECDA;
+
+  /* type — 6 steps, smallest 12px */
+  --t-12: 12px; --t-13: 13px; --t-14: 14px;
+  --t-15: 15px; --t-17: 17px; --t-18: 18px;
+  --t-22: 22px; --t-28: 28px; --t-36: 36px;
+
+  /* radii */
+  --r-1: 6px;  --r-2: 12px;  --r-3: 20px;  --r-pill: 999px;
+
+  /* single shadow */
+  --sh-1: 0 1px 0 rgba(20,30,50,.04), 0 6px 14px -10px rgba(20,30,50,.10);
+  --sh-2: 0 2px 4px rgba(20,30,50,.04), 0 14px 28px -16px rgba(20,30,50,.14);
+
+  /* motion */
+  --ease: cubic-bezier(.32,.72,0,1);
+  --d-1: 140ms;
+  --d-2: 260ms;
+
+  /* spacing */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
+
+  /* figures — canvas 轴文字也要用同一个栈 */
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+[data-theme="dark"] {
+  --paper:    #14171B;
+  --card:     #1E2127;
+  --well:     #262A31;
+  --well-2:   #2E333B;
+  --ink-1: #F1F2F4;
+  --ink-2: #C5C9D0;
+  --ink-3: #9097A0;
+  --ink-4: #6E7682;
+  --hair:  #2E333B;
+  --hair-2:#3A4049;
+  --focus:    #7B9DD9;
+  --focus-2:  #9DB8E5;
+  --focus-soft:#1F2A3B;
+  --pos: #4FB37B;
+  --pos-soft:#1B2C24;
+  --neg: #E07265;
+  --neg-soft:#2C1F1C;
+  --warn: #D9A85F;
+  --warn-soft:#2C2419;
+  --sh-1: 0 1px 0 rgba(0,0,0,.35), 0 6px 14px -10px rgba(0,0,0,.55);
+  --sh-2: 0 2px 4px rgba(0,0,0,.35), 0 14px 28px -16px rgba(0,0,0,.55);
+}
+
+/* ============================================================
+   base
+   ============================================================ */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+               "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--paper);
+  color: var(--ink-1);
+  font-size: var(--t-14);
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+button { font: inherit; color: inherit; cursor: pointer; background: none;
+         border: 0; padding: 0; }
+a { color: var(--focus); text-decoration: none; }
+strong { font-weight: 600; }
+small { font-size: var(--t-12); }
+.tabnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+
+.pos { color: var(--pos); }
+.neg { color: var(--neg); }
+.muted { color: var(--ink-3); }
+.tiny { color: var(--ink-3); font-size: var(--t-12); }
+
+/* privacy mask */
+.hide-balances .js-balance { letter-spacing: .12em; color: var(--ink-4) !important; }
+.hide-balances .js-balance::before { content: "••••"; }
+
+/* ============================================================
+   shell — command bar
+   ============================================================ */
+.command-bar {
+  position: sticky; top: 0; z-index: 30;
+  background: var(--card);
+  border-bottom: 1px solid var(--hair);
+  padding: 0 var(--s-5);
+  height: 52px;
+  display: flex; align-items: center; gap: var(--s-5);
+}
+.brand-pill {
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  padding: 6px 12px;
+  border: 1px solid var(--hair);
+  border-radius: var(--r-pill);
+  font-weight: 600;
+  font-size: var(--t-13);
+  letter-spacing: .04em;
+}
+.brand-pill .tri { color: var(--focus); font-size: 12px; }
+.env-badge {
+  font-size: var(--t-12); letter-spacing: .08em;
+  padding: 2px 6px; border-radius: var(--r-1);
+  background: var(--well); color: var(--ink-2);
+}
+.nav-tabs { display: flex; gap: 2px; }
+.nav-tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--r-1);
+  font-size: var(--t-13);
+  color: var(--ink-3);
+  transition: background var(--d-1) var(--ease), color var(--d-1) var(--ease);
+}
+.nav-tab:hover { background: var(--well); color: var(--ink-1); }
+.nav-tab.is-active { color: var(--focus); background: var(--focus-soft); font-weight: 600; }
+
+.spacer { flex: 1; }
+
+.search-slot {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: var(--well);
+  border-radius: var(--r-1);
+  min-width: 200px;
+}
+.search-slot input {
+  border: 0; background: transparent; outline: none;
+  font: inherit; color: var(--ink-2);
+  width: 100%;
+}
+.search-slot input::placeholder { color: var(--ink-4); }
+
+.toolbar { display: flex; gap: 4px; }
+.tool-btn {
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--r-1);
+  color: var(--ink-3);
+  transition: background var(--d-1) var(--ease), color var(--d-1) var(--ease);
+}
+.tool-btn:hover { background: var(--well); color: var(--ink-1); }
+.tool-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none;
+                stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ============================================================
+   account card (left column) — T212-style with embedded mini chart
+   ============================================================ */
+.account-card {
+  background: var(--card); border: 1px solid var(--hair);
+  border-radius: var(--r-3); box-shadow: var(--sh-1);
+  padding: var(--s-5);
+  display: flex; flex-direction: column; gap: var(--s-3);
+}
+.account-card .head {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.account-card .label { font-size: var(--t-12); color: var(--ink-3);
+                       letter-spacing: .04em; text-transform: uppercase; }
+.account-card .head .icon-btn {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--r-1); color: var(--ink-3);
+  transition: background var(--d-1) var(--ease), color var(--d-1) var(--ease);
+}
+.account-card .head .icon-btn:hover { background: var(--well); color: var(--ink-1); }
+.account-card .head .icon-btn svg { width: 14px; height: 14px;
+                                     fill: none; stroke: currentColor;
+                                     stroke-width: 1.5; stroke-linecap: round;
+                                     stroke-linejoin: round; }
+
+.account-card .big-val {
+  font-size: var(--t-36); font-weight: 600;
+  letter-spacing: -.02em; color: var(--ink-1);
+  font-variant-numeric: tabular-nums; line-height: 1.05;
+}
+.account-card .big-val .ccy {
+  font-size: var(--t-18); color: var(--ink-3);
+  margin-left: 6px; font-weight: 500;
+}
+.account-card .delta-row {
+  display: flex; gap: var(--s-2); align-items: center; flex-wrap: wrap;
+  font-size: var(--t-13);
+}
+.account-card .delta {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: var(--r-pill);
+  font-weight: 600;
+}
+.account-card .delta.pos { color: var(--pos); background: var(--pos-soft); }
+.account-card .delta.neg { color: var(--neg); background: var(--neg-soft); }
+.account-card .muted { color: var(--ink-3); font-size: var(--t-12); }
+
+/* mini chart embedded in account card */
+.mini-chart {
+  width: 100%; height: 90px;
+  position: relative;
+}
+.mini-chart svg { width: 100%; height: 100%; display: block; }
+
+.mini-stats {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--s-3);
+  font-size: var(--t-12);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--hair);
+}
+.mini-stats > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mini-stats .k { color: var(--ink-3); letter-spacing: .04em;
+                 text-transform: uppercase; font-size: 11px; }
+.mini-stats .v { font-size: var(--t-13); font-weight: 600;
+                 font-variant-numeric: tabular-nums; color: var(--ink-1); }
+.mini-stats .v.pos { color: var(--pos); }
+.mini-stats .v.neg { color: var(--neg); }
+
+/* range switcher (used in account card AND asset head) */
+.range-bar {
+  display: flex; gap: 2px; padding: 2px;
+  background: var(--well); border-radius: var(--r-1);
+  width: fit-content;
+}
+.range-btn {
+  padding: 4px 10px; border-radius: 6px;
+  font-size: var(--t-12); color: var(--ink-3);
+  transition: all var(--d-1) var(--ease);
+  letter-spacing: .02em;
+}
+.range-btn:hover:not(.is-active) { color: var(--ink-2); }
+.range-btn.is-active {
+  background: var(--card); color: var(--ink-1); font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+}
+
+/* ============================================================
+   KPI grid — 2x3 cells in left column
+   ============================================================ */
+.kpi-grid {
+  background: var(--card); border: 1px solid var(--hair);
+  border-radius: var(--r-3); box-shadow: var(--sh-1);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+}
+.kpi-cell {
+  padding: var(--s-4) var(--s-5);
+  border-right: 1px solid var(--hair);
+  border-bottom: 1px solid var(--hair);
+  display: flex; flex-direction: column; gap: 4px;
+  min-width: 0;
+}
+.kpi-cell:nth-child(2n) { border-right: 0; }
+.kpi-cell:nth-last-child(-n+2) { border-bottom: 0; }
+.kpi-cell .label { font-size: var(--t-12); color: var(--ink-3); }
+.kpi-cell .v { font-size: var(--t-15); font-weight: 600; color: var(--ink-1);
+               font-variant-numeric: tabular-nums; line-height: 1.2; }
+.kpi-cell .v.pos { color: var(--pos); }
+.kpi-cell .v.neg { color: var(--neg); }
+.kpi-cell .sub { font-size: var(--t-12); color: var(--ink-3);
+                 font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   body grid — left column (account + KPI + list) | right column (canvas)
+   ============================================================ */
+.body-grid {
+  display: grid;
+  grid-template-columns: minmax(340px, 34%) minmax(0, 1fr);
+  gap: var(--s-5);
+  padding: var(--s-5);
+  align-items: start;
+}
+.left-col { display: flex; flex-direction: column; gap: var(--s-4);
+            min-width: 0; }
+
+/* list rail */
+.list-rail { background: var(--card); border: 1px solid var(--hair);
+             border-radius: var(--r-3); box-shadow: var(--sh-1);
+             overflow: hidden; }
+
+/* section card — shared header pattern (list-rail, pending-orders, allocation) */
+.section-card { background: var(--card); border: 1px solid var(--hair);
+                border-radius: var(--r-3); box-shadow: var(--sh-1);
+                overflow: hidden; }
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--s-4) var(--s-5);
+  border-bottom: 1px solid var(--hair);
+  gap: var(--s-3);
+}
+.section-head-tight { padding: var(--s-3) var(--s-5); }
+.section-card[data-collapsed="true"] > :not(.section-head) { display: none; }
+.section-card[data-collapsed="true"] .section-head { border-bottom: 0; }
+.section-card[data-collapsed="true"] .chevron-btn svg {
+  transform: rotate(180deg);
+}
+
+.head-left { display: flex; align-items: baseline; gap: var(--s-2);
+             min-width: 0; }
+.head-left h2 { margin: 0; font-size: var(--t-18); font-weight: 600;
+                letter-spacing: -.01em; }
+.head-total { font-size: var(--t-13); color: var(--ink-3);
+              font-variant-numeric: tabular-nums; font-weight: 500; }
+.head-count {
+  font-size: var(--t-12); font-weight: 600;
+  background: var(--well); color: var(--ink-2);
+  padding: 1px 8px; border-radius: var(--r-pill);
+  font-variant-numeric: tabular-nums;
+}
+.head-right { display: flex; align-items: center; gap: var(--s-3); }
+
+.chevron-btn {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--r-1);
+  color: var(--ink-3);
+  transition: background var(--d-1) var(--ease), color var(--d-1) var(--ease);
+}
+.chevron-btn:hover { background: var(--well); color: var(--ink-1); }
+.chevron-btn svg { transition: transform var(--d-2) var(--ease); }
+.list-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--s-4) var(--s-5);
+  border-bottom: 1px solid var(--hair);
+}
+.list-head h2 { margin: 0; font-size: var(--t-18); font-weight: 600;
+                letter-spacing: -.01em; }
+.sort-group { display: flex; gap: 2px; background: var(--well);
+              padding: 2px; border-radius: var(--r-1); }
+.sort-btn {
+  padding: 4px 10px; border-radius: var(--r-1);
+  font-size: var(--t-12); color: var(--ink-3);
+  transition: all var(--d-1) var(--ease);
+}
+.sort-btn.is-active { background: var(--card); color: var(--ink-1);
+                      font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+.sort-btn:hover:not(.is-active) { color: var(--ink-2); }
+
+.pos-row {
+  display: grid;
+  grid-template-columns: 32px 1fr 64px 64px 80px;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-5);
+  border-bottom: 1px solid var(--hair);
+  cursor: pointer;
+  transition: background var(--d-1) var(--ease);
+  position: relative;
+}
+.pos-row:last-child { border-bottom: 0; }
+.pos-row:hover { background: var(--well); }
+.pos-row.is-active { background: var(--focus-soft); }
+.pos-row.is-active::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--focus); border-radius: 0 2px 2px 0;
+}
+.logo-32 {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--well-2); color: var(--ink-1);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: var(--t-12); font-weight: 700; letter-spacing: .02em;
+  flex-shrink: 0;
+}
+.pos-id { display: flex; flex-direction: column; min-width: 0; }
+.pos-id strong { font-size: var(--t-14); font-weight: 600; color: var(--ink-1);
+                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pos-id small { font-size: var(--t-12); color: var(--ink-3); }
+.spark { width: 64px; height: 24px; display: block; }
+.weight { font-size: var(--t-13); color: var(--ink-2); text-align: right;
+          font-variant-numeric: tabular-nums; }
+.weight b { color: var(--ink-1); font-weight: 600; }
+.ret { font-size: var(--t-13); text-align: right; font-weight: 600;
+       font-variant-numeric: tabular-nums; }
+.ret .arrow { display: inline-block; margin-right: 2px; }
+
+/* pending orders — T212-style row layout (no × button — read-only) */
+.pending-list { padding: 0; }
+.pending-row {
+  display: grid; grid-template-columns: 32px 1fr auto;
+  align-items: center; gap: var(--s-3);
+  padding: var(--s-3) var(--s-5);
+  border-bottom: 1px solid var(--hair);
+}
+.pending-row:last-of-type { border-bottom: 0; }
+.pending-id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pending-id strong { font-size: var(--t-14); font-weight: 600;
+                     color: var(--ink-1); white-space: nowrap;
+                     overflow: hidden; text-overflow: ellipsis; }
+.pending-id small { font-size: var(--t-12); color: var(--ink-3); }
+.pending-amount { font-size: var(--t-13); font-weight: 600;
+                  font-variant-numeric: tabular-nums;
+                  color: var(--ink-1); white-space: nowrap; }
+
+/* asset allocation — proportional treemap (tile size = portfolio weight) */
+.alloc-grid {
+  display: flex;
+  flex-direction: column;
+  height: 210px;
+  gap: 1px;
+  background: var(--hair);
+  border-top: 1px solid var(--hair);
+}
+.alloc-row {
+  display: flex;
+  gap: 1px;
+  min-height: 0;
+  flex: var(--h);
+}
+.alloc-tile {
+  flex: var(--w);
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 4px;
+  padding: var(--s-2);
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+.alloc-tile.gain { background: var(--pos-soft); }
+.alloc-tile.loss { background: var(--neg-soft); }
+.alloc-logo {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--card);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: var(--t-12); font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--ink-1);
+  box-shadow: 0 1px 0 rgba(0,0,0,.05);
+  flex-shrink: 0;
+}
+.alloc-tile.gain .alloc-logo,
+.alloc-tile.loss .alloc-logo { background: var(--card); }
+.alloc-caption { margin: 0; padding: var(--s-3) var(--s-5) var(--s-2);
+                 font-size: var(--t-12); color: var(--ink-3);
+                 line-height: 1.4; }
+.alloc-ticker { font-size: var(--t-13); font-weight: 600;
+                letter-spacing: .04em; color: var(--ink-1);
+                white-space: nowrap; }
+.alloc-pct { font-size: var(--t-12); font-weight: 600;
+             font-variant-numeric: tabular-nums; white-space: nowrap; }
+.alloc-pct.pos { color: var(--pos); }
+.alloc-pct.neg { color: var(--neg); }
+/* weight hint — shows only on larger tiles */
+.alloc-wt { font-size: var(--t-12); color: var(--ink-3);
+            font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* on very small tiles drop the weight line so content never overflows */
+@media (max-width: 1180px) {
+  .alloc-wt { display: none; }
+}
+
+/* asset canvas */
+.canvas { display: flex; flex-direction: column; gap: var(--s-5);
+          min-width: 0; }
+.canvas-stack { display: flex; flex-direction: column; gap: var(--s-5);
+                min-width: 0; }
+.asset-head {
+  background: var(--card); border: 1px solid var(--hair);
+  border-radius: var(--r-3); box-shadow: var(--sh-1);
+  padding: var(--s-5);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-5);
+}
+.asset-id { display: flex; align-items: center; gap: var(--s-4);
+            min-width: 0; }
+.logo-44 {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--well-2); color: var(--ink-1);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: var(--t-13); font-weight: 700;
+  flex-shrink: 0;
+}
+.asset-id .id-text { display: flex; flex-direction: column; gap: 2px;
+                     min-width: 0; }
+.asset-id .tag { font-size: var(--t-12); color: var(--ink-3);
+                 letter-spacing: .04em; }
+
+/* 元信息条：用细分隔线代替堆叠的「·」。
+   依据 tasteskill 9.F：中黑点每行最多 1 个，不能当万能分隔符。 */
+.meta-strip { display: inline-flex; align-items: center; flex-wrap: wrap; }
+.meta-strip > * + * { padding-left: var(--s-3); margin-left: var(--s-3);
+                      border-left: 1px solid var(--hair-2); }
+.meta-strip b { font-weight: 600; color: var(--ink-1); letter-spacing: 0; }
+.asset-id .name { font-size: var(--t-22); font-weight: 600;
+                  letter-spacing: -.01em; color: var(--ink-1); }
+
+.price-block { display: flex; flex-direction: column; align-items: flex-end;
+               gap: 4px; min-width: 0; }
+.price-main { font-size: var(--t-36); font-weight: 600;
+              letter-spacing: -.02em; color: var(--ink-1);
+              font-variant-numeric: tabular-nums; line-height: 1.05;
+              display: inline-flex; align-items: baseline; gap: 6px; }
+.price-main .ccy { font-size: var(--t-18); color: var(--ink-3); font-weight: 500; }
+.price-sub { font-size: var(--t-13); display: inline-flex; align-items: center;
+             gap: 6px; }
+.price-sub.pos { color: var(--pos); }
+.price-sub.neg { color: var(--neg); }
+
+.range-bar {
+  grid-column: 1 / -1;
+}
+
+/* chart card */
+.chart-card {
+  background: var(--card); border: 1px solid var(--hair);
+  border-radius: var(--r-3); box-shadow: var(--sh-1);
+  padding: var(--s-5);
+  display: flex; flex-direction: column; gap: var(--s-4);
+}
+.chart-head { display: flex; justify-content: space-between;
+              align-items: flex-start; gap: var(--s-4); flex-wrap: wrap; }
+.chart-title { display: flex; flex-direction: column; gap: 4px; }
+.chart-title h3 { margin: 0; font-size: var(--t-18); font-weight: 600;
+                  letter-spacing: -.01em; }
+.chart-title p { margin: 0; font-size: var(--t-12); color: var(--ink-3); }
+/* 图表元信息：日期区间与数据来源用细分隔线分开，不再串成一串「·」 */
+.chart-meta { display: flex; align-items: center; flex-wrap: wrap; }
+.chart-meta > * + * { padding-left: var(--s-3); margin-left: var(--s-3);
+                      border-left: 1px solid var(--hair-2); }
+.chart-legend { display: flex; gap: var(--s-4); }
+.chart-legend span { display: inline-flex; align-items: center;
+                     gap: 6px; font-size: var(--t-12); color: var(--ink-3); }
+.chart-legend i { width: 10px; height: 10px; border-radius: 2px;
+                  display: inline-block; }
+.legend-line { background: var(--focus); height: 2px; border-radius: 2px;
+               width: 14px; }
+.legend-buy { background: var(--pos); }
+.legend-sell { background: var(--warn); }
+
+.chart-area {
+  width: 100%;
+  /* 与生产 styles.css 的 .price-chart 一致：aspect-ratio 820 / 300 */
+  aspect-ratio: 820 / 300;
+  min-height: 260px;
+  position: relative;
+}
+.chart-area svg { width: 100%; height: 100%; display: block; }
+.price-chart { width: 100%; height: 100%; min-width: 0; }
+.tv-lightweight-charts { max-width: 100%; min-width: 0; }
+
+/* detail grid — 3 columns */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-4);
+}
+.detail-card {
+  background: var(--card); border: 1px solid var(--hair);
+  border-radius: var(--r-2); box-shadow: var(--sh-1);
+  padding: var(--s-5);
+}
+.detail-card .head { display: flex; align-items: center; gap: 8px;
+                     margin-bottom: var(--s-3); }
+.detail-card .head svg { width: 14px; height: 14px; stroke: var(--ink-3);
+                          fill: none; stroke-width: 1.5;
+                          stroke-linecap: round; stroke-linejoin: round; }
+.detail-card h4 { margin: 0; font-size: var(--t-12); color: var(--ink-3);
+                  letter-spacing: .04em; text-transform: uppercase;
+                  font-weight: 600; }
+
+.kv { display: grid; grid-template-columns: 1fr auto;
+      row-gap: var(--s-3); column-gap: var(--s-3); }
+.kv .row { display: contents; }
+.kv span { font-size: var(--t-13); color: var(--ink-3);
+           align-self: center; }
+.kv strong { font-size: var(--t-14); color: var(--ink-1); font-weight: 600;
+             text-align: right; font-variant-numeric: tabular-nums;
+             align-self: center; }
+.kv strong.pos { color: var(--pos); }
+.kv strong.neg { color: var(--neg); }
+
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr;
+               row-gap: var(--s-3); column-gap: var(--s-3); }
+.metric-grid .label { font-size: var(--t-12); color: var(--ink-3); }
+.metric-grid .v { font-size: var(--t-17); font-weight: 600;
+                  color: var(--ink-1); font-variant-numeric: tabular-nums;
+                  line-height: 1.2; }
+.metric-grid .v small { display: block; font-size: var(--t-12);
+                        font-weight: 500; color: var(--ink-3); margin-top: 2px; }
+
+.order-row {
+  display: grid; grid-template-columns: auto 1fr auto;
+  align-items: center; gap: var(--s-3);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--hair);
+  font-size: var(--t-13);
+}
+.order-row:last-of-type { border-bottom: 0; }
+.order-tag {
+  padding: 2px 8px; border-radius: var(--r-pill);
+  font-size: var(--t-12); font-weight: 600;
+}
+.order-tag.buy  { color: var(--pos); background: var(--pos-soft); }
+.order-tag.sell { color: var(--warn); background: var(--warn-soft); }
+.order-tag.fill { color: var(--focus); background: var(--focus-soft); }
+.order-id { font-weight: 600; color: var(--ink-1); }
+.order-meta { color: var(--ink-3); }
+.order-amt { font-variant-numeric: tabular-nums; font-weight: 600;
+             color: var(--ink-1); text-align: right; }
+
+.empty-mini {
+  display: flex; flex-direction: column; align-items: center;
+  gap: var(--s-2); padding: var(--s-3) 0;
+  color: var(--ink-3); font-size: var(--t-13);
+}
+.empty-mini svg { width: 32px; height: 32px; stroke: currentColor;
+                  fill: none; stroke-width: 1.5;
+                  stroke-linecap: round; stroke-linejoin: round; }
+
+/* ============================================================
+   holdings detail page (T212 "INVESTMENTS VALUE" pattern)
+   ============================================================ */
+.holdings-page {
+  background: var(--card); border: 1px solid var(--hair);
+  border-radius: var(--r-3); box-shadow: var(--sh-1);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.hp-head { padding: var(--s-5) var(--s-5) var(--s-4); }
+.hp-head .label { font-size: var(--t-12); color: var(--ink-3);
+                  letter-spacing: .04em; text-transform: uppercase; }
+.hp-total {
+  font-size: var(--t-36); font-weight: 600;
+  letter-spacing: -.02em; color: var(--ink-1);
+  font-variant-numeric: tabular-nums; line-height: 1.1;
+  margin-top: 6px;
+  display: block;
+}
+.hp-total .ccy { font-size: var(--t-18); color: var(--ink-3);
+                 margin-left: 6px; font-weight: 500; }
+
+.hp-meta { border-top: 1px solid var(--hair); }
+.hp-meta-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--s-3) var(--s-5);
+  border-bottom: 1px solid var(--hair);
+  font-size: var(--t-13);
+}
+.hp-meta-row .k { color: var(--ink-3); letter-spacing: .04em;
+                  text-transform: uppercase; font-size: var(--t-12); }
+.hp-meta-row .v { font-size: var(--t-15); font-weight: 600;
+                  color: var(--ink-1); font-variant-numeric: tabular-nums; }
+.hp-meta-row .v.pos { color: var(--pos); }
+.hp-meta-row .v.neg { color: var(--neg); }
+
+.hp-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--s-4) var(--s-5) var(--s-3);
+  gap: var(--s-3);
+}
+.hp-toolbar .left { display: flex; align-items: baseline; gap: var(--s-2); }
+.hp-toolbar h2 { margin: 0; font-size: var(--t-18); font-weight: 600;
+                 letter-spacing: -.01em; }
+.hp-toolbar .count { font-size: var(--t-13); color: var(--ink-3);
+                     font-variant-numeric: tabular-nums; }
+.icon-sq {
+  width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--hair); border-radius: var(--r-1);
+  color: var(--ink-3);
+  transition: background var(--d-1) var(--ease), color var(--d-1) var(--ease);
+}
+.icon-sq:hover { background: var(--well); color: var(--ink-1); }
+.icon-sq svg { width: 14px; height: 14px; fill: none; stroke: currentColor;
+               stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+.hp-viewtoggle {
+  display: flex; gap: 2px; padding: 2px;
+  background: var(--well); border-radius: var(--r-1);
+  width: fit-content;
+  margin: 0 var(--s-5);
+}
+.hp-viewtoggle .vt-btn {
+  padding: 5px 14px; border-radius: 6px;
+  font-size: var(--t-13); color: var(--ink-3);
+  transition: all var(--d-1) var(--ease);
+}
+.hp-viewtoggle .vt-btn.is-active {
+  background: var(--focus); color: #fff; font-weight: 600;
+}
+[data-theme="dark"] .hp-viewtoggle .vt-btn.is-active { color: #10141A; }
+
+.hp-desc {
+  margin: 0; padding: var(--s-3) var(--s-5);
+  font-size: var(--t-12); color: var(--ink-3); line-height: 1.5;
+}
+
+.hp-list { border-top: 1px solid var(--hair); }
+.hp-row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto auto;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-4) var(--s-5);
+  border-bottom: 1px solid var(--hair);
+  cursor: pointer;
+  transition: background var(--d-1) var(--ease);
+}
+.hp-row:last-child { border-bottom: 0; }
+.hp-row:hover { background: var(--well); }
+.hp-row.is-active { background: var(--focus-soft); }
+.logo-circle {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: var(--t-12); font-weight: 700; letter-spacing: .02em;
+  flex-shrink: 0;
+}
+.hp-id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.hp-id strong { font-size: var(--t-15); font-weight: 600; color: var(--ink-1);
+                white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hp-id small { font-size: var(--t-12); color: var(--ink-3); }
+.hp-wt { font-size: var(--t-13); color: var(--ink-3); text-align: right;
+         font-variant-numeric: tabular-nums; min-width: 56px; }
+.hp-vals { display: flex; flex-direction: column; align-items: flex-end;
+           gap: 2px; min-width: 112px; }
+.hp-vals .val { font-size: var(--t-15); font-weight: 600; color: var(--ink-1);
+                font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hp-vals .ret { font-size: var(--t-13); font-weight: 600;
+                font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hp-vals .ret.pos { color: var(--pos); }
+.hp-vals .ret.neg { color: var(--neg); }
+
+/* view switching — only one canvas view is visible at a time */
+.canvas[hidden], .holdings-page[hidden] { display: none !important; }
+
+/* footer */
+.foot {
+  border-top: 1px solid var(--hair);
+  padding: var(--s-4) var(--s-5);
+  font-size: var(--t-12); color: var(--ink-3);
+  display: flex; justify-content: space-between; gap: var(--s-4);
+}
+
+/* ============================================================
+   responsive
+   ============================================================ */
+@media (max-width: 1180px) {
+  .body-grid { grid-template-columns: 320px minmax(0, 1fr); }
+  .pos-row { grid-template-columns: 32px 1fr 80px; }
+  .pos-row .spark, .pos-row .weight { display: none; }
+}
+@media (max-width: 980px) {
+  .body-grid { grid-template-columns: minmax(0, 1fr); padding: var(--s-4); }
+  .left-col { order: 1; }
+  .canvas { order: 2; }
+  .pos-row { grid-template-columns: 32px 1fr 64px 80px; }
+  .pos-row .spark, .pos-row .weight { display: none; }
+  .chart-area { min-height: 240px; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .command-bar .nav-tabs { display: none; }
+  .search-slot { display: none; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 680px) {
+  .command-bar { padding: 0 var(--s-4); }
+  .pos-row { padding: var(--s-3) var(--s-4); }
+  .asset-head { padding: var(--s-4); grid-template-columns: 1fr;
+                gap: var(--s-3); }
+  .asset-head .price-block { align-items: flex-start; }
+  .price-main { font-size: var(--t-28); }
+  .chart-card, .detail-card { padding: var(--s-4); }
+  .body-grid { padding: var(--s-3); gap: var(--s-3); }
+  .pos-row { grid-template-columns: 32px 1fr 72px; }
+  .account-card .big-val { font-size: var(--t-28); }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+
+  /* holdings page — give the figures room */
+  .hp-head { padding: var(--s-4) var(--s-4) var(--s-3); }
+  .hp-total { font-size: var(--t-28); }
+  .hp-meta-row { padding: var(--s-3) var(--s-4); }
+  .hp-toolbar { padding: var(--s-3) var(--s-4); }
+  .hp-viewtoggle { margin: 0 var(--s-4); }
+  .hp-desc { padding: var(--s-2) var(--s-4) var(--s-3); }
+  .hp-row { grid-template-columns: 36px 1fr auto;
+            gap: var(--s-3); padding: var(--s-3) var(--s-4); }
+  .hp-row .hp-wt { display: none; }
+  .hp-vals { min-width: 0; }
+  .hp-vals .val { font-size: var(--t-14); }
+  .hp-vals .ret { font-size: var(--t-12); }
+  .logo-circle { width: 36px; height: 36px; }
+}
+
+/* ---------- 交互状态 ----------
+   tasteskill 4.5：交互元素要有触感反馈；键盘用户要有可见焦点环。 */
+
+/* 按压反馈：轻微下沉 1px。把 transform 并入过渡属性，松手时不跳变。 */
+.nav-tab, .range-btn, .vt-btn, .sort-btn, .tool-btn,
+.icon-btn, .icon-sq, .brand-pill, .chevron-btn {
+  transition-property: background, color, border-color, transform;
+  transition-duration: var(--d-1);
+  transition-timing-function: var(--ease);
+}
+button:active { transform: translateY(1px); }
+
+/* 可点击的行按下时用底色反馈，不做位移（位移会让行内数字抖动）。
+   只给真正绑定了点击的行：.pending-row / .order-row 是只读展示，
+   给它们加按压态会暗示一个并不存在的交互。 */
+.pos-row:active,
+.hp-row:active { background: var(--well); }
+
+/* 键盘焦点环：仅键盘导航时出现，鼠标点击不出现 */
+:where(button, a, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* 整行宽的列表项把焦点环内收，避免描边溢出卡片边缘 */
+.pos-row:focus-visible,
+.hp-row:focus-visible {
+  outline-offset: -2px;
+  border-radius: var(--r-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+}
+</style>
+</head>
+
+<body data-theme="light">
+
+<script>
+  // 主题优先级：URL 参数 > 已保存偏好 > 系统偏好 > light
+  // tasteskill 6.C / 8.C：默认应跟随 prefers-color-scheme，不能硬编码 light
+  try {
+    var t = new URLSearchParams(location.search).get('theme');
+    if (t !== 'dark' && t !== 'light') {
+      try { t = localStorage.getItem('cartographer-theme'); } catch (e2) { t = null; }
+    }
+    if (t !== 'dark' && t !== 'light') {
+      t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', t);
+    document.documentElement.style.colorScheme = t;
+    document.body.setAttribute('data-theme', t);
+  } catch (e) {}
+</script>
+
+<!-- ============================================================
+     Command bar
+     ============================================================ -->
+<header class="command-bar">
+  <button class="brand-pill" aria-label="账户设置">
+    <span class="tri">▲</span>
+    <span>INVEST</span>
+    <span class="env-badge">DEMO</span>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+         stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+
+  <nav class="nav-tabs" aria-label="主导航">
+    <button class="nav-tab is-active" data-nav="概览" aria-current="page">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+           stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.4"/>
+        <rect x="14" y="3" width="7" height="5" rx="1.4"/>
+        <rect x="14" y="12" width="7" height="9" rx="1.4"/>
+        <rect x="3" y="16" width="7" height="5" rx="1.4"/></svg>
+      概览
+    </button>
+    <button class="nav-tab" data-nav="持仓">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+           stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2.4"/>
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      持仓
+    </button>
+    <button class="nav-tab" data-nav="历史">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+           stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/>
+        <path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+      历史
+    </button>
+    <button class="nav-tab" data-nav="设置">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+           stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.86l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.86-.34 1.7 1.7 0 0 0-1.02 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.86.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.86 1.7 1.7 0 0 0-1.55-1.02H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.86l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.86.34H9a1.7 1.7 0 0 0 1.02-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1.02 1.55 1.7 1.7 0 0 0 1.86-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.86V9a1.7 1.7 0 0 0 1.55 1.02H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1.02Z"/></svg>
+      设置
+    </button>
+    <button class="nav-tab" data-nav="帮助">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+           stroke-linejoin="round"><circle cx="12" cy="12" r="9.6"/>
+        <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/>
+        <path d="M12 17h.01"/></svg>
+      帮助
+    </button>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <div class="search-slot">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+         stroke-linejoin="round"><circle cx="11" cy="11" r="7"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="搜索标的 / 货币…" />
+  </div>
+
+  <div class="toolbar">
+    <button class="tool-btn" id="themeBtn" title="切换主题 (T)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/>
+        <path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/>
+        <path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/>
+        <path d="m19.07 4.93-1.41 1.41"/></svg>
+    </button>
+    <button class="tool-btn" id="eyeBtn" title="隐藏金额">
+      <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>
+        <circle cx="12" cy="12" r="3"/></svg>
+    </button>
+    <button class="tool-btn" title="刷新">
+      <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.2-2.5L3 16"/>
+        <path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.2 2.5L21 8"/>
+        <path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ============================================================
+     Body grid
+     ============================================================ -->
+<main class="body-grid">
+
+  <!-- LEFT COLUMN: account card + KPI grid + position list -->
+  <aside class="left-col">
+
+    <!-- 1. Account card with mini chart (T212 style) -->
+    <section class="account-card" aria-label="账户总价值">
+      <div class="head">
+        <span class="label">账户总价值 · EUR</span>
+        <button class="icon-btn" aria-label="账户设置" title="账户设置">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.86l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.86-.34 1.7 1.7 0 0 0-1.02 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.86.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.86 1.7 1.7 0 0 0-1.55-1.02H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.86l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.86.34H9a1.7 1.7 0 0 0 1.02-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1.02 1.55 1.7 1.7 0 0 0 1.86-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.86V9a1.7 1.7 0 0 0 1.55 1.02H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1.02Z"/></svg>
+        </button>
+      </div>
+
+      <div class="big-val">€24,382.61<span class="ccy js-balance">EUR</span></div>
+
+      <div class="delta-row">
+        <span class="delta pos">▲ +€302.30</span>
+        <span class="delta pos">+1.4% 今日</span>
+        <span class="muted">vs 昨日收盘</span>
+      </div>
+
+      <!-- mini chart -->
+      <div class="mini-chart">
+        <svg viewBox="0 0 320 90" preserveAspectRatio="none"
+             aria-label="账户价值近期走势">
+          <defs>
+            <linearGradient id="miniFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"  stop-color="var(--focus)" stop-opacity="0.22"/>
+              <stop offset="100%" stop-color="var(--focus)" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M0,68 L40,62 80,64 120,52 160,56 200,42 240,46 280,30 320,26 L320,90 L0,90 Z"
+                fill="url(#miniFill)"/>
+          <path d="M0,68 L40,62 80,64 120,52 160,56 200,42 240,46 280,30 320,26"
+                fill="none" stroke="var(--focus)" stroke-width="1.6"
+                stroke-linejoin="round" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- mini stats -->
+      <div class="mini-stats">
+        <div>
+          <span class="k">可用现金</span>
+          <span class="v js-balance">€2,115.40</span>
+        </div>
+        <div>
+          <span class="k">本周回报</span>
+          <span class="v pos">+€128.37 / +2.7%</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. KPI grid 2x3 -->
+    <div class="kpi-grid" aria-label="账户快照">
+      <div class="kpi-cell">
+        <span class="label">投资市值</span>
+        <span class="v js-balance">€22,267.21</span>
+        <span class="sub">91.3% 占比</span>
+      </div>
+      <div class="kpi-cell">
+        <span class="label">已实现盈亏</span>
+        <span class="v pos js-balance">+€1,126.40</span>
+        <span class="sub">本期累计</span>
+      </div>
+      <div class="kpi-cell">
+        <span class="label">持仓成本</span>
+        <span class="v js-balance">€19,930.88</span>
+      </div>
+      <div class="kpi-cell">
+        <span class="label">汇兑影响</span>
+        <span class="v pos js-balance">+€86.20</span>
+      </div>
+      <div class="kpi-cell">
+        <span class="label">现金占比</span>
+        <span class="v">8.7%</span>
+        <span class="sub">前三大 73.0%</span>
+      </div>
+      <div class="kpi-cell">
+        <span class="label">持仓 · 待处理</span>
+        <span class="v">5 / 2</span>
+        <span class="sub">订单</span>
+      </div>
+    </div>
+
+    <!-- 3. Position list rail -->
+    <section class="list-rail section-card" aria-label="持仓列表" data-section>
+      <header class="list-head section-head">
+        <div class="head-left">
+          <h2>持仓</h2>
+          <span class="head-total js-balance">€22,267.21</span>
+        </div>
+        <div class="head-right">
+          <div class="sort-group" role="group" aria-label="排序">
+            <button class="sort-btn is-active">权重</button>
+            <button class="sort-btn">收益</button>
+            <button class="sort-btn">名称</button>
+          </div>
+          <button class="chevron-btn" aria-label="折叠" data-collapse>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                 stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>
+          </button>
+        </div>
+      </header>
+
+    <div class="pos-row is-active" role="button" tabindex="0" aria-current="true" data-asset="AAPL" data-ccy="USD">
+      <span class="logo-32" style="background:#15212D;color:#fff">AP</span>
+      <div class="pos-id">
+        <strong>Apple Inc.</strong>
+        <small>AAPL · USD</small>
+      </div>
+      <svg class="spark" viewBox="0 0 64 24" preserveAspectRatio="none">
+        <polyline fill="none" stroke="var(--pos)" stroke-width="1.4"
+          points="0,18 8,16 16,17 24,14 32,15 40,10 48,11 56,7 64,5"/>
+      </svg>
+      <span class="weight"><b>24.4</b>%</span>
+      <span class="ret pos"><span class="arrow">▲</span>+18.3%</span>
+    </div>
+
+    <div class="pos-row" role="button" tabindex="0" aria-current="false" data-asset="NVDA" data-ccy="USD">
+      <span class="logo-32" style="background:#76B900;color:#fff">NV</span>
+      <div class="pos-id">
+        <strong>NVIDIA Corp.</strong>
+        <small>NVDA · USD</small>
+      </div>
+      <svg class="spark" viewBox="0 0 64 24" preserveAspectRatio="none">
+        <polyline fill="none" stroke="var(--pos)" stroke-width="1.4"
+          points="0,20 8,18 16,15 24,16 32,12 40,11 48,8 56,6 64,4"/>
+      </svg>
+      <span class="weight"><b>26.3</b>%</span>
+      <span class="ret pos"><span class="arrow">▲</span>+28.8%</span>
+    </div>
+
+    <div class="pos-row" role="button" tabindex="0" aria-current="false" data-asset="MSFT" data-ccy="USD">
+      <span class="logo-32" style="background:#F25022;color:#fff">MS</span>
+      <div class="pos-id">
+        <strong>Microsoft Corp.</strong>
+        <small>MSFT · USD</small>
+      </div>
+      <svg class="spark" viewBox="0 0 64 24" preserveAspectRatio="none">
+        <polyline fill="none" stroke="var(--pos)" stroke-width="1.4"
+          points="0,16 8,15 16,17 24,13 32,14 40,11 48,12 56,9 64,8"/>
+      </svg>
+      <span class="weight"><b>22.3</b>%</span>
+      <span class="ret pos"><span class="arrow">▲</span>+7.9%</span>
+    </div>
+
+    <div class="pos-row" role="button" tabindex="0" aria-current="false" data-asset="VOO" data-ccy="EUR">
+      <span class="logo-32" style="background:#C8102E;color:#fff">VO</span>
+      <div class="pos-id">
+        <strong>Vanguard S&amp;P 500</strong>
+        <small>VOO · EUR</small>
+      </div>
+      <svg class="spark" viewBox="0 0 64 24" preserveAspectRatio="none">
+        <polyline fill="none" stroke="var(--pos)" stroke-width="1.4"
+          points="0,17 8,16 16,15 24,14 32,15 40,12 48,11 56,10 64,9"/>
+      </svg>
+      <span class="weight"><b>15.0</b>%</span>
+      <span class="ret pos"><span class="arrow">▲</span>+9.4%</span>
+    </div>
+
+    <div class="pos-row" role="button" tabindex="0" aria-current="false" data-asset="TSLA" data-ccy="GBP">
+      <span class="logo-32" style="background:#E31937;color:#fff">TS</span>
+      <div class="pos-id">
+        <strong>Tesla Inc.</strong>
+        <small>TSLA · GBP</small>
+      </div>
+      <svg class="spark" viewBox="0 0 64 24" preserveAspectRatio="none">
+        <polyline fill="none" stroke="var(--neg)" stroke-width="1.4"
+          points="0,8 8,10 16,9 24,12 32,11 40,14 48,15 56,17 64,18"/>
+      </svg>
+      <span class="weight"><b>12.0</b>%</span>
+      <span class="ret neg"><span class="arrow">▼</span>−5.7%</span>
+    </div>
+    </section>
+
+    <!-- 4. Pending Orders (T212 pattern) -->
+    <section class="section-card" aria-label="待处理订单" data-section>
+      <header class="section-head section-head-tight">
+        <div class="head-left">
+          <h2>待处理订单</h2>
+          <span class="head-count">2</span>
+        </div>
+        <button class="chevron-btn" aria-label="折叠" data-collapse>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+               stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>
+        </button>
+      </header>
+
+      <div class="pending-list">
+        <div class="pending-row">
+          <span class="logo-32" style="background:#15212D;color:#fff">AP</span>
+          <div class="pending-id">
+            <strong>Sell Apple Inc.</strong>
+            <small>1.0 · LIMIT @ $251.00</small>
+          </div>
+          <span class="pending-amount js-balance">−€217.40</span>
+        </div>
+        <div class="pending-row">
+          <span class="logo-32" style="background:#E31937;color:#fff">TS</span>
+          <div class="pending-id">
+            <strong>Sell Tesla Inc.</strong>
+            <small>2.0 · LIMIT @ $280.00</small>
+          </div>
+          <span class="pending-amount js-balance">+€510.00</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Asset Allocation 2x2 treemap (T212 vibe) -->
+    <section class="section-card" aria-label="资产配置" data-section>
+      <header class="section-head">
+        <div class="head-left">
+          <h2>资产配置</h2>
+        </div>
+        <button class="chevron-btn" aria-label="折叠" data-collapse>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+               stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>
+        </button>
+      </header>
+      <p class="alloc-caption">查看各资产在组合中的占比与今日涨跌</p>
+
+      <!-- Row heights sum to 100; tile widths within each row sum to 100.
+           Areas therefore equal portfolio weights:
+           NVDA 26.3 | AAPL 24.4 | MSFT 22.3 | VOO 15.0 | TSLA 12.0 -->
+      <div class="alloc-grid">
+        <div class="alloc-row" style="--h: 50.7">
+          <div class="alloc-tile gain" style="--w: 26.3"
+               title="NVIDIA（NVDA），仓位 26.3%，今日 +3.42%">
+            <span class="alloc-logo" style="background:#76B900;color:#fff">NV</span>
+            <span class="alloc-ticker">NVDA</span>
+            <span class="alloc-pct pos">+3.42%</span>
+            <span class="alloc-wt">26.3%</span>
+          </div>
+          <div class="alloc-tile gain" style="--w: 24.4"
+               title="Apple（AAPL），仓位 24.4%，今日 +1.85%">
+            <span class="alloc-logo" style="background:#15212D;color:#fff">AP</span>
+            <span class="alloc-ticker">AAPL</span>
+            <span class="alloc-pct pos">+1.85%</span>
+            <span class="alloc-wt">24.4%</span>
+          </div>
+        </div>
+        <div class="alloc-row" style="--h: 49.3">
+          <div class="alloc-tile gain" style="--w: 22.3"
+               title="Microsoft（MSFT），仓位 22.3%，今日 +0.64%">
+            <span class="alloc-logo" style="background:#F25022;color:#fff">MS</span>
+            <span class="alloc-ticker">MSFT</span>
+            <span class="alloc-pct pos">+0.64%</span>
+            <span class="alloc-wt">22.3%</span>
+          </div>
+          <div class="alloc-tile gain" style="--w: 15.0"
+               title="Vanguard S&P 500（VOO），仓位 15.0%，今日 +0.82%">
+            <span class="alloc-logo" style="background:#C8102E;color:#fff">VO</span>
+            <span class="alloc-ticker">VOO</span>
+            <span class="alloc-pct pos">+0.82%</span>
+            <span class="alloc-wt">15.0%</span>
+          </div>
+          <div class="alloc-tile loss" style="--w: 12.0"
+               title="Tesla（TSLA），仓位 12.0%，今日 −2.15%">
+            <span class="alloc-logo" style="background:#E31937;color:#fff">TS</span>
+            <span class="alloc-ticker">TSLA</span>
+            <span class="alloc-pct neg">−2.15%</span>
+            <span class="alloc-wt">12.0%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </aside><!-- /left-col -->
+
+  <!-- ASSET CANVAS -->
+  <div class="canvas-stack">
+  <section class="canvas" id="assetView">
+
+    <!-- asset head -->
+    <header class="asset-head">
+      <div class="asset-id">
+        <span class="logo-44" id="asset-logo" style="background:#15212D;color:#fff">AP</span>
+        <div class="id-text">
+          <span class="tag meta-strip" id="asset-tag"><b>AAPL</b><span>USD</span><span>NASDAQ</span></span>
+          <span class="name" id="asset-name">Apple Inc.</span>
+        </div>
+      </div>
+      <div class="price-block">
+        <span class="price-main"><span id="asset-price">$198.17</span><span class="ccy">USD</span></span>
+        <span class="price-sub pos" id="asset-sub">
+          <span class="arrow">▲</span><span class="js-balance">+€440.17</span>
+          <span>·</span>
+          <span>+4.30% 今日</span>
+        </span>
+      </div>
+      <div class="range-bar" role="radiogroup" aria-label="价格时间范围">
+        <button class="range-btn" role="radio" aria-checked="false">1D</button>
+        <button class="range-btn" role="radio" aria-checked="false">1W</button>
+        <button class="range-btn is-active" role="radio" aria-checked="true">1M</button>
+        <button class="range-btn" role="radio" aria-checked="false">3M</button>
+        <button class="range-btn" role="radio" aria-checked="false">1Y</button>
+        <button class="range-btn" role="radio" aria-checked="false">5Y</button>
+      </div>
+    </header>
+
+    <!-- chart -->
+    <section class="chart-card">
+      <div class="chart-head">
+        <div class="chart-title">
+          <h3>历史价格与买卖点</h3>
+          <p class="chart-sub">AAPL 每日收盘价</p>
+          <p class="chart-meta">
+            <span>2026-08-15 至 2026-09-15</span>
+            <span>数据来源 Yahoo Finance</span>
+          </p>
+        </div>
+        <div class="chart-legend">
+          <span><i class="legend-line"></i>收盘价</span>
+          <span><i class="legend-buy"></i>买入</span>
+          <span><i class="legend-sell"></i>卖出</span>
+        </div>
+      </div>
+      <div class="chart-area">
+        <!-- 由 TradingView Lightweight Charts v5 渲染（与生产 src/app/App.tsx 同一套配置） -->
+        <div id="priceChart" class="price-chart" role="img"
+             aria-label="AAPL 1个月历史价格曲线，包含 3 个买卖成交点"></div>
+      </div>
+      <p class="tiny" style="margin:0">区间内 3 个 Trading 212 成交点（2 买 / 1 卖）。悬停买卖点查看成交详情。</p>
+    </section>
+
+    <!-- detail grid -->
+    <section class="detail-grid">
+
+      <!-- 1. holding -->
+      <article class="detail-card">
+        <div class="head">
+          <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/>
+            <path d="M7 6V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/></svg>
+          <h4>持仓明细</h4>
+        </div>
+        <div class="kv">
+          <div class="row"><span>当前市值</span><strong class="js-balance">€5,428.10</strong></div>
+          <div class="row"><span>未实现收益</span><strong class="pos">+€840.60</strong></div>
+          <div class="row"><span>未实现收益率</span><strong class="pos">+18.30%</strong></div>
+          <div class="row"><span>持仓数量</span><strong>27.4000</strong></div>
+          <div class="row"><span>平均买入价</span><strong>$167.44</strong></div>
+          <div class="row"><span>持仓成本</span><strong class="js-balance">€4,587.50</strong></div>
+        </div>
+      </article>
+
+      <!-- 2. metrics -->
+      <article class="detail-card">
+        <div class="head">
+          <svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+          <h4>关键指标</h4>
+        </div>
+        <div class="metric-grid">
+          <div>
+            <div class="label">区间波动</div>
+            <div class="v">±3.4%<small>近 30 日</small></div>
+          </div>
+          <div>
+            <div class="label">最大回撤</div>
+            <div class="v neg">−2.1%<small>近 30 日</small></div>
+          </div>
+          <div>
+            <div class="label">组合贡献度</div>
+            <div class="v">4.4%<small>占组合 P/L</small></div>
+          </div>
+          <div>
+            <div class="label">汇兑影响</div>
+            <div class="v pos">+€12.40<small>本期</small></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 3. pending orders -->
+      <article class="detail-card">
+        <div class="head">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/>
+            <path d="M12 7v5l3 2"/></svg>
+          <h4>待处理订单 · 2</h4>
+        </div>
+        <div class="order-row">
+          <span class="order-tag buy">买</span>
+          <div>
+            <div class="order-id">5.0 AAPL</div>
+            <div class="order-meta">限价 $195 · 9/25</div>
+          </div>
+          <div class="order-amt js-balance">−€875.00</div>
+        </div>
+        <div class="order-row">
+          <span class="order-tag sell">卖</span>
+          <div>
+            <div class="order-id">2.0 TSLA</div>
+            <div class="order-meta">限价 $280 · 9/27</div>
+          </div>
+          <div class="order-amt js-balance">+€510.00</div>
+        </div>
+      </article>
+
+    </section>
+
+  </section>
+
+  <!-- ============================================================
+       HOLDINGS DETAIL PAGE (shown when the 持仓 tab is active)
+       ============================================================ -->
+  <section class="holdings-page" id="holdingsPage" hidden>
+
+    <header class="hp-head">
+      <span class="label">持仓总额</span>
+      <strong class="hp-total">€22,267.21<span class="ccy js-balance">EUR</span></strong>
+    </header>
+
+    <div class="hp-meta">
+      <div class="hp-meta-row">
+        <span class="k">累计回报</span>
+        <span class="v pos js-balance">+€2,336.33 (+11.72%)</span>
+      </div>
+      <div class="hp-meta-row">
+        <span class="k">持仓成本</span>
+        <span class="v js-balance">€19,930.88</span>
+      </div>
+    </div>
+
+    <div class="hp-toolbar">
+      <div class="left">
+        <h2>持仓</h2>
+        <span class="count">5</span>
+      </div>
+      <button class="icon-sq" aria-label="排序" title="按权重排序">
+        <svg viewBox="0 0 24 24"><path d="M7 4v16"/><path d="m3 8 4-4 4 4"/>
+          <path d="M17 20V4"/><path d="m13 16 4 4 4-4"/></svg>
+      </button>
+    </div>
+
+    <div class="hp-viewtoggle" role="group" aria-label="数值口径">
+      <button class="vt-btn is-active">市值</button>
+      <button class="vt-btn">市场价</button>
+    </div>
+
+    <p class="hp-desc">显示每只持仓的当前市值、权重与累计回报。点击任意一行查看该标的的价格走势与买卖成交点。</p>
+
+    <div class="hp-list">
+      <div class="hp-row is-active" role="button" tabindex="0" aria-current="true" data-asset="AAPL">
+        <span class="logo-circle" style="background:#15212D;color:#fff">AP</span>
+        <div class="hp-id">
+          <strong>Apple Inc.</strong>
+          <small>AAPL · USD</small>
+        </div>
+        <span class="hp-wt">24.4%</span>
+        <div class="hp-vals">
+          <span class="val js-balance">€5,428.10</span>
+          <span class="ret pos">+€840.60 (+18.3%)</span>
+        </div>
+      </div>
+
+      <div class="hp-row" role="button" tabindex="0" aria-current="false" data-asset="NVDA">
+        <span class="logo-circle" style="background:#76B900;color:#fff">NV</span>
+        <div class="hp-id">
+          <strong>NVIDIA Corp.</strong>
+          <small>NVDA · USD</small>
+        </div>
+        <span class="hp-wt">26.3%</span>
+        <div class="hp-vals">
+          <span class="val js-balance">€5,860.25</span>
+          <span class="ret pos">+€1,311.75 (+28.8%)</span>
+        </div>
+      </div>
+
+      <div class="hp-row" role="button" tabindex="0" aria-current="false" data-asset="MSFT">
+        <span class="logo-circle" style="background:#F25022;color:#fff">MS</span>
+        <div class="hp-id">
+          <strong>Microsoft Corp.</strong>
+          <small>MSFT · USD</small>
+        </div>
+        <span class="hp-wt">22.3%</span>
+        <div class="hp-vals">
+          <span class="val js-balance">€4,965.12</span>
+          <span class="ret pos">+€365.30 (+7.9%)</span>
+        </div>
+      </div>
+
+      <div class="hp-row" role="button" tabindex="0" aria-current="false" data-asset="VOO">
+        <span class="logo-circle" style="background:#C8102E;color:#fff">VO</span>
+        <div class="hp-id">
+          <strong>Vanguard S&amp;P 500</strong>
+          <small>VOO · EUR</small>
+        </div>
+        <span class="hp-wt">15.0%</span>
+        <div class="hp-vals">
+          <span class="val js-balance">€3,332.50</span>
+          <span class="ret pos">+€287.01 (+9.4%)</span>
+        </div>
+      </div>
+
+      <div class="hp-row" role="button" tabindex="0" aria-current="false" data-asset="TSLA">
+        <span class="logo-circle" style="background:#E31937;color:#fff">TS</span>
+        <div class="hp-id">
+          <strong>Tesla Inc.</strong>
+          <small>TSLA · GBP</small>
+        </div>
+        <span class="hp-wt">12.0%</span>
+        <div class="hp-vals">
+          <span class="val js-balance">€2,681.24</span>
+          <span class="ret neg">−€161.02 (−5.7%)</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+  </div><!-- /canvas-stack -->
+</main>
+
+<!-- ============================================================
+     Footer
+     ============================================================ -->
+<footer class="foot">
+  <span>投资服务由受 BaFin 监管的 Trading 212 EU GmbH 提供。dsh × Trading 212 为只读分析工具。</span>
+  <span class="muted">v0.8.8 · 仅供研究参考</span>
+</footer>
+
+<script src="../node_modules/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<script>
+/* ============================================================
+   Price chart — TradingView Lightweight Charts v5.
+   Configuration mirrors src/app/App.tsx (PriceHistoryChart) so the
+   prototype exercises the same engine as the shipped product:
+   same scale margins, magnet crosshair, dashed price line, dashed
+   crosshair, fitContent, and the attribution mark the licence requires.
+   Every colour is read from the design tokens, never from a parallel palette.
+   ============================================================ */
+(function () {
+  var LWC = window.LightweightCharts;
+  var el = document.getElementById('priceChart');
+  if (!LWC || !el) return;
+
+  // ---- 1 month of AAPL daily closes (2026-08-17 → 2026-09-15) ----
+  var closes = [
+    ['2026-08-17', 183.20], ['2026-08-18', 184.05], ['2026-08-19', 182.90],
+    ['2026-08-20', 186.40], ['2026-08-21', 185.10], ['2026-08-24', 188.75],
+    ['2026-08-25', 187.30], ['2026-08-26', 190.60], ['2026-08-27', 189.85],
+    ['2026-08-28', 192.40], ['2026-08-31', 191.20], ['2026-09-01', 194.05],
+    ['2026-09-02', 193.10], ['2026-09-03', 195.60], ['2026-09-04', 194.80],
+    ['2026-09-07', 196.35], ['2026-09-08', 195.20], ['2026-09-09', 197.40],
+    ['2026-09-10', 196.10], ['2026-09-11', 198.90], ['2026-09-14', 197.55],
+    ['2026-09-15', 198.17]
+  ];
+
+  // Trading 212 fills inside the range: 2 buys, 1 sell
+  var trades = [
+    { time: '2026-08-24', side: 'BUY',  qty: 8.5000,  price: 188.75 },
+    { time: '2026-09-07', side: 'SELL', qty: 3.0000,  price: 196.35 },
+    { time: '2026-09-11', side: 'BUY',  qty: 6.2000,  price: 198.90 }
+  ];
+
+  var CURRENCY = 'USD';
+  function money(v) { return '$' + v.toFixed(2); }
+
+  function token(name, fallback) {
+    var v = getComputedStyle(document.documentElement)
+      .getPropertyValue(name).trim();
+    return v || fallback;
+  }
+  function withAlpha(color, alpha) {
+    var hex = color.trim().replace('#', '');
+    var full = hex.length === 3
+      ? hex.split('').map(function (p) { return p + p; }).join('') : hex;
+    var n = parseInt(full, 16);
+    if (full.length !== 6 || isNaN(n)) return color;
+    return 'rgba(' + ((n >> 16) & 255) + ', ' + ((n >> 8) & 255) + ', ' +
+           (n & 255) + ', ' + alpha + ')';
+  }
+
+  function palette() {
+    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var accent = token('--focus', dark ? '#7B9DD9' : '#2F4D7A');
+    return {
+      accent: accent,
+      buy:  token('--pos',  dark ? '#4FB37B' : '#166534'),
+      sell: token('--warn', dark ? '#D9A85F' : '#8A6212'),
+      axis: token('--ink-3', dark ? '#9097A0' : '#6E7682'),
+      grid: withAlpha(token('--hair', dark ? '#2E333B' : '#DAD3C5'), 0.75),
+      cross: withAlpha(accent, 0.6),
+      priceLine: withAlpha(accent, 0.55),
+      font: token('--font-mono', 'ui-monospace, monospace'),
+      labelBg: dark ? '#0B0E12' : '#15171A'
+    };
+  }
+
+  var chart = null, series = null;
+
+  function build() {
+    if (chart) { chart.remove(); chart = null; }
+    var c = palette();
+
+    chart = LWC.createChart(el, {
+      autoSize: true,
+      layout: {
+        background: { color: 'transparent' },
+        textColor: c.axis,
+        fontFamily: c.font,
+        fontSize: 12,
+        attributionLogo: true          // 许可要求：保留 TradingView 标记
+      },
+      grid: { vertLines: { visible: false }, horzLines: { color: c.grid } },
+      crosshair: {
+        mode: LWC.CrosshairMode.Magnet,
+        vertLine: { color: c.cross, width: 1,
+                    style: LWC.LineStyle.Dashed, labelBackgroundColor: c.labelBg },
+        horzLine: { color: c.cross, width: 1,
+                    style: LWC.LineStyle.Dashed, labelBackgroundColor: c.labelBg }
+      },
+      rightPriceScale: {
+        borderVisible: false, entireTextOnly: true,
+        scaleMargins: { top: 0.12, bottom: 0.14 }
+      },
+      timeScale: {
+        borderVisible: false, timeVisible: false, secondsVisible: false,
+        rightOffset: 1, minBarSpacing: 0.4,
+        lockVisibleTimeRangeOnResize: true,
+        fixLeftEdge: true, fixRightEdge: true
+      },
+      localization: { priceFormatter: money },
+      handleScroll: { mouseWheel: true, pressedMouseMove: true,
+                      horzTouchDrag: true, vertTouchDrag: false },
+      handleScale: { axisPressedMouseMove: false, mouseWheel: true, pinch: true }
+    });
+
+    series = chart.addSeries(LWC.LineSeries, {
+      color: c.accent,
+      lineWidth: 2,
+      priceLineVisible: true,
+      priceLineStyle: LWC.LineStyle.Dashed,
+      priceLineColor: c.priceLine,
+      lastValueVisible: true,
+      crosshairMarkerVisible: true,
+      crosshairMarkerRadius: 4,
+      priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
+    });
+
+    series.setData(closes.map(function (r) {
+      return { time: r[0], value: r[1] };
+    }));
+
+    LWC.createSeriesMarkers(series, trades.map(function (t) {
+      return {
+        time: t.time,
+        position: t.side === 'BUY' ? 'belowBar' : 'aboveBar',
+        shape: t.side === 'BUY' ? 'arrowUp' : 'arrowDown',
+        color: t.side === 'BUY' ? c.buy : c.sell,
+        size: 1
+      };
+    }), { zOrder: 'aboveSeries' });
+
+    chart.timeScale().fitContent();
+  }
+
+  build();
+
+  // expose a rebuild hook: the chart lives inside a view that can start hidden
+  // (?view=holdings), and a chart built in a display:none container measures 0.
+  window.__rebuildChart = build;
+
+  // theme changes rebuild the chart so the canvas re-reads the tokens
+  document.getElementById('themeBtn').addEventListener('click', function () {
+    setTimeout(build, 0);
+  });
+  window.addEventListener('keydown', function (e) {
+    if (e.key && e.key.toLowerCase() === 't' && !e.target.matches('input')) {
+      setTimeout(build, 0);
+    }
+  });
+  try {
+    if (new URLSearchParams(location.search).get('theme') === 'dark') {
+      setTimeout(build, 0);
+    }
+  } catch (e) {}
+})();
+</script>
+
+<script>
+(function () {
+  // ---------- theme ----------
+  var themeBtn = document.getElementById('themeBtn');
+  function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    document.documentElement.style.colorScheme = t;
+    document.body.setAttribute('data-theme', t);
+    try { localStorage.setItem('cartographer-theme', t); } catch (e) {}
+  }
+  themeBtn.addEventListener('click', function () {
+    setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+  window.addEventListener('keydown', function (e) {
+    if (e.key && e.key.toLowerCase() === 't' && !e.target.matches('input')) {
+      setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
+  });
+
+  // ---------- privacy ----------
+  var eyeBtn = document.getElementById('eyeBtn');
+  var hidden = false;
+  eyeBtn.addEventListener('click', function () {
+    hidden = !hidden;
+    document.body.classList.toggle('hide-balances', hidden);
+    eyeBtn.title = hidden ? '显示金额' : '隐藏金额';
+  });
+
+  // ---------- range switcher ----------
+  document.querySelectorAll('.range-bar').forEach(function (bar) {
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest('.range-btn');
+      if (!b) return;
+      bar.querySelectorAll('.range-btn').forEach(function (x) {
+        x.classList.remove('is-active');
+        x.setAttribute('aria-checked', 'false');
+      });
+      b.classList.add('is-active');
+      b.setAttribute('aria-checked', 'true');
+    });
+  });
+
+  // ---------- collapsible sections ----------
+  document.querySelectorAll('[data-collapse]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var sec = btn.closest('[data-section]');
+      if (!sec) return;
+      sec.setAttribute('data-collapsed',
+        sec.getAttribute('data-collapsed') === 'true' ? 'false' : 'true');
+    });
+  });
+
+  // ---------- sort ----------
+  document.querySelectorAll('.sort-group').forEach(function (g) {
+    g.addEventListener('click', function (e) {
+      var b = e.target.closest('.sort-btn');
+      if (!b) return;
+      g.querySelectorAll('.sort-btn').forEach(function (x) { x.classList.remove('is-active'); });
+      b.classList.add('is-active');
+    });
+  });
+
+  // ---------- nav tabs / view switching ----------
+  var assetView = document.getElementById('assetView');
+  var holdingsPage = document.getElementById('holdingsPage');
+
+  function setView(name) {
+    var isHoldings = name === '持仓';
+    assetView.hidden = isHoldings;
+    holdingsPage.hidden = !isHoldings;
+    document.querySelectorAll('.nav-tab').forEach(function (x) {
+      var on = x.getAttribute('data-nav') === name;
+      x.classList.toggle('is-active', on);
+      if (on) { x.setAttribute('aria-current', 'page'); }
+      else { x.removeAttribute('aria-current'); }
+    });
+    // a chart built while its container was display:none measured 0 wide
+    if (!isHoldings && typeof window.__rebuildChart === 'function') {
+      requestAnimationFrame(window.__rebuildChart);
+    }
+  }
+
+  document.querySelector('.nav-tabs').addEventListener('click', function (e) {
+    var b = e.target.closest('.nav-tab');
+    if (!b) return;
+    var name = b.getAttribute('data-nav');
+    if (name === '持仓' || name === '概览') {
+      setView(name);
+    } else {
+      document.querySelectorAll('.nav-tab').forEach(function (x) {
+        x.classList.remove('is-active'); x.removeAttribute('aria-current');
+      });
+      b.classList.add('is-active');
+      b.setAttribute('aria-current', 'page');
+    }
+  });
+
+  // ---------- asset selection (swap canvas) ----------
+  // 标的元信息拆成结构化字段，渲染时用细分隔线拼接（见 .meta-strip）
+  var data = {
+    AAPL: { tag: ['AAPL', 'USD', 'NASDAQ'], name: 'Apple Inc.',
+            price: '$198.17', logo: 'AP', logoBg: '#15212D',
+            subCls: 'pos', subText: '▲ +€440.17 · +4.30% 今日' },
+    NVDA: { tag: ['NVDA', 'USD', 'NASDAQ'], name: 'NVIDIA Corp.',
+            price: '$234.52', logo: 'NV', logoBg: '#76B900',
+            subCls: 'pos', subText: '▲ +€620.40 · +5.84% 今日' },
+    MSFT: { tag: ['MSFT', 'USD', 'NASDAQ'], name: 'Microsoft Corp.',
+            price: '$337.40', logo: 'MS', logoBg: '#F25022',
+            subCls: 'pos', subText: '▲ +€120.80 · +1.21% 今日' },
+    VOO:  { tag: ['VOO', 'EUR', 'XETRA'], name: 'Vanguard S&P 500',
+            price: '€544.70', logo: 'VO', logoBg: '#C8102E',
+            subCls: 'pos', subText: '▲ +€38.20 · +0.71% 今日' },
+    TSLA: { tag: ['TSLA', 'GBP', 'LSE'], name: 'Tesla Inc.',
+            price: '£221.40', logo: 'TS', logoBg: '#E31937',
+            subCls: 'neg', subText: '▼ −€42.10 · −1.85% 今日' }
+  };
+
+  /** 首项加粗作为主标识，其余作为次级元信息，靠 CSS 细分隔线分隔。 */
+  function renderTag(parts) {
+    return parts.map(function (p, i) {
+      return i === 0 ? '<b>' + p + '</b>' : '<span>' + p + '</span>';
+    }).join('');
+  }
+
+  function selectAsset(key) {
+    var d = data[key]; if (!d) return;
+    document.querySelectorAll('.pos-row').forEach(function (r) {
+      var on = r.getAttribute('data-asset') === key;
+      r.classList.toggle('is-active', on);
+      r.setAttribute('aria-current', on ? 'true' : 'false');
+    });
+    var logo = document.getElementById('asset-logo');
+    logo.textContent = d.logo;
+    logo.style.background = d.logoBg;
+    document.getElementById('asset-tag').innerHTML = renderTag(d.tag);
+    document.getElementById('asset-name').textContent = d.name;
+    document.getElementById('asset-price').textContent = d.price;
+    var sub = document.getElementById('asset-sub');
+    sub.className = 'price-sub ' + d.subCls;
+    sub.innerHTML = '<span class="arrow">' + d.subText.substring(0,1) + '</span>' +
+                    d.subText.substring(2);
+  }
+
+  /* 这些行是 <div>，原生不可聚焦。加 role/tabindex 之后
+     还要补上键盘激活，否则 Tab 能到但回车没反应。 */
+  function makeActivatable(rows) {
+    rows.forEach(function (row) {
+      row.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          row.click();
+        }
+      });
+    });
+  }
+
+  /* 纯装饰元素对辅助技术隐藏：
+     首字母方块（可读文本会重复公司名）、迷你走势图、涨跌箭头
+     （涨跌方向已由 +/- 号表达，箭头只是视觉强调）。 */
+  document.querySelectorAll('.logo-32, .logo-circle, .spark, .arrow')
+    .forEach(function (el) { el.setAttribute('aria-hidden', 'true'); });
+
+  document.querySelectorAll('.pos-row').forEach(function (row) {
+    row.addEventListener('click', function () {
+      selectAsset(this.getAttribute('data-asset'));
+    });
+  });
+  makeActivatable(Array.prototype.slice.call(document.querySelectorAll('.pos-row')));
+
+  // ---------- holdings detail rows ----------
+  document.querySelectorAll('.hp-row').forEach(function (row) {
+    row.addEventListener('click', function () {
+      document.querySelectorAll('.hp-row').forEach(function (r) {
+        r.classList.remove('is-active');
+        r.setAttribute('aria-current', 'false');
+      });
+      this.classList.add('is-active');
+      this.setAttribute('aria-current', 'true');
+      selectAsset(this.getAttribute('data-asset'));
+      setView('概览');
+    });
+  });
+  makeActivatable(Array.prototype.slice.call(document.querySelectorAll('.hp-row')));
+
+  // ---------- holdings view toggle (市值 / 市场价) ----------
+  document.querySelectorAll('.hp-viewtoggle').forEach(function (g) {
+    g.addEventListener('click', function (e) {
+      var b = e.target.closest('.vt-btn');
+      if (!b) return;
+      g.querySelectorAll('.vt-btn').forEach(function (x) {
+        x.classList.remove('is-active');
+      });
+      b.classList.add('is-active');
+    });
+  });
+
+  // ---------- deep link: ?view=holdings ----------
+  try {
+    var v = new URLSearchParams(location.search).get('view');
+    if (v === 'holdings') setView('持仓');
+  } catch (e) {}
+})();
+</script>
+
+</body>
+</html>

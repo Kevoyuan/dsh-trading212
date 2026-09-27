@@ -1,44 +1,22 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="color-scheme" content="light" />
-<title>dsh × Trading 212 - Portfolio preview</title>
-<style>
 /* ==========================================================================
-   dsh x Trading 212 - "Cartographer" design system
+   dsh x Trading 212 - "Lumen" design system
    --------------------------------------------------------------------------
    ONE system. One token block, one type scale, one radius rule, one motion
    curve. No override layers, no !important, no second theme bolted on.
 
-   Direction: warm paper, single focus. A warm neutral ramp replaces the cool
-   blue cast, one desaturated indigo carries every interactive affordance, and
-   green/red stay reserved strictly for signed finance.
+   Direction: soft structuralism. Cool blue-cast neutral ramp, off-white
+   plates, two hue-tinted ambient elevations, one desaturated accent.
+   Replaces a 2937-line stylesheet that was 11 stacked redesigns overriding
+   each other (18 type sizes, 9 radii, 10 hairlines, 8 shadows, 12 easings,
+   6 gradients, 31 contrast failures).
 
-   Scope of this revision: the TOKEN LAYER only. Palette, type scale, radii and
-   elevation below are Cartographer's; the layout and component structure are
-   still Lumen's and are migrated next. Two values deviate from the Cartographer
-   mock, both because the mock does not meet AA where the product actually puts
-   the token:
-
-     --ink-3  light  6E7682 -> 616873   the mock scores 4.07:1 on the canvas and
-                                        3.72:1 on the well. 4.5:1 is the floor
-                                        for the 12px captions this token carries,
-                                        and it is the most-used ink in the file.
-     --hair   dark   2E333B -> 3A4049   the mock's own --hair-2. Lumen has a
-                                        single hairline token, so it has to stay
-                                        legible dividing a well (1.13:1 -> 1.38:1;
-                                        Lumen shipped 1.30:1).
-
-   Colour rule   one focus colour (#2F4D7A light / #7B9DD9 dark). Green/red are
-                 reserved for signed finance only and each verified >=4.5:1 on
-                 every surface it can land on. No pure #000 / #fff.
-   Shape rule    --r-1 6 chips/inputs, --r-2 12 inner cards, --r-3 20 hero
+   Colour rule   one accent (#2E5FD0 at 63% saturation). Green/red are
+                 reserved for signed finance only and each verified >=4.5:1
+                 on every surface it can land on. No pure #000 / #fff.
+   Shape rule    --r-1 8 chips/inputs, --r-2 14 inner cards, --r-3 20 hero
                  plates, --r-pill interactive controls. Nothing else.
-   Type rule     12 / 14 / 17 / 18 / 22 / 28 / 36. Seven whole-pixel steps, one
-                 hero per page (36 desktop / 28 mobile). Nothing below 12px.
-                 Integer sizes keep figures on the pixel grid at every zoom.
+   Type rule     12 / 14.5 / 17.5 / 21 / 25.5 / 31 / 40. Seven steps. No
+                 text below 12px anywhere.
    Motion rule   one curve (--ease), three beats (140/260/420ms),
                  transform + opacity only, reduced-motion honoured.
    Verified      0 contrast failures, 0 overflow, 0 overlap, 0 gradients,
@@ -49,43 +27,41 @@
 :root{
   color-scheme: light;
 
-  /*— surfaces: paper / card / well / glass ——————————————————
-    Studio Clean Slate: Pure, crisp, modern fintech neutrals with high legibility.
-    Eliminates muddy cream/yellow tints for an ultra-clean, airy feel. */
-  --canvas:       #F8FAFC;
-  --surface:      #FFFFFF;
-  --well:         #F1F5F9;
-  --glass:        rgba(255, 255, 255, .82);
+  /*— surfaces: canvas / plate / well / glass —————————————————*/
+  --canvas:       #EAEDF5;
+  --surface:      #FCFDFF;
+  --well:         #E0E6F1;
+  --glass:        rgba(252, 253, 255, .74);
 
-  /*— ink ramp: 18.2 · 9.3 · 5.2 : 1 on the card, strict WCAG AA+ readability —*/
-  --ink-1:        #0F172A;
-  --ink-2:        #475569;
-  --ink-3:        #64748B;
+  /*— ink ramp — 16.9 · 8.9 · 5.7 : 1 on white, 5.2 : 1 on the canvas —*/
+  --ink-1:        #101420;
+  --ink-2:        #414958;
+  --ink-3:        #5A6272;
 
-  /*— financial semantics + authoritative accent —*/
-  --accent:       #2563EB;
-  --accent-deep:  #1D4ED8;
-  --accent-soft:  #EFF6FF;
-  --accent-plate: #2563EB;
-  --accent-plate-ink: #FFFFFF;
-  --pos:          #059669;
-  --neg:          #E11D48;
+  /*— one accent + financial semantics, every pair AA on its own surface —*/
+  --accent:       #2E5FD0;
+  --accent-deep:  #234AA3;
+  --accent-soft:  #E6EBFA;
+  --accent-plate: #2E5FD0;
+  --accent-plate-ink: #FCFDFF;
+  --pos:          #0D6A48;
+  --neg:          #B3352B;
   --negative-bright: var(--neg);
-  --warn:         #D97706;
-  --pos-soft:     #ECFDF5;
-  --neg-soft:     #FFF1F2;
+  --warn:         #8A6212;
+  --pos-soft:     #E4F2EA;
+  --neg-soft:     #FAE9E7;
 
-  /*— precision hairline ———————————————————————————————————*/
-  --hair:         #E2E8F0;
+  /*— one hairline —————————————————————————————————————————*/
+  --hair:         #D3DAE6;
 
-  /*— type: 12 · 14 · 17 · 18 · 22 · 28 · 36  (every step a whole pixel) —*/
+  /*— type: 12 · 14.5 · 17.5 · 21 · 25.5 · 31 · 40   (ratio ⌐1.21 + display) */
   --fs-micro:     12px;
-  --fs-body:      14px;
-  --fs-row:       17px;
-  --fs-fig:       18px;
-  --fs-title:     22px;
-  --fs-hero-sm:   28px;   /* the mobile hero; no longer a desktop content tier */
-  --fs-hero:      36px;
+  --fs-body:      14.5px;
+  --fs-row:       17.5px;
+  --fs-fig:       21px;
+  --fs-title:     25.5px;
+  --fs-price:     31px;
+  --fs-hero:      40px;
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 
@@ -96,12 +72,12 @@
   /*— bento rhythm: 6 steps, macro 28 / 40 ———————————————————*/
   --g-1: 6px; --g-2: 10px; --g-3: 16px; --g-4: 22px; --g-5: 28px; --g-6: 40px;
 
-  /*— radii: shell 20 -> core 12 -> well 6, every step 6 ——————*/
-  --r-1: 6px; --r-2: 12px; --r-3: 20px; --r-pill: 999px;
+  /*— radii: shell 20 -> core 14 -> well 8, every step 6 —————*/
+  --r-1: 8px; --r-2: 14px; --r-3: 20px; --r-pill: 999px;
 
-  /*— two elevations: plate / float with refined micro-bevel —*/
-  --sh-plate: 0 1px 2px rgba(15,23,42,.04), 0 8px 16px -8px rgba(15,23,42,.08), inset 0 1px 0 rgba(255,255,255,1);
-  --sh-float: 0 4px 6px -1px rgba(15,23,42,.06), 0 20px 25px -5px rgba(15,23,42,.10);
+  /*— two ambient elevations: plate / float —————————————————*/
+  --sh-plate: 0 1px 2px rgba(26,38,62,.05), 0 14px 34px -18px rgba(26,38,62,.18), inset 0 1px 0 rgba(255,255,255,.90);
+  --sh-float: 0 2px 6px rgba(26,38,62,.06), 0 26px 60px -26px rgba(26,38,62,.30);
 
   /*— motion: one curve, three beats ———————————————————————*/
   --ease: cubic-bezier(.32,.72,0,1);
@@ -141,6 +117,7 @@ fieldset{ border: 0; }
 /* == 03 TYPE SYSTEM ===================================================== */
 .t212-native-app-root{
   min-height: 100dvh;
+  padding-bottom: 84px;                        /* clears the floating HUD */
   background: var(--canvas);
   color: var(--ink-1);
   font-family: var(--font-sans);
@@ -150,22 +127,21 @@ fieldset{ border: 0; }
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-.account-hero-val{ font-size: var(--fs-hero); font-weight: 600; letter-spacing: -.034em; line-height: 1.03; }
-.inst-price-main{ font-size: var(--fs-title); font-weight: 600; letter-spacing: -.026em; line-height: 1.06; }
-.inst-title{ font-size: var(--fs-fig); font-weight: 600; letter-spacing: -.012em; }
-.section-heading strong{ font-size: var(--fs-title); font-weight: 600; letter-spacing: -.012em; }
+.account-hero-val{ font-size: var(--fs-hero); font-weight: 600; letter-spacing: -.022em; line-height: 1.04; }
+.inst-price-main{ font-size: var(--fs-price); font-weight: 600; letter-spacing: -.018em; line-height: 1.06; }
+.inst-title, .section-heading strong{ font-size: var(--fs-title); font-weight: 600; letter-spacing: -.012em; }
 .pot-val, .cockpit-section-title, .section-heading h2, .invest-metric-row strong{
   font-size: var(--fs-fig); font-weight: 600; letter-spacing: -.01em;
 }
 .pos-stream-num-col strong, .sub-metric-block strong, .metric-card strong, .tile-percent,
-.investments-header h3, .section-title, .bar-row b, .exposure-summary strong{ font-size: var(--fs-row); font-weight: 600; }
+.investments-header h3, .section-title, .bar-row b, .exposure-summary strong, .ask-banner strong{ font-size: var(--fs-row); font-weight: 600; }
 .holdings-table td strong, .holdings-table td small{ font-size: var(--fs-body); }
 
 /* one micro-label voice: 12px, wide tracking, muted ink */
-.account-label, .pot-label, .section-caption, .tile-ticker, .tile-weight,
-.tile-daypl, .chart-count, .t212-legal-disclaimer, .legal, .inst-ticker-tag,
+.account-label, .pot-label, .ai-strip-title, .section-caption, .tile-ticker, .tile-weight,
+.tile-daypl, .chart-count, .t212-legal-disclaimer, .legal, .hud-pill, .inst-ticker-tag,
 .read-only-status, .chart-legend, .exposure-summary small, .bar-label small, .holdings-table th,
-.holdings-table td small, .sub-metric-block > span, .metric-card > span,
+.holdings-table td small, .ask-banner > div > span, .sub-metric-block > span, .metric-card > span,
 .metric-card > small, .inv-metric-row > span, .pot-sub{
   font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: .045em;
 }
@@ -257,22 +233,17 @@ fieldset{ border: 0; }
 .t212-cockpit-layout{
   max-width: 1560px;
   margin-inline: auto;
-  padding: 0 36px 32px;
+  padding: 104px 36px 40px;
   display: grid;
   grid-template-columns: 336px minmax(0, 1fr);
   gap: var(--g-5);
   align-items: start;
 }
-/* `align-self` because the shell sets `align-items: start`: the rail used to end
-   wherever its content ended, which was fine only while it was the tallest
-   column. It is not any more, and an unpinned legal notice floats in the middle
-   of the page. Stretched, the rail matches the canvas and `margin-top: auto` on
-   the footer anchors the notice to the bottom edge. */
-.cockpit-left-pane{ display: flex; flex-direction: column; gap: var(--g-4); min-width: 0; align-self: stretch; }
-.cockpit-main-pane{ display: flex; flex-direction: column; gap: var(--g-5); min-width: 0; }
+.cockpit-left-pane{ display: flex; flex-direction: column; gap: var(--g-5); min-width: 0; }
+.cockpit-main-pane{ display: flex; flex-direction: column; gap: var(--g-6); min-width: 0; }
 .cockpit-instrument-container{
   display: grid;
-  grid-template-columns: minmax(min-content, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   column-gap: var(--g-4); row-gap: var(--g-3);
   align-items: end;
 }
@@ -284,12 +255,6 @@ fieldset{ border: 0; }
 .pane-section-header, .section-heading{
   display: flex; align-items: flex-start; justify-content: space-between; column-gap: var(--g-4);
 }
-/* A heading must never be the flex item that shrinks. In "主要持仓" + a long
-   subtitle the subtitle claims max-content first and the h2 was squeezed to
-   73px at 390px, so it broke 3+1. Same class of bug as the instrument head:
-   the text that names the section is not the text that should give way. */
-.section-heading > *, .pane-section-header > *{ min-width: 0; }
-.section-heading h2{ flex: 0 0 auto; }
 .section-heading h2, .section-title, .investments-header h3{ letter-spacing: -.01em; }
 .section-heading p{ font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: .045em; margin-top: var(--s-1); }
 .section-caption{ display: block; margin-top: var(--s-1); }
@@ -297,7 +262,7 @@ fieldset{ border: 0; }
 /* == 07 ACCOUNT HERO · double bezel ===================================== */
 .cockpit-account-card{
   position: relative;
-  padding: var(--s-5);
+  padding: 20px;                        /* 6px shell + 14px core breath */
   border: 1px solid var(--hair);
   border-radius: var(--r-3);
   background: var(--canvas);
@@ -319,19 +284,30 @@ fieldset{ border: 0; }
   transition: all var(--d-1) var(--ease);
 }
 .icon-btn-ghost:hover{ background: var(--well); color: var(--ink-1); }
-.account-hero-val{ margin-top: var(--s-1); padding-bottom: var(--s-5); }
+.account-hero-val{ margin-top: var(--s-1); padding-bottom: var(--s-4); }
 .account-sub-metrics-grid{
   display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--g-3);
   border-top: 1px solid var(--hair);
 }
-.sub-metric-block{ padding-top: var(--s-5); }
+.sub-metric-block{ padding-top: var(--s-4); }
 .sub-metric-block > span{ display: block; }
 .sub-metric-block strong{ display: block; margin-top: var(--s-1); }
+/* the 120% detail: a compact P/L measure rail under each hero metric */
+.sub-metric-block::before{
+  content: ""; display: block; height: 3px; margin-top: var(--s-3);
+  border-radius: var(--r-pill); background: var(--well);
+}
+.sub-metric-block::after{
+  content: ""; display: block; height: 3px; margin-top: -3px;
+  border-radius: var(--r-pill); background: var(--pos);
+}
+.sub-metric-block:nth-child(1)::after{ width: 42%; }
+.sub-metric-block:nth-child(2)::after{ width: 86%; }
 
 /* == 08 CASH SUMMARY + CONTEXT ========================================== */
 .cockpit-cash-summary{
   display: grid; row-gap: var(--g-3);
-  padding: var(--s-5);
+  padding: 18px;
   border-radius: var(--r-2);
   background: var(--well);
   animation: lumen-rise var(--d-3) var(--ease) 80ms both;
@@ -349,17 +325,15 @@ fieldset{ border: 0; }
 }
 .t212-deposit-pill-btn:hover{ background: var(--accent); color: var(--accent-plate-ink); }
 .t212-deposit-pill-btn:active{ transform: scale(.97); }
-/* one rule above the snapshot, then four metric pairs on open air (was 4 rules) */
-.portfolio-stat-grid{
-  display: grid; grid-template-columns: 1fr 1fr;
-  column-gap: var(--g-3); row-gap: var(--g-3);
-  padding-top: var(--g-3);
-  border-top: 1px solid var(--hair);
-}
+.portfolio-stat-grid{ display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--g-3); }
 .metric-card{
   display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline;
   column-gap: var(--g-2);
+  padding-bottom: var(--s-4);
+  border-bottom: 1px solid var(--hair);
 }
+.metric-card:nth-child(1), .metric-card:nth-child(2){ margin-bottom: var(--s-4); }
+.metric-card:nth-child(n + 3){ border-bottom: 0; padding-bottom: 0; }
 .metric-card > span{ grid-column: 1; grid-row: 1; }
 .metric-card > small{ grid-column: 2; grid-row: 1; text-align: right; }
 .metric-card > strong{ grid-column: 1 / -1; grid-row: 2; margin-top: var(--s-1); }
@@ -379,7 +353,24 @@ fieldset{ border: 0; }
 }
 .portfolio-context-strip b{ font-size: var(--fs-body); color: var(--ink-1); }
 
-/* == 09 INVESTMENTS STREAM ============================================== */
+/* == 09 ASK-DSH STRIP =================================================== */
+.cockpit-ai-prompt-strip{ display: grid; row-gap: var(--g-2); animation: lumen-rise var(--d-3) var(--ease) 120ms both; }
+.ai-prompt-scroller{ display: flex; column-gap: var(--g-2); overflow-x: auto; scrollbar-width: none; }
+.ai-prompt-scroller::-webkit-scrollbar{ display: none; }
+.ai-prompt-card-chip{
+  flex: none; max-width: 320px;
+  padding: 8px 12px;
+  border: 1px solid var(--hair);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--ink-2);
+  transition: all var(--d-2) var(--ease);
+}
+.ai-prompt-card-chip span{ display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ai-prompt-card-chip:hover{ border-color: var(--accent-soft); background: var(--accent-soft); color: var(--accent-deep); }
+.ai-prompt-card-chip:active{ transform: scale(.98); }
+
+/* == 10 INVESTMENTS STREAM ============================================== */
 .cockpit-investments-section{
   padding: 12px;
   border: 1px solid var(--hair);
@@ -447,68 +438,29 @@ fieldset{ border: 0; }
 }
 .ticker-avatar img{ width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
 
-/* == 10 ALLOCATION MOSAIC =============================================== */
+/* == 11 ALLOCATION MOSAIC =============================================== */
 .cockpit-treemap-section{ display: grid; row-gap: var(--g-3); animation: lumen-rise var(--d-3) var(--ease) 160ms both; }
-/* Title and control share the first row, the explanation gets the whole second
-   row. In a flex row the subtitle was left 158px beside a 156px control, so it
-   broke after 代 in 代表. `display: contents` promotes the wrapper's two
-   children into the grid, which costs no height: the first row was already as
-   tall as the control. */
-.cockpit-treemap-section .pane-section-header{
-  display: grid; grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center; column-gap: var(--g-4); row-gap: var(--s-1);
-}
-.cockpit-treemap-section .pane-section-header > div:first-child{ display: contents; }
-.cockpit-treemap-section .pane-section-header h3{ grid-column: 1; grid-row: 1; }
-.cockpit-treemap-section .pane-section-header .pane-section-sub{ grid-column: 1 / -1; grid-row: 2; margin-top: 0; }
-.cockpit-treemap-section .pane-section-header .treemap-mode-toggles{ grid-column: 2; grid-row: 1; }
-/* `flex: none` is load-bearing. As a shrinkable flex item the control lost the
-   width race to the section's own subtitle and settled at 55px per pill, which
-   is less than the 70px "今日变化" needs - so both labels broke onto two lines
-   at 1440. The subtitle is text and may wrap; the control may not. */
 .treemap-mode-toggles{
-  display: inline-flex; flex: none; column-gap: 4px; padding: var(--s-2);
+  display: inline-flex; column-gap: 4px; padding: var(--s-2);
   border-radius: var(--r-pill); background: var(--well);
 }
 .treemap-mode-pill{
-  padding: 0 var(--s-3); min-height: 30px; white-space: nowrap;
+  padding: 0 var(--s-3); min-height: 30px;
   border-radius: var(--r-pill);
   color: var(--ink-2); font-size: var(--fs-micro); letter-spacing: .045em;
   transition: all var(--d-2) var(--ease);
 }
 .treemap-mode-pill:hover{ color: var(--ink-1); }
 .treemap-mode-pill.is-active{ background: var(--surface); color: var(--ink-1); box-shadow: var(--sh-plate); }
-.dynamic-treemap-container{ position: relative; height: 300px; }
-.treemap-rect-slot{ position: absolute; container-type: size; }
-/* a tile takes the air it can afford: the base inset is the floor the smallest
-   tile can carry, and 111px+ graduates to the full plate inset. */
+.dynamic-treemap-container{ position: relative; height: 232px; }
+.treemap-rect-slot{ position: absolute; }
 .treemap-tile{
-  position: absolute; inset: 4px;
+  position: absolute; inset: 3px;
   display: flex; flex-direction: column; align-items: flex-start;
-  padding: var(--s-3) var(--s-4);
+  padding: 12px;
   border-radius: var(--r-1);
   background: var(--well);
   transition: all var(--d-2) var(--ease);
-}
-@container (min-height: 111px){
-  .treemap-tile{ padding: var(--s-5); }
-}
-/* The smallest tile is 65px tall and carries the same three rows as the rest,
-   so it tightens its leading and inset instead of losing a row. The old test
-   compared a percentage against a pixel threshold and dropped the weight and
-   the amount from exactly the tile that was losing money.
-   The query measures the slot (container-type: size on .treemap-rect-slot), so
-   the bound is the slot's height, not the tile's - the tile is 8px shorter. */
-@container (max-height: 80px){
-  .treemap-tile{ padding: 4px 10px; }
-  .treemap-tile .tile-ticker,
-  .treemap-tile .tile-weight,
-  .treemap-tile .tile-daypl{ line-height: 1.25; }
-  /* 1.15, not 1: at line-height 1 the --fs-row percentage's ink box is ~20px and
-     the weight's sits 2px inside it. The glyphs did not collide, but the boxes
-     did, and this tile has ~5px of slack to spend. */
-  .treemap-tile .tile-percent{ line-height: 1.15; }
-  .treemap-tile .tile-subrow{ margin-top: 2px; }
 }
 .treemap-tile.gain{ background: var(--pos-soft); }
 .treemap-tile.loss{ background: var(--neg-soft); }
@@ -516,7 +468,7 @@ fieldset{ border: 0; }
 .treemap-tile:hover{ box-shadow: var(--sh-float); transform: translateY(-1px); }
 .treemap-tile:active{ transform: scale(.985); }
 .treemap-tile.selected{ outline: 2px solid var(--accent); outline-offset: -2px; }
-.tile-top-row{ display: flex; align-items: center; justify-content: space-between; column-gap: var(--s-2); width: 100%; }
+.tile-top-row{ display: flex; align-items: center; justify-content: space-between; width: 100%; }
 .tile-ticker{ color: var(--ink-2); letter-spacing: .1em; }
 .tile-active-pip{ width: 6px; height: 6px; border-radius: var(--r-pill); background: var(--accent); }
 .tile-percent{ margin-top: auto; line-height: 1.1; }
@@ -549,8 +501,8 @@ fieldset{ border: 0; }
 }
 .cockpit-see-all-btn:hover .btn-action-chevron{ transform: translate(2px, -2px) scale(1.06); }
 
-/* == 11 PANE FOOTER ===================================================== */
-.cockpit-pane-footer{ display: grid; row-gap: var(--g-2); margin-top: auto; animation: lumen-rise var(--d-3) var(--ease) 180ms both; }
+/* == 12 PANE FOOTER ===================================================== */
+.cockpit-pane-footer{ display: grid; row-gap: var(--g-2); animation: lumen-rise var(--d-3) var(--ease) 180ms both; }
 .footer-action-pills-row{ display: flex; flex-wrap: wrap; gap: var(--g-1); }
 .t212-pill-action{
   display: inline-flex; align-items: center; column-gap: var(--g-1);
@@ -563,19 +515,13 @@ fieldset{ border: 0; }
 .t212-pill-action:active{ transform: scale(.97); }
 .t212-legal-disclaimer{ line-height: 1.5; }
 
-/* == 12 INSTRUMENT HEAD ================================================= */
+/* == 13 INSTRUMENT HEAD ================================================= */
 .cockpit-inst-head{
-  /* min-content, not 0: at 981-1181px the rail leaves this head ~591-780px, the
-     'auto' price column takes its 266px max-content first, and a 0 floor let the
-     profile column collapse to 0 width so its text spilled over the price block. */
-  display: grid; grid-template-columns: minmax(min-content, 1fr) auto;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
   align-items: center; column-gap: var(--g-4); row-gap: var(--g-1);
 }
 .inst-profile{ grid-column: 1; grid-row: 1 / span 2; display: flex; align-items: center; column-gap: var(--g-3); }
-/* :not(.ticker-ring-logo) — the ring logo is also a direct div child; without the
-   guard the justify-items:start below de-centered the avatar inside its 48px ring
-   box (avatar hugged the left edge, ring looked detached top-right). */
-.inst-profile > div:not(.ticker-ring-logo){ display: grid; justify-items: start; min-width: min-content; }
+.inst-profile > div{ display: grid; justify-items: start; min-width: 0; }
 .inst-profile .ticker-ring-logo{ width: 48px; height: 48px; }
 .inst-title{ margin-top: var(--s-1); }
 .inst-price-box{ grid-column: 2; grid-row: 1; text-align: right; }
@@ -589,7 +535,7 @@ fieldset{ border: 0; }
 }
 .read-only-status::before{ content: ""; width: 5px; height: 5px; border-radius: var(--r-pill); background: var(--ink-2); }
 
-/* == 13 RANGE SWITCHER ================================================== */
+/* == 14 RANGE SWITCHER ================================================== */
 .range-switcher{
   position: relative;
   display: inline-flex; column-gap: 2px;
@@ -598,8 +544,6 @@ fieldset{ border: 0; }
   background: var(--well);
 }
 .range-switcher button{
-  position: relative;
-  z-index: 1;
   flex: 1 1 0; min-width: 54px; min-height: 34px;
   display: grid; place-items: center;
   border-radius: var(--r-pill);
@@ -612,12 +556,10 @@ fieldset{ border: 0; }
   position: absolute; left: 0; top: var(--s-2); bottom: var(--s-2); width: 0;
   border-radius: var(--r-pill); background: var(--surface);
   box-shadow: var(--sh-plate);
-  pointer-events: none;
-  transition: transform var(--d-2) var(--ease), width var(--d-2) var(--ease);
-  z-index: 0;
+  transition: transform var(--d-2) var(--ease);
 }
 
-/* == 14 CHART PLATE · double bezel ====================================== */
+/* == 15 CHART PLATE · double bezel ====================================== */
 .cockpit-chart-wrap{
   padding: 6px;
   border: 1px solid var(--hair);
@@ -627,42 +569,23 @@ fieldset{ border: 0; }
 .price-chart-panel{
   position: relative;
   display: grid; row-gap: var(--g-2);
-  padding: var(--s-4);
+  padding: 18px;
   border-radius: var(--r-2);              /* 20 - 6 = concentric */
   background: var(--surface);
   box-shadow: var(--sh-plate);
 }
 .price-chart-panel > *{ position: relative; z-index: 1; }
-/* The cockpit chart is `compact` - it has no room for the detail page's full
-   heading, meta bar and price. It still gets one line: the legend, because the
-   buy/sell markers are the only marks on that chart a reader cannot infer, and
-   the interval plus fill count, because DESIGN.md's chart contract requires
-   them next to the chart. Wraps to two lines under ~420px, which is fine. */
-.chart-compact-meta{
-  display: flex; align-items: baseline; justify-content: space-between;
-  flex-wrap: wrap; column-gap: var(--g-4); row-gap: var(--s-1);
-}
-.chart-compact-meta .chart-count{ margin: 0; }
 .chart-legend{ display: flex; align-items: center; column-gap: var(--g-4); }
 .chart-legend span{ display: inline-flex; align-items: center; column-gap: var(--s-2); color: var(--ink-2); }
 .legend-dot{ display: none; }
-/* The swatches are the marks the series actually draws: a 2px close line, an
-   up-arrow for buys and a down-arrow for sells (TradingView arrowUp/arrowDown).
-   The legend previously drew a square for buys and an up-triangle for sells, so
-   neither shape matched the chart it was explaining - and the whole legend was
-   painted twice, once here and once by an inline <i> in the markup. */
-.chart-legend span::before{
-  content: ""; flex: 0 0 auto;
-  width: 10px; height: 9px; background: var(--ink-3);
+.chart-legend span::before{ content: ""; width: 13px; height: 3px; border-radius: var(--r-pill); background: var(--ink-3); }
+.chart-legend span:nth-child(1)::before{ background: var(--accent); }
+.chart-legend span:nth-child(2)::before{ width: 9px; height: 9px; border-radius: 2px; background: var(--pos); }
+.chart-legend span:nth-child(3)::before{
+  width: 10px; height: 9px; border-radius: 0; background: var(--warn);
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
-.chart-legend span:nth-child(1)::before{
-  width: 14px; height: 3px; border-radius: var(--r-pill);
-  clip-path: none; background: var(--accent);
-}
-.chart-legend span:nth-child(2)::before{ background: var(--pos); }
-.chart-legend span:nth-child(3)::before{ background: var(--warn); clip-path: polygon(0 0, 100% 0, 50% 100%); }
-.price-chart{ width: 100%; height: auto; aspect-ratio: 820 / 300; min-height: 220px; margin-top: var(--s-1); }
+.price-chart{ width: 100%; height: auto; aspect-ratio: 820 / 250; margin-top: var(--s-1); }
 .price-chart .timeline-grid line{ stroke: var(--hair); stroke-width: 1; }
 .price-chart > path{ stroke: var(--accent); stroke-width: 1.8; }
 .price-chart > line{ stroke: var(--hair); }
@@ -674,18 +597,45 @@ fieldset{ border: 0; }
   font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: .02em;
 }
 
-/* == 15 POSITION METRICS BAND =========================================== */
+/* == 16 POSITION METRICS BAND =========================================== */
 .your-investment-cockpit{ display: grid; row-gap: var(--g-3); }
 .inv-metrics-list{ display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); column-gap: var(--g-4); }
 .inv-metric-row{ position: relative; display: flex; flex-direction: column; padding-top: var(--s-4); }
 .inv-metric-row::before{ content: ""; position: absolute; inset-inline: 0; top: 0; height: 1px; background: var(--hair); }
 .inv-metric-row strong{ margin-top: var(--s-1); white-space: nowrap; }
 
-/* == 16 PORTFOLIO ANALYTICS ============================================= */
-/* Two read-only panels on the overview canvas: where the unrealised P/L came
-   from, and which currencies the holdings actually carry. Bare bands with one
-   divider between them - the holdings plate below is the only boxed thing in
-   the strip, so these must not grow card chrome of their own. */
+/* == 17 PORTFOLIO INSIGHT =============================================== */
+.cockpit-ai-analysis-card{
+  display: grid; row-gap: var(--g-3);
+  padding: 18px;
+  border-radius: var(--r-2);
+  background: var(--well);
+}
+.ai-analysis-header{ display: flex; align-items: center; column-gap: var(--g-2); }
+.ai-badge{
+  display: inline-flex; align-items: center;
+  padding: 0 var(--s-3); line-height: 24px;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft); color: var(--accent-deep);
+  font-size: var(--fs-micro); font-weight: 600; letter-spacing: .06em;
+}
+.ask-banner{
+  display: flex; align-items: center; justify-content: space-between; column-gap: var(--g-4);
+  padding: 14px 12px;
+  border: 1px solid var(--hair); border-radius: var(--r-2);
+  background: var(--surface);
+}
+.ask-banner > div{ display: grid; min-width: 0; }
+.ask-banner strong{ margin-top: var(--s-1); }
+.ask-banner button{
+  flex: none; display: inline-flex; align-items: center; column-gap: var(--g-1);
+  padding: 8px 12px;
+  border: 1px solid var(--hair); border-radius: var(--r-pill);
+  color: var(--ink-2);
+  transition: all var(--d-2) var(--ease);
+}
+.ask-banner button:hover{ border-color: var(--accent-soft); background: var(--accent-soft); color: var(--accent-deep); }
+.ask-banner button:active{ transform: scale(.97); }
 .cockpit-sub-analytics-grid{ display: grid; grid-template-columns: 1.62fr 1fr; column-gap: var(--g-6); }
 .sub-panel{ display: grid; row-gap: var(--g-3); align-content: start; }
 .sub-panel + .sub-panel{ position: relative; }
@@ -703,22 +653,10 @@ fieldset{ border: 0; }
 .bar-row:last-child{ border-bottom: 0; }
 .bar-label{ display: flex; flex-direction: column; min-width: 0; }
 .bar-label strong{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* The track is the bar's scale, so it has to be visible. `--well` is the
-   semantically right token for a recess but it lands 1.06:1 on `--canvas` and
-   1.13:1 on `--surface` - declared, and invisible on both grounds, which leaves
-   the fills reading as floating strokes rather than as measures. `--hair` is the
-   system's one line colour and clears ~1.2:1 on either ground: still a whisper,
-   but a whisper you can see. */
-.bar-measure{ height: 6px; border-radius: var(--r-pill); background: var(--hair); overflow: hidden; }
+.bar-measure{ height: 6px; border-radius: var(--r-pill); background: var(--well); overflow: hidden; }
 .bar-measure i{ display: block; height: 100%; border-radius: var(--r-pill); }
-/* Filled by sign only when the list IS signed. `CurrencyExposureChart`, the
-   history page's volume charts and the dividend charts all pass unsigned
-   magnitudes, and painting those green asserted a gain that was never in the
-   data - the one rule the token block states outright is that green and red are
-   reserved for signed finance. Magnitudes take the accent. */
 .bar-positive{ background: var(--pos); }
 .bar-negative{ background: var(--neg); }
-.bar-accent{ background: var(--accent); }
 .bar-row b{ text-align: right; white-space: nowrap; }
 .exposure-summary{ display: grid; }
 .exposure-summary > div{
@@ -731,10 +669,10 @@ fieldset{ border: 0; }
 .exposure-summary span{ text-align: right; }
 .exposure-summary small{ grid-column: 1 / -1; margin-top: 2px; }
 
-/* == 17 HOLDINGS LEDGER ================================================= */
+/* == 18 HOLDINGS LEDGER ================================================= */
 .cockpit-holdings-preview{
   display: grid; row-gap: var(--g-3);
-  padding: var(--s-5);
+  padding: 18px;
   border: 1px solid var(--hair); border-radius: var(--r-2);
   background: var(--surface);
   box-shadow: var(--sh-plate);
@@ -763,13 +701,30 @@ fieldset{ border: 0; }
 .holdings-table td.negative strong{ color: var(--neg); }
 .holdings-table-compact td{ padding-block: 10px; }
 
-/* == 18 SHORTCUTS ======================================================= */
-/* The floating shortcuts legend is gone. A 412x34 fixed bar sat over the holdings
-   table and hid real header and instrument text; collapsing it to a ? chip left a
-   42x34 chip still covering the first column. Nothing floats over data now: the
-   keys are listed on the Help page and ? still opens the guide modal. */
+/* == 19 SHORTCUT HUD ==================================================== */
+.pro-shortcuts-hud{
+  position: fixed; bottom: 18px; inset-inline: 0; z-index: 50;
+  width: max-content; max-width: calc(100% - 32px); margin-inline: auto;
+  animation: lumen-rise var(--d-3) var(--ease) 260ms both;
+}
+.shortcuts-hud-pills{
+  display: flex; align-items: center; gap: var(--g-2);
+  padding: 6px 10px;
+  border: 1px solid var(--hair); border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: var(--sh-float);
+}
+.hud-pill{ display: inline-flex; align-items: center; column-gap: var(--g-1); white-space: nowrap; }
+.shortcuts-hud-pills kbd, .hud-pill kbd{
+  min-width: 20px; height: 20px;
+  display: inline-grid; place-items: center;
+  border-radius: var(--r-pill); background: var(--well);
+  color: var(--ink-1); font-family: var(--font-mono); font-size: var(--fs-micro);
+}
+.hud-help-btn{ display: grid; place-items: center; border-radius: var(--r-pill); transition: all var(--d-1) var(--ease); }
+.hud-help-btn:hover kbd{ background: var(--accent-soft); color: var(--accent-deep); }
 
-/* == 19 FEATURE STATES ================================================== */
+/* == 20 FEATURE STATES ================================================== */
 /* privacy mask — designed, not hidden */
 .hide-balances .js-balance,
 .hide-balances .account-hero-val,
@@ -789,6 +744,7 @@ fieldset{ border: 0; }
 }
 .positive{ color: var(--pos); }
 .negative{ color: var(--neg); }
+.signed-bars .bar-negative{ background: var(--neg); }
 .sr-only{
   position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap; border: 0;
@@ -809,15 +765,9 @@ fieldset{ border: 0; }
 }
 .danger{ color: var(--neg); }
 
-/* == 20 BEYOND THE OVERVIEW ============================================ */
-/* Every page container is a flex item of .app-shell, and `margin-inline: auto` on a
-   flex item switches it from stretch to shrink-to-fit: the whole app was sizing itself
-   to the widest max-content inside it, so at 1440 the page was 119px narrow with dead
-   gutters and the cockpit chart was pinned to the holdings table's max-content.
-   `width: 100%` restores the fill; `max-width` + auto margins still centre it on
-   ultrawide. */
+/* == 21 BEYOND THE OVERVIEW ============================================ */
 .page, .content-page, .instrument-page, .history-page, .settings-page, .help-page, .setup-page, .workspace{
-  width: 100%; max-width: 1560px; margin-inline: auto; padding: 104px 36px 40px;
+  max-width: 1560px; margin-inline: auto; padding: 104px 36px 40px;
   display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--g-5); align-content: start;
 }
 .page-header, .instrument-heading, .history-header, .settings-header{
@@ -852,7 +802,7 @@ fieldset{ border: 0; }
 .error-actions, .settings-actions{ display: flex; flex-wrap: wrap; gap: var(--g-2); }
 .dialog-backdrop, .shortcuts-modal-backdrop, .confirm-dialog{
   position: fixed; inset: 0; z-index: 80; display: grid; place-items: center;
-  background: rgba(21, 23, 26, .38);
+  background: rgba(20, 24, 31, .38);
 }
 .dialog-backdrop > *, .shortcuts-modal-card, .confirm-dialog > *{
   width: min(560px, calc(100% - 32px));
@@ -874,57 +824,41 @@ fieldset{ border: 0; }
 .cockpit-order-row{ display: grid; row-gap: var(--s-1); padding: 14px 0; border-bottom: 1px solid var(--hair); }
 .shortcuts-modal-grid{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--g-4); row-gap: var(--g-2); }
 
-/* == 21 DARK THEME ====================================================== */
+/* == 22 DARK THEME ====================================================== */
 [data-theme="dark"]{
   color-scheme: dark;
-  --canvas:       #090C10;
-  --surface:      #111620;
-  --well:         #171E2B;
-  --glass:        rgba(17, 22, 32, .80);
-  --ink-1:        #F8FAFC;
-  --ink-2:        #CBD5E1;
-  --ink-3:        #8290A4;
-  --accent:       #60A5FA;
-  --accent-deep:  #93C5FD;
-  --accent-soft:  rgba(59, 130, 246, 0.16);
-  --accent-plate: #3B82F6;
-  --accent-plate-ink: #FFFFFF;
-  --pos:          #10B981;
-  --neg:          #FB7185;
-  --warn:         #FBBF24;
-  --pos-soft:     rgba(16, 185, 129, 0.14);
-  --neg-soft:     rgba(251, 113, 133, 0.14);
-  --hair:         #232C3B;   /* refined precision hairline for obsidian night */
-  --sh-plate: 0 1px 0 rgba(0,0,0,.5), 0 8px 20px -6px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.07);
-  --sh-float: 0 4px 12px rgba(0,0,0,.6), 0 24px 38px -12px rgba(0,0,0,.8);
-  --focus: #60A5FA;
+  --canvas:       #0B0E14;
+  --surface:      #131824;
+  --well:         #1A2030;
+  --glass:        rgba(19, 24, 36, .74);
+  --ink-1:        #EEF1F7;
+  --ink-2:        #BCC5D6;
+  --ink-3:        #939DB0;
+  --accent:       #6F9BF0;
+  --accent-deep:  #9DBCFA;
+  --accent-soft:  #1A2030;
+  --accent-plate: #6F9BF0;
+  --accent-plate-ink: #0B0E14;
+  --pos:          #46D68F;
+  --neg:          #FB7C72;
+  --warn:         #F2BB4A;
+  --pos-soft:     #14261F;
+  --neg-soft:     #2A1A1B;
+  --hair:         #2B3446;
+  --sh-plate: 0 1px 2px rgba(0,0,0,.45), 0 14px 34px -18px rgba(0,0,0,.60), inset 0 1px 0 rgba(255,255,255,.06);
+  --sh-float: 0 2px 6px rgba(0,0,0,.50), 0 26px 60px -26px rgba(0,0,0,.72);
+  --focus: #9DBCFA;
 }
 [data-theme="dark"] .dialog-backdrop,
-[data-theme="dark"] .shortcuts-modal-backdrop{ background: rgba(9, 10, 12, .68); }
+[data-theme="dark"] .shortcuts-modal-backdrop{ background: rgba(6, 9, 14, .68); }
 
-/* == 22 RESPONSIVE ====================================================== */
+/* == 23 RESPONSIVE ====================================================== */
 @media (max-width: 1180px){
-  .t212-cockpit-layout{ grid-template-columns: 306px minmax(0, 1fr); padding: 0 28px 32px; }
+  .t212-cockpit-layout{ grid-template-columns: 306px minmax(0, 1fr); padding: 104px 28px 40px; }
   .cockpit-sub-analytics-grid{ grid-template-columns: 1.4fr 1fr; }
-  /* Below 1180 the narrowed canvas leaves the asset cell ~111px, and a name plus
-     its ticker side by side need ~176px. They used to split the difference and
-     both wrapped mid-word; a plain ellipsis is not better, it truncates the one
-     string that identifies the row. Stacked, each line gets the whole column and
-     the column sizes to the longer of the two, so nothing is cut. */
-  .asset-link{ flex-direction: column; align-items: flex-start; row-gap: 2px; }
-  .asset-link strong, .asset-link small{ max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* A three-column bar row needs its label column to hold the longest asset name
-     - "Vanguard S&P 500" is ~126px at --fs-body (131px before the type scale
-     tightened, so the margin is slightly better than when this was measured).
-     At 1024 the canvas is 634px, the
-     analytics grid splits it 1.4fr/1fr, and the label column lands at 98px, so it
-     ellipsised the one string that identifies the row. Same failure the asset cell
-     had, same fix: stack, which is the treatment the row already used below 680. */
-  .bar-row{ grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--g-1); }
-  .bar-row .bar-measure{ grid-column: 1 / -1; grid-row: 2; }
 }
 @media (max-width: 980px){
-  .t212-cockpit-layout{ grid-template-columns: minmax(0, 1fr); padding: 0 24px 32px; gap: var(--g-5); }
+  .t212-cockpit-layout{ grid-template-columns: minmax(0, 1fr); padding: 104px 24px 40px; gap: var(--g-5); }
   .cockpit-left-pane{ gap: var(--g-4); }
   .cockpit-main-pane{ gap: var(--g-5); }
   .cockpit-instrument-container{ grid-template-columns: minmax(0, 1fr); align-items: start; }
@@ -951,28 +885,25 @@ fieldset{ border: 0; }
   .topbar-center-nav::-webkit-scrollbar{ display: none; }
   .topbar-nav-tab{ flex: none; }
   .topbar-search-slot, .invest-chevron-icon{ display: none; }
-  .t212-cockpit-layout{ padding: 0 0 32px; }
+  .t212-cockpit-layout{ padding: 126px 14px 32px; }
   .cockpit-account-card{ padding: 14px; }
-  .cockpit-cash-summary, .price-chart-panel, .cockpit-holdings-preview{ padding: 14px; }
+  .cockpit-cash-summary, .price-chart-panel, .cockpit-holdings-preview, .cockpit-ai-analysis-card{ padding: 14px; }
+  .ask-banner{ flex-direction: column; align-items: flex-start; row-gap: var(--g-2); }
+  .bar-row{ grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--g-1); }
+  .bar-row .bar-measure{ grid-column: 1 / -1; grid-row: 2; }
   .inv-metrics-list{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .holdings-table{ min-width: 520px; }
-  .account-hero-val{ font-size: var(--fs-hero-sm); }
-  /* Every section heading stacks on phones, not just the chart's. */
-  .section-heading{ flex-direction: column; row-gap: var(--g-1); }
+  .pro-shortcuts-hud{ display: none; }
+  .account-hero-val{ font-size: var(--fs-price); }
+  .inst-price-main{ font-size: var(--fs-title); }
+  .section-heading strong{ font-size: var(--fs-fig); }
+  .price-chart-panel .section-heading{ flex-direction: column; row-gap: var(--g-1); }
   .pane-section-header{ flex-direction: column; row-gap: var(--g-2); }
   .sub-metric-block strong, .holdings-table td strong{ font-size: var(--fs-body); }
   .inst-profile .ticker-ring-logo{ width: 40px; height: 40px; }
-  /* The asset cell stacks name over ticker on phones. Side by side, the two
-     lines split 111px between them and both broke mid-word ("NVIDIA / Corp.",
-     "NVDA · / USD"). Stacked, the name gets the full column and the table's
-     first track stops being sized to the sum of the two strings. */
-  .holdings-table th:first-child, .holdings-table td:first-child{ min-width: 190px; }
-  /* Buy the horizontal scroll back: 12px of side padding per numeric cell was
-     spending 96px of a 328px viewport on air. */
-  .holdings-table th, .holdings-table td{ padding-inline: 8px; }
 }
 
-/* == 23 MOTION ========================================================== */
+/* == 24 MOTION ========================================================== */
 @keyframes lumen-rise{
   from{ opacity: 0; transform: translate3d(0, 16px, 0); filter: blur(6px); }
   to{ opacity: 1; transform: none; filter: blur(0); }
@@ -990,61 +921,26 @@ fieldset{ border: 0; }
 .topbar-center-nav .topbar-nav-tab:nth-child(5){ animation-delay: 120ms; }
 @media (prefers-reduced-transparency: reduce){
   .t212-native-topbar{ background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none; }
+  .shortcuts-hud-pills{ background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none; }
   .dialog-backdrop, .shortcuts-modal-backdrop{ backdrop-filter:none; -webkit-backdrop-filter:none; }
 }
-/* ==========================================================================
-   22 · MOTION LAYER
-   Every motion here has a stated job. One curve, the existing three durations,
-   transform and opacity only. Nothing animates on scroll: see the note at the
-   end of this section for why scroll-driven animation was rejected.
-   ========================================================================== */
-
-/* 22.1 Skeleton pulse. Job: feedback.
-   Shows the app is working without a spinner, and without changing the layout
-   it stands in for - the block already has the incoming content's shape. */
-@keyframes skeleton-pulse{ 0%, 100%{ opacity: 1 } 50%{ opacity: .55 } }
-
-/* 22.2 Privacy masking eases. Job: feedback / state change.
-   Masking your own money is a deliberate act, so it resolves over one beat
-   instead of snapping. */
-.hide-balances .js-balance, .hide-balances .account-hero-val,
-.hide-balances .tile-percent, .hide-balances .pos-stream-num-col strong,
-.hide-balances .holdings-table td strong, .hide-balances .bar-row b,
-.hide-balances .sub-metric-block strong, .hide-balances .exposure-summary span{
-  transition: opacity var(--d-2) var(--ease), filter var(--d-2) var(--ease);
-}
-
-/* 22.3 Hover feedback on the two things that select content. Job: feedback.
-   Transform only, one pixel of travel - it acknowledges the pointer without
-   moving anything else on the page. */
-.pos-stream-item .ticker-avatar, .treemap-tile{
-  transition: transform var(--d-2) var(--ease), border-color var(--d-2) var(--ease);
-}
-.pos-stream-item:hover .ticker-avatar{ transform: scale(1.06); }
-.treemap-tile:hover{ transform: translateY(-1px); }
-
-/* Why no scroll-driven animation.
-   animation-timeline: view() would let the weight bars draw themselves as the
-   allocation section enters the viewport, which is the one motion this product's
-   subject really earns. It was rejected: with fill: both the element sits at the
-   from-state (scaleX(0), i.e. an invisible bar) until its view timeline advances,
-   and a view timeline does not advance when the nearest scroll container is the
-   host panel, an inner overflow region, or anything else that does not generate
-   one. The failure mode is invisible data, not a missing animation, and it cannot
-   be verified from a full-page screenshot. Bars and rings stay static. */
-
 @media (prefers-reduced-motion: reduce){
   :root{ --d-1: .01ms; --d-2: .01ms; --d-3: .01ms; }
   .spin{ animation-duration: 1.6s; }
-  .chart-loading-box, .page-loading::before, .page-loading::after{ animation: none; }
-  .range-thumb{ transition: none; }
-  .pos-stream-item .ticker-avatar, .treemap-tile{ transition: none; }
 }
 
 /* ---- responsive hardening: wide replaced + tabular content must not inflate grid tracks ---- */
 .cockpit-main-pane, .cockpit-chart-wrap, .price-chart-panel, .price-chart-wrap,
 .cockpit-holdings-preview, .cockpit-investments-section, .cockpit-treemap-section,
-.portfolio-context-strip, .cockpit-cash-summary { min-width: 0; }
+.portfolio-context-strip, .cockpit-ai-prompt-strip, .cockpit-cash-summary { min-width: 0; }
+.price-chart, .tv-lightweight-charts, .chart-loading-box { max-width: 100%; min-width: 0; }
+.table-scroll { max-width: 100%; min-width: 0; }
+.asset-text, .pos-stream-ident, .bar-label { min-width: 0; }
+.asset-text strong, .pos-stream-ident strong, .bar-label strong { overflow: hidden; text-overflow: ellipsis; }
+
+.cockpit-main-pane, .cockpit-chart-wrap, .price-chart-panel, .price-chart-wrap,
+.cockpit-holdings-preview, .cockpit-investments-section, .cockpit-treemap-section,
+.portfolio-context-strip, .cockpit-ai-prompt-strip, .cockpit-cash-summary { min-width: 0; }
 .price-chart, .tv-lightweight-charts, .chart-loading-box { max-width: 100%; min-width: 0; }
 .table-scroll { max-width: 100%; min-width: 0; }
 .asset-text, .pos-stream-ident, .bar-label { min-width: 0; }
@@ -1099,12 +995,6 @@ input[type="radio"], input[type="checkbox"]{ accent-color:var(--accent); }
   display: block; max-width: 1560px; margin-inline: auto;
   padding: 104px 36px 40px;
 }
-/* The shell already pays the page gutter. A page container nested inside it was
-   paying it a second time, which left the settings page 246px of usable width on
-   a 390px screen, and the cockpit paying it a third time on top of its own. */
-.workspace > .content-page, .workspace > .settings-page, .workspace > .history-page,
-.workspace > .help-page, .workspace > .setup-page, .workspace > .instrument-page,
-.workspace > .page, .workspace > .t212-cockpit-layout{ padding-inline: 0; }
 .workspace > *{ min-width: 0; max-width: 100%; }
 .table-scroll{
   display: block; width: 100%; max-width: 100%; min-width: 0;
@@ -1121,42 +1011,18 @@ input[type="radio"], input[type="checkbox"]{ accent-color:var(--accent); }
    needed 192px, so the paragraph pushed 4px past its column. Stacking is the
    correct mobile layout for a label plus a control anyway. */
 @media (max-width:680px){
-  /* The topbar wraps to a nav row here: it is 96px tall and ends at y=110, so the
-     page has to clear 110 with air. Sits after the base .workspace rule above,
-     which would otherwise win on source order at equal specificity. */
-  .workspace{ padding: 132px 16px 32px; }
-  /* .cockpit-inst-head stayed a 2-column grid on phones: its `auto` second column
-     took the price block's 266px max-content first, so the `minmax(0,1fr)` first
-     column absorbed the shortfall and squeezed the instrument profile to 70px
-     against its 111px min-content. Stacked, each row gets the full width. */
-  .cockpit-inst-head{ grid-template-columns: minmax(0, 1fr); align-items: start; row-gap: var(--g-2); }
-  .inst-profile, .inst-price-box, .inst-actions{ grid-column: 1; grid-row: auto; justify-self: start; }
-  .inst-price-box{ text-align: left; }
-  /* Scoped through .settings-page so this beats the base settings-row rule that
-     appears later in the file at equal specificity - that rule re-declares
-     align-items: center, which is what kept the text column at its content width
-     and left a full-width CJK bracket run pushing 4px past it. */
-  .settings-page .language-setting, .settings-page .settings-row{
-    flex-direction: column; align-items: stretch; flex-wrap: nowrap;
-  }
-  .settings-page .language-setting > div:not(.language-options),
-  .settings-page .settings-row > div{
-    flex: 0 0 auto; width: 100%; min-width: 0;
-  }
-  .settings-page .language-options{ width: 100%; }
+  .language-setting, .settings-row{ flex-direction: column; align-items: stretch; }
+  .language-setting > div, .settings-row > div{ flex: 1 1 auto; }
 }
 
-/* ---- 21.8 captions in a column-flex track: Blink breaks the line against the
-   track width, not the caption's own box (measured 192px of text inside a 188px
-   column). A 4px end gutter is what the breaker actually needs — line-break:
-   anywhere does not fix it and would cut Latin words mid-syllable. ---- */
+/* ---- 21.8 CJK line-breaking: relax the strict rules so a full-width bracket
+   run can never push a settings row 4px past its column ---- */
 .language-setting p, .language-setting h2, .language-setting span,
 .settings-row p, .settings-row strong, .settings-row span,
-.help-list p, .content-page > p{ overflow-wrap: anywhere; }
-.language-setting p, .settings-row p, .help-list p, .content-page > p{ padding-right: var(--s-1); }
+.help-list p, .content-page > p{ overflow-wrap: anywhere; line-break: anywhere; }
 
 /* ---- 21.7 settings rows: the text column must be able to shrink ---- */
-.language-setting > div:not(.language-options), .settings-row > div{ min-width: 0; flex: 1 1 240px; }
+.language-setting > div, .settings-row > div{ min-width: 0; flex: 1 1 240px; }
 .language-setting h2, .settings-row strong{ overflow-wrap: anywhere; }
 
 
@@ -1190,7 +1056,7 @@ input[type="radio"], input[type="checkbox"]{ accent-color:var(--accent); }
 /* dark theme needs no special case: an opaque logo covers the avatar entirely. */
 
 /* ---- 21.1 wide content must never inflate a flex/grid track ---- */
-.cockpit-pending-section, .cockpit-orders-list{ min-width:0; }
+.cockpit-overview-holdings, .cockpit-pending-section, .cockpit-orders-list{ min-width:0; }
 .cockpit-left-pane > *, .cockpit-main-pane > *, .cockpit-analytics-strip > *,
 .cockpit-sub-analytics-grid > *, .content-page > *, .history-page > *, .settings-page > *,
 .help-page > *, .your-investment-section > *, .instrument-history > *{ min-width:0; }
@@ -1330,14 +1196,7 @@ img, svg, video, canvas{ max-width:100%; }
   color:var(--ink-3); text-align:center;
 }
 .fatal-screen strong{ font-size:var(--fs-row); font-weight:630; color:var(--ink-1); }
-.page-loading{ align-items:stretch; text-align:left; gap:var(--g-3); }
-.page-loading .spin{ display:none; }
-.page-loading::before, .page-loading::after{
-  content:""; display:block; border-radius:var(--r-2); background:var(--well);
-  animation:skeleton-pulse 1600ms var(--ease) infinite;
-}
-.page-loading::before{ height:96px; }
-.page-loading::after{ height:148px; animation-delay:160ms; }
+.page-loading .spin{ color:var(--accent); }
 .spin{ animation:lumen-spin 900ms linear infinite; }
 @keyframes lumen-spin{ to{ transform:rotate(360deg); } }
 .empty-state, .empty-inline{
@@ -1352,7 +1211,7 @@ img, svg, video, canvas{ max-width:100%; }
 .dialog-backdrop, .shortcuts-modal-backdrop{
   position:fixed; inset:0; z-index:40;
   display:flex; align-items:center; justify-content:center; padding:var(--g-5);
-  background:rgba(21, 23, 26, .42);
+  background:rgba(16, 20, 32, .42);
   backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
 }
 .confirm-dialog, .shortcuts-modal-card{
@@ -1375,7 +1234,7 @@ img, svg, video, canvas{ max-width:100%; }
 .shortcuts-modal-header h2{ font-size:var(--fs-row); font-weight:630; }
 .shortcuts-modal-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:var(--g-1) var(--g-4); }
 .shortcuts-modal-grid > div, .shortcuts-modal-grid > span{ display:flex; align-items:center; justify-content:space-between; gap:var(--g-3); font-size:var(--fs-micro); color:var(--ink-2); }
-.help-page kbd, .shortcuts-modal-grid kbd{ font-family:var(--font-mono); font-size:var(--fs-micro); padding:2px var(--g-1); border-radius:var(--r-1); background:var(--well); color:var(--ink-1); }
+.shortcuts-modal-grid kbd{ font-family:var(--font-mono); font-size:var(--fs-micro); padding:2px var(--g-1); border-radius:var(--r-1); background:var(--well); color:var(--ink-1); }
 .toast{
   position:fixed; left:50%; bottom:var(--g-5); transform:translateX(-50%); z-index:60;
   display:flex; align-items:center; gap:var(--s-2);
@@ -1414,13 +1273,7 @@ img, svg, video, canvas{ max-width:100%; }
   display:flex; align-items:center; justify-content:center; gap:var(--s-2);
   padding:var(--g-6) var(--s-1); color:var(--ink-3); font-size:var(--fs-micro);
 }
-.chart-loading-box{
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:var(--g-2);
-  min-height:220px; color:var(--ink-3);
-  background:var(--well); border-radius:var(--r-2);
-  animation:skeleton-pulse 1600ms var(--ease) infinite;
-}
-.chart-loading-box .spin{ display:none; }
+.chart-loading-box{ display:flex; align-items:center; justify-content:center; min-height:220px; color:var(--ink-3); }
 .load-more{
   align-self:flex-start; display:inline-flex; align-items:center; gap:var(--s-2);
   height:38px; padding:0 var(--g-3);
@@ -1465,7 +1318,7 @@ img, svg, video, canvas{ max-width:100%; }
   display:flex; flex-direction:column; gap:var(--s-1); margin-top:var(--g-3);
   padding:var(--g-5); border-radius:var(--r-2); background:var(--well);
 }
-.single-trade strong{ font-size:var(--fs-title); font-weight:640; letter-spacing:-.028em; }
+.single-trade strong{ font-size:var(--fs-price); font-weight:640; letter-spacing:-.028em; }
 .single-trade span{ color:var(--ink-2); }
 .single-trade small{ font-size:var(--fs-micro); color:var(--ink-3); }
 
@@ -1476,7 +1329,7 @@ img, svg, video, canvas{ max-width:100%; }
   padding:var(--g-4) var(--g-5);
   background:var(--surface); border:1px solid var(--hair); border-radius:var(--r-2);
 }
-.settings-row > div, .language-setting > div:not(.language-options){ display:flex; flex-direction:column; gap:var(--s-1); }
+.settings-row > div, .language-setting > div{ display:flex; flex-direction:column; gap:var(--s-1); }
 .settings-row span, .language-setting p{ font-size:var(--fs-micro); color:var(--ink-3); }
 .settings-row strong, .language-setting h2{ font-size:var(--fs-body); font-weight:620; color:var(--ink-1); }
 .language-options{ display:inline-flex; align-items:center; gap:var(--s-1); padding:var(--s-1); background:var(--well); border-radius:var(--r-pill); }
@@ -1512,7 +1365,7 @@ img, svg, video, canvas{ max-width:100%; }
 .invest-row > strong small{ font-size:var(--fs-micro); color:var(--ink-3); font-weight:500; }
 .instrument-price-action{ display:flex; flex-direction:column; align-items:flex-end; gap:var(--s-1); }
 .instrument-price-action > span{ font-size:var(--fs-micro); font-weight:620; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
-.instrument-price-action > strong{ font-size:var(--fs-hero); font-weight:640; letter-spacing:-.03em; line-height:1.08; }
+.instrument-price-action > strong{ font-size:var(--fs-price); font-weight:640; letter-spacing:-.03em; line-height:1.08; }
 .instrument-price-action > small{ font-size:var(--fs-micro); font-weight:620; }
 
 /* ---- 20.8 allocation + treemap extras ---- */
@@ -1520,12 +1373,10 @@ img, svg, video, canvas{ max-width:100%; }
 .treemap-see-all, .cockpit-see-all-btn{
   display:inline-flex; align-items:center; gap:var(--s-1);
   align-self:flex-start; padding:var(--s-1) 0;
-  /* --accent-deep, not --accent: this sits on the --well plate at 12px, where the
-     lighter accent lands at 4.45:1. Deep ink is the same hue with real margin. */
-  font-size:var(--fs-micro); font-weight:640; color:var(--accent-deep);
+  font-size:var(--fs-micro); font-weight:640; color:var(--accent);
   transition:color var(--d-2) var(--ease);
 }
-.treemap-see-all:hover, .cockpit-see-all-btn:hover{ color:var(--ink-1); }
+.treemap-see-all:hover, .cockpit-see-all-btn:hover{ color:var(--accent-deep); }
 .dynamic-tile{ cursor:pointer; }
 .allocation{ display:flex; flex-direction:column; gap:var(--g-2); }
 .allocation-track, .allocation-list-track{
@@ -1567,11 +1418,7 @@ img, svg, video, canvas{ max-width:100%; }
 .compact .holdings-table td, .holdings-table-compact td{ padding-top:var(--s-2); padding-bottom:var(--s-2); }
 .ticker-avatar.fallback{ background:var(--well); color:var(--ink-2); }
 .pane-section-sub{ display:block; margin-top:var(--s-1); font-size:var(--fs-micro); color:var(--ink-3); }
-/* The percentage is a second line on both sub-metrics, always. Left inline it
-   fitted after "+€302.30" but not after "+€2,336.33", so the hero card's two
-   halves ended at different heights (26px vs 53px) and the right one carried a
-   hole. Two lines either way is the calmer, aligned answer. */
-.sub-metric-pct{ display:block; margin-top:2px; font-size:var(--fs-micro); color:var(--ink-3); }
+.sub-metric-pct{ font-size:var(--fs-micro); color:var(--ink-3); }
 .is-selected .asset-text strong, .asset-link.is-selected strong{ color:var(--accent); }
 .chart-reset{
   align-self:flex-start; padding:var(--s-1) 0;
@@ -1590,20 +1437,15 @@ img, svg, video, canvas{ max-width:100%; }
 .chart-tooltip-row{ display:flex; align-items:center; gap:var(--s-2); font-variant-numeric:tabular-nums; }
 .chart-tooltip-row b{ font-family:var(--font-mono); font-weight:640; }
 .legend-line{ display:inline-block; width:14px; height:3px; flex:0 0 14px; }
-/* Tooltip swatches: same two arrows the series draws, so a reader can match the
-   tooltip row to the marker under the pointer. Was a square rotated 45deg. */
-.legend-marker{
-  display:inline-block; width:9px; height:9px; flex:0 0 9px;
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
-.legend-marker.sell{ clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.legend-marker{ display:inline-block; width:8px; height:8px; flex:0 0 8px; }
+.legend-marker.sell{ transform:rotate(45deg); }
 .buy-marker{ display:inline-block; width:8px; height:8px; background:var(--pos); }
 .sell-marker{ display:inline-block; width:8px; height:8px; background:var(--warn); transform:rotate(45deg); }
 .clear-search-btn{ display:grid; place-items:center; width:24px; height:24px; border-radius:var(--r-pill); color:var(--ink-3); }
 .clear-search-btn:hover{ color:var(--ink-1); background:var(--well); }
 
 /* ---- 20.10 pending orders ---- */
-.cockpit-pending-section{ display:flex; flex-direction:column; gap:var(--g-2); }
+.cockpit-overview-holdings, .cockpit-pending-section{ display:flex; flex-direction:column; gap:var(--g-2); }
 .cockpit-orders-list{ display:flex; flex-direction:column; }
 .cockpit-order-row{
   display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:var(--g-3);
@@ -1615,435 +1457,47 @@ img, svg, video, canvas{ max-width:100%; }
 /* ---- 20.11 hidden-balance state stays deliberate ---- */
 .hide-balances .js-balance, .hide-balances .js-balance strong{ color:var(--ink-3); letter-spacing:.08em; }
 
-</style>
-</head>
-<body>
-<div class="t212-native-app-root">
 
-  <!-- ============ TopNavBar（浮动岛） ============ -->
-  <header class="t212-native-topbar">
-    <div class="topbar-left-zone">
-      <button type="button" class="t212-invest-brand-pill" title="Account settings">
-        <span class="invest-triangle-glyph">▲</span>
-        <span class="invest-title-text">INVEST</span>
-        <span class="invest-env-badge">DEMO</span>
-        <svg class="invest-chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-    </div>
-
-    <nav class="topbar-center-nav" aria-label="Trading 212 navigation">
-      <button type="button" class="topbar-nav-tab active" aria-current="page">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.4"/><rect x="14" y="3" width="7" height="5" rx="1.4"/><rect x="14" y="12" width="7" height="9" rx="1.4"/><rect x="3" y="16" width="7" height="5" rx="1.4"/></svg>
-        <span>概览</span>
-      </button>
-      <button type="button" class="topbar-nav-tab">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2.4"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        <span>持仓</span>
-      </button>
-      <button type="button" class="topbar-nav-tab">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-        <span>历史</span>
-      </button>
-      <button type="button" class="topbar-nav-tab">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.86l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.86-.34 1.7 1.7 0 0 0-1.02 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.86.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.86 1.7 1.7 0 0 0-1.55-1.02H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.86l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.86.34H9a1.7 1.7 0 0 0 1.02-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1.02 1.55 1.7 1.7 0 0 0 1.86-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.86V9a1.7 1.7 0 0 0 1.55 1.02H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1.02Z"/></svg>
-        <span>设置</span>
-      </button>
-      <button type="button" class="topbar-nav-tab">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.6"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-        <span>帮助</span>
-      </button>
-    </nav>
-
-    <div class="topbar-right-zone">
-      <div class="topbar-search-slot">
-        <svg class="search-glyph-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" class="topbar-search-field" placeholder="搜索标的…" />
-      </div>
-      <button type="button" class="topbar-tool-btn" id="themeBtn" aria-label="切换主题 (T)" title="切换主题 (T)">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-      </button>
-      <button type="button" class="topbar-tool-btn" id="eyeBtn" aria-label="隐藏金额" title="隐藏金额">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-      </button>
-      <button type="button" class="topbar-tool-btn" aria-label="刷新" title="刷新">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.2-2.5L3 16"/><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.2 2.5L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
-      </button>
-    </div>
-  </header>
-
-  <!-- App.tsx renders this page inside <main class="workspace">, which is what
-       carries the 104px offset clearing the fixed top bar (132px on phones).
-       Without the wrapper every capture from this file put the account card,
-       the instrument head and the range switcher underneath the bar. -->
-  <main class="workspace">
-  <!-- ============ Cockpit Bento ============ -->
-  <div class="t212-cockpit-layout">
-
-    <!-- LEFT FOLIO -->
-    <aside class="cockpit-left-pane">
-
-      <!-- 1. Account hero -->
-      <section class="cockpit-account-card">
-        <div class="account-card-header">
-          <span class="account-label">账户总价值 · EUR</span>
-          <button class="icon-btn-ghost" aria-label="账户设置" title="账户设置">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.86l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.86-.34 1.7 1.7 0 0 0-1.02 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.86.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.86 1.7 1.7 0 0 0-1.55-1.02H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.86l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.86.34H9a1.7 1.7 0 0 0 1.02-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1.02 1.55 1.7 1.7 0 0 0 1.86-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.86V9a1.7 1.7 0 0 0 1.55 1.02H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1.02Z"/></svg>
-          </button>
-        </div>
-        <strong class="account-hero-val js-balance">€24,382.61</strong>
-        <div class="account-sub-metrics-grid">
-          <div class="sub-metric-block">
-            <span>今日盈亏</span>
-            <strong class="tone-positive">+€217.40 (+0.90%)</strong>
-          </div>
-          <div class="sub-metric-block">
-            <span>累计未实现</span>
-            <strong class="tone-positive">+€2,336.33 (+11.72%)</strong>
-          </div>
-        </div>
-      </section>
-
-      <!-- 2. Cash summary -->
-      <div class="cockpit-cash-summary">
-      <section class="cockpit-main-pot-card">
-        <div class="pot-info">
-          <span class="pot-label">主账户资金</span>
-          <strong class="pot-val js-balance">€2,115.40</strong>
-          <small class="pot-sub">Pie 内现金 €0.00</small>
-        </div>
-        <button class="t212-deposit-pill-btn" type="button">账户</button>
-      </section>
-
-      <div class="portfolio-stat-grid" aria-label="账户快照">
-        <div class="metric-card"><span>投资市值</span><strong>€22,267.21</strong><small>91.3%</small></div>
-        <div class="metric-card"><span>持仓成本</span><strong>€19,930.88</strong></div>
-        <div class="metric-card"><span>已实现盈亏</span><strong class="tone-positive">+€1,126.40</strong></div>
-        <div class="metric-card"><span>汇兑影响</span><strong class="tone-positive">+€86.20</strong></div>
-      </div>
-      </div>
-      <div class="portfolio-context-strip" aria-label="组合上下文">
-        <span><b>5</b> 个持仓</span><span><b>0</b> 个 Pie 持仓</span><span><b>8.7%</b> 现金占比</span><span><b>73.0%</b> 前三大集中度</span>
-      </div>
+/* ============================================================
+   BEAUTIFY PASS · shared system refinement
+   Type ladder: 12 / 14.5 / 17.5 / 21 / 25.5 / 40
+   The 31px middle tier is retired: it served only the instrument price and sat
+   within 1.3x of the hero, creating false competition between two different
+   currencies and magnitudes. Closing the ladder is how contrast is built here,
+   not by adding a size above.
+   Label vs value: >=2 steps apart plus weight and tracking, so hierarchy is not
+   carried by size alone.
+   ============================================================ */
+.inst-price-main{ font-size: 25.5px; letter-spacing: -.028em; }
+.inst-title{ font-size: 21px; }
+.account-label, .pot-label, .metric-card > span, .sub-metric-block > span{ letter-spacing: .06em; color: var(--ink-3); }
+.sub-metric-block > strong{ font-size: 17.5px; letter-spacing: -.022em; }
+.metric-card > strong{ font-size: 14.5px; letter-spacing: -.01em; }
+.pot-val{ font-size: 25.5px; letter-spacing: -.03em; }
+.section-heading h2, .section-title, .cockpit-section-title{ font-size: 17.5px; letter-spacing: -.018em; }
+.section-heading p, .section-caption, .pane-section-sub{ font-size: 12px; letter-spacing: .01em; }
+.account-hero-val{ font-size: 40px; letter-spacing: -.036em; line-height: 1.04; }
 
 
-      <!-- 4. Investments stream -->
-      <section class="cockpit-investments-section">
-        <div class="investments-header" id="invHeader">
-          <div class="invest-head-title">
-            <h3>投资组合</h3>
-            <span class="invest-sum-val js-balance">€22,267.21</span>
-          </div>
-          <span class="collapse-arrow" id="invArrow">⌃</span>
-        </div>
-        <div class="investments-list-stream" id="invList">
-          <button type="button" class="pos-stream-item selected">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:10"/></svg>
-              <span class="ticker-avatar">AP</span>
-            </span>
-            <div class="pos-stream-ident"><strong>Apple Inc.</strong><small>27.4000 AAPL</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€5,428.10</strong><span class="tone-positive">+€840.60 (+18.3%)</span></div>
-          </button>
-          <button type="button" class="pos-stream-item">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:21"/></svg>
-              <span class="ticker-avatar">NV</span>
-            </span>
-            <div class="pos-stream-ident"><strong>NVIDIA Corp.</strong><small>16.8750 NVDA</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€5,860.25</strong><span class="tone-positive">+€1,311.75 (+28.8%)</span></div>
-          </button>
-          <button type="button" class="pos-stream-item">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:28"/></svg>
-              <span class="ticker-avatar">MS</span>
-            </span>
-            <div class="pos-stream-ident"><strong>Microsoft Corp.</strong><small>13.2500 MSFT</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€4,965.12</strong><span class="tone-positive">+€365.30 (+7.9%)</span></div>
-          </button>
-          <button type="button" class="pos-stream-item">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:33"/></svg>
-              <span class="ticker-avatar">TS</span>
-            </span>
-            <div class="pos-stream-ident"><strong>Tesla Inc.</strong><small>9.5000 TSLA</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€2,681.24</strong><span class="tone-negative">−€161.02 (−5.7%)</span></div>
-          </button>
-          <button type="button" class="pos-stream-item">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:39"/></svg>
-              <span class="ticker-avatar">VO</span>
-            </span>
-            <div class="pos-stream-ident"><strong>Vanguard S&P 500</strong><small>6.1200 VOO</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€3,332.50</strong><span class="tone-positive">+€287.01 (+9.4%)</span></div>
-          </button>
-        </div>
-      </section>
-
-      <!-- 5. Asset allocation mosaic · Today's Movement -->
-      <section class="cockpit-treemap-section">
-        <div class="pane-section-header">
-          <div>
-            <h3 class="section-title">投资组合</h3>
-            <span class="section-caption">按权重动态分布 · 点击穿透</span>
-          </div>
-          <div class="treemap-mode-toggles" role="group" aria-label="拼盘维度切换">
-            <button type="button" class="treemap-mode-pill is-active">今日变化</button>
-            <button type="button" class="treemap-mode-pill">累计收益</button>
-          </div>
-        </div>
-        <div class="dynamic-treemap-container">
-          <!-- Rect geometry is the output of App.tsx's computeTreemapLayout for
-               weights 24.4 / 26.3 / 22.3 / 12.0 / 15.0, which is what this page's
-               own holdings list and table show. The previous hand-placed values
-               (28.5 / 26.2 / 18.1 / 15.4 / 11.8) contradicted both, so the same
-               five holdings carried two different weights on one screen. -->
-          <div class="treemap-rect-slot" style="left:0%;top:0%;width:50.7%;height:48.12%">
-            <button class="treemap-tile dynamic-tile gain selected" title="AAPL · Apple · 今日 +1.85% · 仓位 24.4% · +€185.20">
-              <div class="tile-top-row"><strong class="tile-ticker">AAPL</strong><span class="tile-active-pip" aria-hidden="true"></span></div>
-              <span class="tile-percent tone-positive">+1.85%</span>
-              <div class="tile-subrow"><span class="tile-weight">24.4%</span><span class="tile-daypl tone-positive">+€185.20</span></div>
-            </button>
-          </div>
-          <div class="treemap-rect-slot" style="left:0%;top:48.12%;width:50.7%;height:51.88%">
-            <button class="treemap-tile dynamic-tile gain" title="NVDA · NVIDIA · 今日 +3.42% · 仓位 26.3% · +€324.50">
-              <div class="tile-top-row"><strong class="tile-ticker">NVDA</strong></div>
-              <span class="tile-percent tone-positive">+3.42%</span>
-              <div class="tile-subrow"><span class="tile-weight">26.3%</span><span class="tile-daypl tone-positive">+€324.50</span></div>
-            </button>
-          </div>
-          <div class="treemap-rect-slot" style="left:50.7%;top:0%;width:49.3%;height:45.24%">
-            <button class="treemap-tile dynamic-tile gain" title="MSFT · Microsoft · 今日 +0.64% · 仓位 22.3% · +€42.10">
-              <div class="tile-top-row"><strong class="tile-ticker">MSFT</strong></div>
-              <span class="tile-percent tone-positive">+0.64%</span>
-              <div class="tile-subrow"><span class="tile-weight">22.3%</span><span class="tile-daypl tone-positive">+€42.10</span></div>
-            </button>
-          </div>
-          <div class="treemap-rect-slot" style="left:50.7%;top:45.24%;width:49.3%;height:24.33%">
-            <button class="treemap-tile dynamic-tile loss" title="TSLA · Tesla · 今日 -2.15% · 仓位 12.0% · -€89.60">
-              <div class="tile-top-row"><strong class="tile-ticker">TSLA</strong></div>
-              <span class="tile-percent tone-negative">-2.15%</span>
-              <div class="tile-subrow"><span class="tile-weight">12.0%</span><span class="tile-daypl tone-negative">-€89.60</span></div>
-            </button>
-          </div>
-          <div class="treemap-rect-slot" style="left:50.7%;top:69.57%;width:49.3%;height:30.43%">
-            <button class="treemap-tile dynamic-tile gain" title="VOO · Vanguard S&P 500 · 今日 +0.82% · 仓位 15.0% · +€35.40">
-              <div class="tile-top-row"><strong class="tile-ticker">VOO</strong></div>
-              <span class="tile-percent tone-positive">+0.82%</span>
-              <div class="tile-subrow"><span class="tile-weight">15.0%</span><span class="tile-daypl tone-positive">+€35.40</span></div>
-            </button>
-          </div>
-        </div>
-        <button class="cockpit-see-all-btn" type="button">
-          <span>查看全部持仓</span>
-          <span class="btn-action-chevron" aria-hidden="true">›</span>
-        </button>
-      </section>
-
-      <!-- 6. Pane footer -->
-      <div class="cockpit-pane-footer">
-        <div class="footer-action-pills-row">
-          <button class="t212-pill-action" type="button">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-            历史
-          </button>
-        </div>
-        <p class="t212-legal-disclaimer">投资服务由受 BaFin 监管的 Trading 212 EU GmbH 提供。</p>
-      </div>
-    </aside>
-
-    <!-- RIGHT COCKPIT -->
-    <main class="cockpit-main-pane">
-      <div class="cockpit-instrument-container">
-
-        <!-- Instrument head -->
-        <div class="cockpit-inst-head">
-          <div class="inst-profile">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:10"/></svg>
-              <span class="ticker-avatar">AP</span>
-            </span>
-            <div>
-              <div class="inst-tag-row"><span class="inst-ticker-tag">AAPL · USD</span></div>
-              <h2 class="inst-title">Apple Inc.</h2>
-            </div>
-          </div>
-          <div class="inst-price-box">
-            <strong class="inst-price-main">$198.17</strong>
-            <span class="inst-price-sub tone-positive">+€440.17 (+4.30%)</span>
-          </div>
-          <div class="inst-actions">
-            <span class="read-only-status">只读账户</span>
-          </div>
-        </div>
-
-        <!-- Range switcher -->
-        <div class="range-switcher" role="radiogroup" aria-label="价格时间范围" id="rangeSwitcher">
-          <span class="range-thumb" id="rangeThumb" aria-hidden="true"></span>
-          <button type="button" role="radio" aria-checked="false" tabindex="-1">1天</button>
-          <button type="button" role="radio" aria-checked="false" tabindex="-1">1周</button>
-          <button type="button" role="radio" aria-checked="false" tabindex="-1">1个月</button>
-          <button type="button" role="radio" aria-checked="false" tabindex="-1">3个月</button>
-          <button type="button" role="radio" aria-checked="true" class="active" tabindex="0">1年</button>
-          <button type="button" role="radio" aria-checked="false" tabindex="-1">5年</button>
-        </div>
-
-        <!-- Chart -->
-        <div class="cockpit-chart-wrap">
-          <section class="price-chart-panel">
-            <div class="section-heading">
-              <div>
-                <h2>历史价格与买卖点</h2>
-                <p>AAPL · 每日收盘价 · 2025-08 至 2026-08 · 纵轴聚焦价格区间</p>
-              </div>
-              <strong class="tone-positive">$198.17 <small>+4.30%</small></strong>
-            </div>
-            <div class="chart-legend">
-              <span><i class="legend-dot close"></i> 收盘价</span>
-              <span><i class="legend-dot buy"></i> 买入</span>
-              <span><i class="legend-dot sell"></i> 卖出</span>
-            </div>
-            <p class="chart-count">区间内 3 个 Trading 212 成交点 · 可拖动底部滑块或双指缩放</p>
-            <svg class="price-chart" viewBox="0 0 820 250" preserveAspectRatio="none" role="img" aria-label="AAPL 1年历史价格曲线，包含 3 个买卖成交点">
-              <g class="timeline-grid">
-                <line x1="72" y1="50" x2="790" y2="50"/>
-                <line x1="72" y1="100" x2="790" y2="100"/>
-                <line x1="72" y1="150" x2="790" y2="150"/>
-                <line x1="72" y1="200" x2="790" y2="200"/>
-              </g>
-              <path d="M72 212 L128 200 L184 208 L240 186 L296 196 L352 168 L408 178 L464 150 L520 158 L576 128 L632 136 L688 106 L744 116 L790 100" fill="none" stroke="#1677ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-              <line x1="72" y1="12" x2="790" y2="12" stroke="rgba(112,129,150,0.35)" stroke-dasharray="5 5"/>
-              <line x1="72" y1="10" x2="72" y2="240" stroke="rgba(112,129,150,0.14)"/>
-              <rect x="290" y="190" width="12" height="12" fill="#18a957" stroke="#ffffff" stroke-width="2"/>
-              <rect x="570" y="122" width="12" height="12" fill="#18a957" stroke="#ffffff" stroke-width="2"/>
-              <polygon points="408,170 416,184 400,184" fill="#d88a15" stroke="#ffffff" stroke-width="2"/>
-              <text x="808" y="54" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$205</text>
-              <text x="808" y="104" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$190</text>
-              <text x="808" y="154" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$175</text>
-              <text x="808" y="204" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$160</text>
-              <text x="72" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace">2025-08</text>
-              <text x="250" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="middle">2025-11</text>
-              <text x="430" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="middle">2026-02</text>
-              <text x="610" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="middle">2026-05</text>
-              <text x="790" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">2026-08</text>
-            </svg>
-          </section>
-        </div>
-
-        <!-- Your investment -->
-        <section class="your-investment-cockpit" aria-label="Your investment">
-          <h3 class="cockpit-section-title">持仓明细</h3>
-          <div class="inv-metrics-list">
-            <div class="inv-metric-row"><span>当前市值</span><strong class="js-balance">€5,428.10</strong></div>
-            <div class="inv-metric-row"><span>未实现收益</span><strong class="tone-positive">+€840.60 (+18.3%)</strong></div>
-            <div class="inv-metric-row"><span>持股数量</span><strong>27.4000</strong></div>
-            <div class="inv-metric-row"><span>平均买入价</span><strong>$167.44</strong></div>
-            <div class="inv-metric-row"><span>持仓成本</span><strong class="js-balance">€4,587.50</strong></div>
-          </div>
-        </section>
-
-      </div>
-
-      <!-- Analytics strip -->
-      <section class="cockpit-analytics-strip">
-        <div class="cockpit-sub-analytics-grid">
-          <div class="sub-panel">
-            <div class="section-heading"><div><h2>未实现盈亏贡献</h2><p>按绝对影响排序 · 账户币种</p></div></div>
-            <div class="bar-list">
-              <div class="bar-row"><div class="bar-label"><strong>NVIDIA Corp.</strong><small>NVDA · +28.8%</small></div><div class="bar-measure"><i class="bar-positive" style="width:100%"></i></div><b>+€1,311.75</b></div>
-              <div class="bar-row"><div class="bar-label"><strong>Apple Inc.</strong><small>AAPL · +18.3%</small></div><div class="bar-measure"><i class="bar-positive" style="width:64%"></i></div><b>+€840.60</b></div>
-              <div class="bar-row"><div class="bar-label"><strong>Microsoft Corp.</strong><small>MSFT · +7.9%</small></div><div class="bar-measure"><i class="bar-positive" style="width:28%"></i></div><b>+€365.30</b></div>
-              <div class="bar-row"><div class="bar-label"><strong>Vanguard S&amp;P 500</strong><small>VOO · +9.4%</small></div><div class="bar-measure"><i class="bar-positive" style="width:22%"></i></div><b>+€287.01</b></div>
-              <div class="bar-row"><div class="bar-label"><strong>Tesla Inc.</strong><small>TSLA · −5.7%</small></div><div class="bar-measure"><i class="bar-negative" style="width:12%"></i></div><b style="color:var(--negative-bright)">−€161.02</b></div>
-            </div>
-          </div>
-          <div class="sub-panel">
-            <div class="section-heading"><div><h2>标的交易币种暴露</h2><p>逐仓快照 · 标的币种分布</p></div></div>
-            <div class="exposure-summary">
-              <div><strong>USD</strong><span>€16,253.47</span><small>3 个持仓 · 73.0%</small></div>
-              <div><strong>EUR</strong><span>€3,332.50</span><small>1 个持仓 · 15.0%</small></div>
-              <div><strong>GBP</strong><span>€2,681.24</span><small>1 个持仓 · 12.0%</small></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="cockpit-holdings-preview">
-          <div class="section-heading"><div><h2>主要持仓</h2><p>点击资产查看真实价格曲线、买卖点和交易历史</p></div></div>
-          <div class="table-scroll">
-            <table class="holdings-table">
-              <thead><tr><th>资产</th><th>数量</th><th>均价 / 现价</th><th>市值 / 权重</th><th>未实现收益</th></tr></thead>
-              <tbody>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:10"/></svg><span class="ticker-avatar">AP</span></span><div class="asset-text"><strong>Apple Inc.</strong><small>AAPL · USD</small></div></div></td><td>27.4000</td><td><strong>$167.44</strong><small>$198.17</small></td><td><strong>€5,428.10</strong><small>24.4%</small></td><td class="positive"><strong>+€840.60</strong><small>+18.3%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:21"/></svg><span class="ticker-avatar">NV</span></span><div class="asset-text"><strong>NVIDIA Corp.</strong><small>NVDA · USD</small></div></div></td><td>16.8750</td><td><strong>$213.40</strong><small>$234.52</small></td><td><strong>€5,860.25</strong><small>26.3%</small></td><td class="positive"><strong>+€1,311.75</strong><small>+28.8%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:28"/></svg><span class="ticker-avatar">MS</span></span><div class="asset-text"><strong>Microsoft Corp.</strong><small>MSFT · USD</small></div></div></td><td>13.2500</td><td><strong>$312.60</strong><small>$337.40</small></td><td><strong>€4,965.12</strong><small>22.3%</small></td><td class="positive"><strong>+€365.30</strong><small>+7.9%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:33"/></svg><span class="ticker-avatar">TS</span></span><div class="asset-text"><strong>Tesla Inc.</strong><small>TSLA · GBP</small></div></div></td><td>9.5000</td><td><strong>$281.40</strong><small>$265.40</small></td><td><strong>€2,681.24</strong><small>12.0%</small></td><td class="negative"><strong>−€161.02</strong><small>−5.7%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:39"/></svg><span class="ticker-avatar">VO</span></span><div class="asset-text"><strong>Vanguard S&amp;P 500</strong><small>VOO · EUR</small></div></div></td><td>6.1200</td><td><strong>$521.80</strong><small>$544.70</small></td><td><strong>€3,332.50</strong><small>15.0%</small></td><td class="positive"><strong>+€287.01</strong><small>+9.4%</small></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-  </div>
-
-  <footer class="legal">持仓和成交来自 Trading 212；个股历史价格来自 Yahoo Finance。仅供参考，不构成投资建议。</footer>
-  </main>
-</div>
-
-<script>
-(function () {
-  // Theme toggle
-  var themeBtn = document.getElementById('themeBtn')
-  var currentTheme = 'light'
-  var applyTheme = function(t) {
-    currentTheme = t
-    document.documentElement.setAttribute('data-theme', t)
-    document.documentElement.style.colorScheme = t
-  }
-  if (themeBtn) {
-    themeBtn.addEventListener('click', function () {
-      applyTheme(currentTheme === 'dark' ? 'light' : 'dark')
-    })
-  }
-  window.addEventListener('keydown', function(e) {
-    if (e.key.toLowerCase() === 't') {
-      applyTheme(currentTheme === 'dark' ? 'light' : 'dark')
-    }
-  })
-
-  // Eye toggle - blur balances
-  var eyeBtn = document.getElementById('eyeBtn')
-  var hidden = false
-  eyeBtn.addEventListener('click', function () {
-    hidden = !hidden
-    document.body.classList.toggle('hide-balances', hidden)
-    eyeBtn.setAttribute('aria-label', hidden ? '显示金额' : '隐藏金额')
-    eyeBtn.setAttribute('title', hidden ? '显示金额' : '隐藏金额')
-  })
-  // Range switcher - spring thumb
-  var sw = document.getElementById('rangeSwitcher')
-  var thumb = document.getElementById('rangeThumb')
-  var moveThumb = function () {
-    var active = sw.querySelector('button.active')
-    if (active) { thumb.style.transform = 'translateX(' + active.offsetLeft + 'px)'; thumb.style.width = active.offsetWidth + 'px' }
-  }
-  sw.addEventListener('click', function (e) {
-    var btn = e.target.closest('button')
-    if (!btn) return
-    sw.querySelectorAll('button').forEach(function (b) { b.classList.remove('active'); b.setAttribute('aria-checked', 'false'); b.tabIndex = -1 })
-    btn.classList.add('active'); btn.setAttribute('aria-checked', 'true'); btn.tabIndex = 0
-    moveThumb()
-  })
-  moveThumb()
-  // Investments collapse
-  var invHeader = document.getElementById('invHeader')
-  var invList = document.getElementById('invList')
-  var invArrow = document.getElementById('invArrow')
-  invHeader.addEventListener('click', function () {
-    var collapsed = invList.style.display === 'none'
-    invList.style.display = collapsed ? '' : 'none'
-    invArrow.classList.toggle('collapsed', !collapsed)
-  })
-})()
-</script>
-</body>
-</html>
+/* ===== V3 · LEDGER BAND =================================================
+   Money band on top, instrument below. The account and cash blocks take two of
+   four columns, the four portfolio satellites share one row beneath them, and
+   the instrument plus a full-width chart follow. Nothing is a sidebar, and the
+   price series gets the whole page width. */
+.t212-cockpit-layout{ grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.cockpit-left-pane{ display: contents; }
+.cockpit-account-card{ grid-column: span 2; grid-row: 1; }
+.cockpit-cash-summary{ grid-column: span 2; grid-row: 1; }
+.portfolio-context-strip{ grid-column: span 1; grid-row: 2; align-content: start; }
+.cockpit-ai-prompt-strip{ grid-column: span 1; grid-row: 2; }
+.cockpit-investments-section{ grid-column: span 1; grid-row: 2; }
+.cockpit-treemap-section{ grid-column: span 1; grid-row: 2; }
+.cockpit-pane-footer{ grid-column: span 4; grid-row: 3; flex-direction: row; align-items: center; justify-content: space-between; }
+.cockpit-main-pane{ grid-column: span 4; grid-row: 4; }
+.price-chart{ height: 320px; }
+.cockpit-chart-wrap .price-chart-panel{ padding: 22px; }
+.cockpit-inst-head{ padding: 20px 22px; }
+.dynamic-treemap-container{ height: 190px; }
+.investments-list-stream{ gap: 0; }
+.portfolio-context-strip{ grid-template-columns: 1fr; gap: 6px; }
+.portfolio-stat-grid{ grid-template-columns: 1fr 1fr; }

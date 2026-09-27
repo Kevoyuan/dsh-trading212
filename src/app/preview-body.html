@@ -51,6 +51,9 @@
         <svg class="search-glyph-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" class="topbar-search-field" placeholder="搜索标的…" />
       </div>
+      <button type="button" class="topbar-tool-btn" id="themeBtn" aria-label="切换主题 (T)" title="切换主题 (T)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+      </button>
       <button type="button" class="topbar-tool-btn" id="eyeBtn" aria-label="隐藏金额" title="隐藏金额">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
       </button>
@@ -60,6 +63,11 @@
     </div>
   </header>
 
+  <!-- App.tsx renders this page inside <main class="workspace">, which is what
+       carries the 104px offset clearing the fixed top bar (132px on phones).
+       Without the wrapper every capture from this file put the account card,
+       the instrument head and the range switcher underneath the bar. -->
+  <main class="workspace">
   <!-- ============ Cockpit Bento ============ -->
   <div class="t212-cockpit-layout">
 
@@ -77,12 +85,12 @@
         <strong class="account-hero-val js-balance">€24,382.61</strong>
         <div class="account-sub-metrics-grid">
           <div class="sub-metric-block">
-            <span>24小时变动</span>
+            <span>今日盈亏</span>
             <strong class="tone-positive">+€217.40 (+0.90%)</strong>
           </div>
           <div class="sub-metric-block">
-            <span>收益率</span>
-            <strong class="tone-positive">+22.41%</strong>
+            <span>累计未实现</span>
+            <strong class="tone-positive">+€2,336.33 (+11.72%)</strong>
           </div>
         </div>
       </section>
@@ -106,17 +114,9 @@
       </div>
       </div>
       <div class="portfolio-context-strip" aria-label="组合上下文">
-        <span><b>5</b> 个持仓</span><span><b>0</b> 个 Pie 持仓</span><span><b>8.7%</b> 现金占比</span><span><b>55.2%</b> 前三大集中度</span>
+        <span><b>5</b> 个持仓</span><span><b>0</b> 个 Pie 持仓</span><span><b>8.7%</b> 现金占比</span><span><b>73.0%</b> 前三大集中度</span>
       </div>
 
-      <!-- 3. AI prompt strip -->
-      <div class="cockpit-ai-prompt-strip">
-        <span class="ai-strip-title">询问 dsh</span>
-        <div class="ai-prompt-scroller">
-          <button type="button" class="ai-prompt-card-chip"><span>今天是什么在驱动我的投资组合？</span></button>
-          <button type="button" class="ai-prompt-card-chip"><span>有哪些即将发生的事件可能影响我的持仓？</span></button>
-        </div>
-      </div>
 
       <!-- 4. Investments stream -->
       <section class="cockpit-investments-section">
@@ -171,22 +171,64 @@
         </div>
       </section>
 
-      <!-- 5. Asset allocation mosaic -->
+      <!-- 5. Asset allocation mosaic · Today's Movement -->
       <section class="cockpit-treemap-section">
         <div class="pane-section-header">
           <div>
-            <h3>资产配置</h3>
-            <p class="pane-section-sub">按市值查看持仓比例与收益</p>
+            <h3 class="section-title">投资组合</h3>
+            <span class="section-caption">按权重动态分布 · 点击穿透</span>
+          </div>
+          <div class="treemap-mode-toggles" role="group" aria-label="拼盘维度切换">
+            <button type="button" class="treemap-mode-pill is-active">今日变化</button>
+            <button type="button" class="treemap-mode-pill">累计收益</button>
           </div>
         </div>
         <div class="dynamic-treemap-container">
-          <div class="treemap-rect-slot" style="left:0%;top:0%;width:50%;height:47%"><button class="treemap-tile dynamic-tile gain selected"><strong class="tile-ticker">AAPL</strong><span class="tile-percent tone-positive">+18.3%</span></button></div>
-          <div class="treemap-rect-slot" style="left:50%;top:0%;width:50%;height:47%"><button class="treemap-tile dynamic-tile gain"><strong class="tile-ticker">NVDA</strong><span class="tile-percent tone-positive">+28.8%</span></button></div>
-          <div class="treemap-rect-slot" style="left:0%;top:49%;width:33.4%;height:51%"><button class="treemap-tile dynamic-tile gain"><strong class="tile-ticker">MSFT</strong><span class="tile-percent tone-positive">+7.9%</span></button></div>
-          <div class="treemap-rect-slot" style="left:34%;top:49%;width:33%;height:51%"><button class="treemap-tile dynamic-tile loss"><strong class="tile-ticker">TSLA</strong><span class="tile-percent tone-negative">−5.7%</span></button></div>
-          <div class="treemap-rect-slot" style="left:68%;top:49%;width:32%;height:51%"><button class="treemap-tile dynamic-tile gain"><strong class="tile-ticker">VOO</strong><span class="tile-percent tone-positive">+9.4%</span></button></div>
+          <!-- Rect geometry is the output of App.tsx's computeTreemapLayout for
+               weights 24.4 / 26.3 / 22.3 / 12.0 / 15.0, which is what this page's
+               own holdings list and table show. The previous hand-placed values
+               (28.5 / 26.2 / 18.1 / 15.4 / 11.8) contradicted both, so the same
+               five holdings carried two different weights on one screen. -->
+          <div class="treemap-rect-slot" style="left:0%;top:0%;width:50.7%;height:48.12%">
+            <button class="treemap-tile dynamic-tile gain selected" title="AAPL · Apple · 今日 +1.85% · 仓位 24.4% · +€185.20">
+              <div class="tile-top-row"><strong class="tile-ticker">AAPL</strong><span class="tile-active-pip" aria-hidden="true"></span></div>
+              <span class="tile-percent tone-positive">+1.85%</span>
+              <div class="tile-subrow"><span class="tile-weight">24.4%</span><span class="tile-daypl tone-positive">+€185.20</span></div>
+            </button>
+          </div>
+          <div class="treemap-rect-slot" style="left:0%;top:48.12%;width:50.7%;height:51.88%">
+            <button class="treemap-tile dynamic-tile gain" title="NVDA · NVIDIA · 今日 +3.42% · 仓位 26.3% · +€324.50">
+              <div class="tile-top-row"><strong class="tile-ticker">NVDA</strong></div>
+              <span class="tile-percent tone-positive">+3.42%</span>
+              <div class="tile-subrow"><span class="tile-weight">26.3%</span><span class="tile-daypl tone-positive">+€324.50</span></div>
+            </button>
+          </div>
+          <div class="treemap-rect-slot" style="left:50.7%;top:0%;width:49.3%;height:45.24%">
+            <button class="treemap-tile dynamic-tile gain" title="MSFT · Microsoft · 今日 +0.64% · 仓位 22.3% · +€42.10">
+              <div class="tile-top-row"><strong class="tile-ticker">MSFT</strong></div>
+              <span class="tile-percent tone-positive">+0.64%</span>
+              <div class="tile-subrow"><span class="tile-weight">22.3%</span><span class="tile-daypl tone-positive">+€42.10</span></div>
+            </button>
+          </div>
+          <div class="treemap-rect-slot" style="left:50.7%;top:45.24%;width:49.3%;height:24.33%">
+            <button class="treemap-tile dynamic-tile loss" title="TSLA · Tesla · 今日 -2.15% · 仓位 12.0% · -€89.60">
+              <div class="tile-top-row"><strong class="tile-ticker">TSLA</strong></div>
+              <span class="tile-percent tone-negative">-2.15%</span>
+              <div class="tile-subrow"><span class="tile-weight">12.0%</span><span class="tile-daypl tone-negative">-€89.60</span></div>
+            </button>
+          </div>
+          <div class="treemap-rect-slot" style="left:50.7%;top:69.57%;width:49.3%;height:30.43%">
+            <button class="treemap-tile dynamic-tile gain" title="VOO · Vanguard S&P 500 · 今日 +0.82% · 仓位 15.0% · +€35.40">
+              <div class="tile-top-row"><strong class="tile-ticker">VOO</strong></div>
+              <span class="tile-percent tone-positive">+0.82%</span>
+              <div class="tile-subrow"><span class="tile-weight">15.0%</span><span class="tile-daypl tone-positive">+€35.40</span></div>
+            </button>
+          </div>
         </div>
-        <button class="cockpit-see-all-btn" type="button">查看全部</button>
+        <button class="cockpit-see-all-btn" type="button">
+          <span>查看全部持仓</span>
+          <span class="btn-action-chevron" aria-hidden="true">›</span>
+        </button>
       </section>
 
       <!-- 6. Pane footer -->
@@ -295,20 +337,6 @@
 
       <!-- Analytics strip -->
       <section class="cockpit-analytics-strip">
-        <div class="cockpit-ai-analysis-card">
-          <div class="ai-analysis-header">
-            <span class="ai-badge">询问 dsh</span>
-            <h3>组合问答</h3>
-          </div>
-          <div class="ask-banner">
-            <div>
-              <span>回到任意 dsh 对话直接提问</span>
-              <strong>请用我的 Trading 212 数据总结前三大持仓和集中度风险</strong>
-            </div>
-            <button type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>复制问题</button>
-          </div>
-        </div>
-
         <div class="cockpit-sub-analytics-grid">
           <div class="sub-panel">
             <div class="section-heading"><div><h2>未实现盈亏贡献</h2><p>按绝对影响排序 · 账户币种</p></div></div>
@@ -323,9 +351,9 @@
           <div class="sub-panel">
             <div class="section-heading"><div><h2>标的交易币种暴露</h2><p>逐仓快照 · 标的币种分布</p></div></div>
             <div class="exposure-summary">
-              <div><strong>USD</strong><span>€17,753.71</span><small>4 个持仓 · 79.7%</small></div>
+              <div><strong>USD</strong><span>€16,253.47</span><small>3 个持仓 · 73.0%</small></div>
               <div><strong>EUR</strong><span>€3,332.50</span><small>1 个持仓 · 15.0%</small></div>
-              <div><strong>GBP</strong><span>€1,181.00</span><small>1 个持仓 · 5.3%</small></div>
+              <div><strong>GBP</strong><span>€2,681.24</span><small>1 个持仓 · 12.0%</small></div>
             </div>
           </div>
         </div>
@@ -339,21 +367,41 @@
                 <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:10"/></svg><span class="ticker-avatar">AP</span></span><div class="asset-text"><strong>Apple Inc.</strong><small>AAPL · USD</small></div></div></td><td>27.4000</td><td><strong>$167.44</strong><small>$198.17</small></td><td><strong>€5,428.10</strong><small>24.4%</small></td><td class="positive"><strong>+€840.60</strong><small>+18.3%</small></td></tr>
                 <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:21"/></svg><span class="ticker-avatar">NV</span></span><div class="asset-text"><strong>NVIDIA Corp.</strong><small>NVDA · USD</small></div></div></td><td>16.8750</td><td><strong>$213.40</strong><small>$234.52</small></td><td><strong>€5,860.25</strong><small>26.3%</small></td><td class="positive"><strong>+€1,311.75</strong><small>+28.8%</small></td></tr>
                 <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:28"/></svg><span class="ticker-avatar">MS</span></span><div class="asset-text"><strong>Microsoft Corp.</strong><small>MSFT · USD</small></div></div></td><td>13.2500</td><td><strong>$312.60</strong><small>$337.40</small></td><td><strong>€4,965.12</strong><small>22.3%</small></td><td class="positive"><strong>+€365.30</strong><small>+7.9%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:33"/></svg><span class="ticker-avatar">TS</span></span><div class="asset-text"><strong>Tesla Inc.</strong><small>TSLA · USD</small></div></div></td><td>9.5000</td><td><strong>$281.40</strong><small>$265.40</small></td><td><strong>€2,681.24</strong><small>12.0%</small></td><td class="negative"><strong>−€161.02</strong><small>−5.7%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:39"/></svg><span class="ticker-avatar">VO</span></span><div class="asset-text"><strong>Vanguard S&amp;P 500</strong><small>VOO · USD</small></div></div></td><td>6.1200</td><td><strong>$521.80</strong><small>$544.70</small></td><td><strong>€3,332.50</strong><small>15.0%</small></td><td class="positive"><strong>+€287.01</strong><small>+9.4%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:33"/></svg><span class="ticker-avatar">TS</span></span><div class="asset-text"><strong>Tesla Inc.</strong><small>TSLA · GBP</small></div></div></td><td>9.5000</td><td><strong>$281.40</strong><small>$265.40</small></td><td><strong>€2,681.24</strong><small>12.0%</small></td><td class="negative"><strong>−€161.02</strong><small>−5.7%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:39"/></svg><span class="ticker-avatar">VO</span></span><div class="asset-text"><strong>Vanguard S&amp;P 500</strong><small>VOO · EUR</small></div></div></td><td>6.1200</td><td><strong>$521.80</strong><small>$544.70</small></td><td><strong>€3,332.50</strong><small>15.0%</small></td><td class="positive"><strong>+€287.01</strong><small>+9.4%</small></td></tr>
               </tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <footer class="legal">持仓和成交来自 Trading 212；个股历史价格来自 Yahoo Finance。仅供参考，不构成投资建议。</footer>
-    </main>
   </div>
+
+  <footer class="legal">持仓和成交来自 Trading 212；个股历史价格来自 Yahoo Finance。仅供参考，不构成投资建议。</footer>
+  </main>
 </div>
 
 <script>
 (function () {
+  // Theme toggle
+  var themeBtn = document.getElementById('themeBtn')
+  var currentTheme = 'light'
+  var applyTheme = function(t) {
+    currentTheme = t
+    document.documentElement.setAttribute('data-theme', t)
+    document.documentElement.style.colorScheme = t
+  }
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function () {
+      applyTheme(currentTheme === 'dark' ? 'light' : 'dark')
+    })
+  }
+  window.addEventListener('keydown', function(e) {
+    if (e.key.toLowerCase() === 't') {
+      applyTheme(currentTheme === 'dark' ? 'light' : 'dark')
+    }
+  })
+
   // Eye toggle - blur balances
   var eyeBtn = document.getElementById('eyeBtn')
   var hidden = false

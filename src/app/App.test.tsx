@@ -20,19 +20,19 @@ const snapshot: PortfolioSnapshot = {
 }
 
 const mocks = vi.hoisted(() => ({
-  status: vi.fn(), portfolio: vi.fn(), history: vi.fn(), market: vi.fn(), connect: vi.fn(), disconnect: vi.fn(), diagnosticText: vi.fn(() => 'diagnostic'),
+  status: vi.fn(), portfolio: vi.fn(), history: vi.fn(), market: vi.fn(), quotes: vi.fn(), connect: vi.fn(), disconnect: vi.fn(), diagnosticText: vi.fn(() => 'diagnostic'),
 }))
 
 vi.mock('./api.ts', async importOriginal => {
   const original = await importOriginal<typeof import('./api.ts')>()
-  return { ...original, api: { status: mocks.status, portfolio: mocks.portfolio, history: mocks.history, market: mocks.market, connect: mocks.connect, disconnect: mocks.disconnect }, diagnosticText: mocks.diagnosticText }
+  return { ...original, api: { status: mocks.status, portfolio: mocks.portfolio, history: mocks.history, market: mocks.market, quotes: mocks.quotes, connect: mocks.connect, disconnect: mocks.disconnect }, diagnosticText: mocks.diagnosticText }
 })
 
 import { App, tickerLabel } from './App.tsx'
 import { languageStore } from './i18n.ts'
 
 describe('Trading 212 UI interactions', () => {
-  beforeEach(() => { vi.clearAllMocks(); languageStore.setPreference('auto'); mocks.status.mockResolvedValue({ connected: false, environment: 'demo', writable: true, source: 'none' }); mocks.portfolio.mockResolvedValue(snapshot); mocks.market.mockResolvedValue({ source: 'Yahoo Finance', symbol: 'AAPL', exchange: 'NMS', currency: 'USD', range: '1y', interval: '1d', fetchedAt: '2026-08-24T10:00:00Z', regularMarketPrice: 225, candles: Array.from({ length: 24 }, (_, index) => ({ time: new Date(Date.UTC(2026, 7, index + 1)).toISOString(), close: 200 + index })) }); mocks.history.mockImplementation(async (kind: string) => kind === 'orders' ? { kind, items: [
+  beforeEach(() => { vi.clearAllMocks(); languageStore.setPreference('auto'); mocks.status.mockResolvedValue({ connected: false, environment: 'demo', writable: true, source: 'none' }); mocks.portfolio.mockResolvedValue(snapshot); mocks.quotes.mockResolvedValue({ AAPL_US_EQ: { currentPrice: 225, previousClose: 220, dailyChangePercent: 2.27, dailyProfitLoss: 22.7 } }); mocks.market.mockResolvedValue({ source: 'Yahoo Finance', symbol: 'AAPL', exchange: 'NMS', currency: 'USD', range: '1w', interval: '1d', fetchedAt: '2026-08-24T10:00:00Z', regularMarketPrice: 225, candles: Array.from({ length: 24 }, (_, index) => ({ time: new Date(Date.UTC(2026, 7, index + 1)).toISOString(), close: 200 + index })) }); mocks.history.mockImplementation(async (kind: string) => kind === 'orders' ? { kind, items: [
     { order: { id: 1, ticker: 'AAPL_US_EQ', side: 'BUY', status: 'FILLED', type: 'MARKET', instrument: { name: 'Apple', currency: 'USD' } }, fill: { id: 11, filledAt: '2026-08-01T10:00:00Z', price: 210, quantity: 1, walletImpact: { currency: 'EUR', netValue: -190 } } },
     { order: { id: 2, ticker: 'AAPL_US_EQ', side: 'SELL', status: 'FILLED', type: 'MARKET', instrument: { name: 'Apple', currency: 'USD' } }, fill: { id: 12, filledAt: '2026-08-20T10:00:00Z', price: 225, quantity: 0.5, walletImpact: { currency: 'EUR', netValue: 102, realisedProfitLoss: 7 } } },
   ] } : { kind, items: [] }); mocks.disconnect.mockResolvedValue({ connected: false }) })
@@ -111,13 +111,13 @@ describe('Trading 212 UI interactions', () => {
     await screen.findByText('账户总价值 · EUR')
     await user.click(screen.getByRole('button', { name: /Apple.*AAPL.*USD/ }))
     expect(await screen.findByRole('heading', { name: 'Apple' })).toBeTruthy()
-    expect(await screen.findByRole('img', { name: /Apple 1年历史价格曲线，包含 2 个买卖成交点/ })).toBeTruthy()
+    expect(await screen.findByRole('img', { name: /Apple 1周历史价格曲线，包含 2 个买卖成交点/ })).toBeTruthy()
     const points = screen.getByLabelText('成交点明细')
     expect(within(points).getByText(/买入.*成交价/)).toBeTruthy()
     expect(within(points).getByText(/卖出.*成交价/)).toBeTruthy()
     expect(screen.getByText(/价格来源：Yahoo Finance/)).toBeTruthy()
     expect(mocks.history).toHaveBeenCalledWith('orders', undefined, 'AAPL_US_EQ')
-    expect(mocks.market).toHaveBeenCalledWith('AAPL_US_EQ', '1y')
+    expect(mocks.market).toHaveBeenCalledWith('AAPL_US_EQ', '1w')
     await user.click(screen.getByRole('radio', { name: '1天' }))
     await waitFor(() => expect(mocks.market).toHaveBeenCalledWith('AAPL_US_EQ', '1d'))
     await user.click(screen.getByRole('radio', { name: '1周' }))
@@ -143,5 +143,19 @@ describe('Trading 212 UI interactions', () => {
     await user.click(screen.getByRole('button', { name: '显示金额' }))
     expect(screen.getByText('€1,250.00')).toBeTruthy()
     expect(root?.classList.contains('hide-balances')).toBe(false)
+  })
+
+  it('displays true today change in daily mode and switches to cumulative return in total mode', async () => {
+    mocks.status.mockResolvedValue({ connected: true, environment: 'demo', writable: true, source: 'record' })
+    render(<App />)
+    const user = userEvent.setup()
+    await screen.findByText('资产配置')
+    // In daily mode, it should display today's change (+2.3%) from api.quotes rather than returnPercent (+5.3%)
+    expect(await screen.findByText('+2.3%')).toBeTruthy()
+    expect(screen.getByText('今日盈亏')).toBeTruthy()
+    // Switch to total return mode
+    await user.click(screen.getByRole('button', { name: '累计收益' }))
+    const matches = await screen.findAllByText('+5.3%')
+    expect(matches.length).toBeGreaterThanOrEqual(1)
   })
 })

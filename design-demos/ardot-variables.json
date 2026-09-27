@@ -1,0 +1,537 @@
+{
+  "Cartographer": {
+    "modes": [
+      "Light",
+      "Dark"
+    ],
+    "variables": {
+      "paper": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.9569,
+            "g": 0.9451,
+            "b": 0.9176,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.0784,
+            "g": 0.0902,
+            "b": 0.1059,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "FRAME_FILL"
+        ]
+      },
+      "card": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.9843,
+            "g": 0.9804,
+            "b": 0.9647,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.1176,
+            "g": 0.1294,
+            "b": 0.1529,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "FRAME_FILL"
+        ]
+      },
+      "well": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.9255,
+            "g": 0.9059,
+            "b": 0.8627,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.149,
+            "g": 0.1647,
+            "b": 0.1922,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "FRAME_FILL"
+        ]
+      },
+      "well2": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.898,
+            "g": 0.8745,
+            "b": 0.8196,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.1804,
+            "g": 0.2,
+            "b": 0.2314,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "FRAME_FILL"
+        ]
+      },
+      "ink1": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.0824,
+            "g": 0.0902,
+            "b": 0.102,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.9451,
+            "g": 0.949,
+            "b": 0.9569,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "TEXT_FILL"
+        ]
+      },
+      "ink2": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.2471,
+            "g": 0.2745,
+            "b": 0.3176,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.7725,
+            "g": 0.7882,
+            "b": 0.8157,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "TEXT_FILL"
+        ]
+      },
+      "ink3": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.4314,
+            "g": 0.4627,
+            "b": 0.5098,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.5647,
+            "g": 0.5922,
+            "b": 0.6275,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "TEXT_FILL"
+        ]
+      },
+      "ink4": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.6039,
+            "g": 0.6275,
+            "b": 0.6667,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.4314,
+            "g": 0.4627,
+            "b": 0.5098,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "TEXT_FILL"
+        ]
+      },
+      "hair": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.8549,
+            "g": 0.8275,
+            "b": 0.7725,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.1804,
+            "g": 0.2,
+            "b": 0.2314,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "STROKE"
+        ]
+      },
+      "hair2": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.7882,
+            "g": 0.7529,
+            "b": 0.6784,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.2275,
+            "g": 0.251,
+            "b": 0.2863,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "STROKE"
+        ]
+      },
+      "focus": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.1843,
+            "g": 0.302,
+            "b": 0.4784,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.4824,
+            "g": 0.6157,
+            "b": 0.851,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "ALL_FILLS"
+        ]
+      },
+      "focus2": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.1412,
+            "g": 0.2431,
+            "b": 0.4,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.6157,
+            "g": 0.7216,
+            "b": 0.898,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "ALL_FILLS"
+        ]
+      },
+      "focusSoft": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.8902,
+            "g": 0.9137,
+            "b": 0.9451,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.1216,
+            "g": 0.1647,
+            "b": 0.2314,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "ALL_FILLS"
+        ]
+      },
+      "pos": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.0863,
+            "g": 0.3961,
+            "b": 0.2039,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.3098,
+            "g": 0.702,
+            "b": 0.4824,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "TEXT_FILL"
+        ]
+      },
+      "posSoft": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.8824,
+            "g": 0.9373,
+            "b": 0.898,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.1059,
+            "g": 0.1725,
+            "b": 0.1412,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "ALL_FILLS"
+        ]
+      },
+      "neg": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.6902,
+            "g": 0.2,
+            "b": 0.1451,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.8784,
+            "g": 0.4471,
+            "b": 0.3961,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "TEXT_FILL"
+        ]
+      },
+      "negSoft": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.9686,
+            "g": 0.902,
+            "b": 0.8863,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.1725,
+            "g": 0.1216,
+            "b": 0.1098,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "ALL_FILLS"
+        ]
+      },
+      "warn": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.5412,
+            "g": 0.3843,
+            "b": 0.0706,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.851,
+            "g": 0.6588,
+            "b": 0.3725,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "TEXT_FILL"
+        ]
+      },
+      "warnSoft": {
+        "type": "COLOR",
+        "valuesByMode": {
+          "Light": {
+            "r": 0.9569,
+            "g": 0.9255,
+            "b": 0.8549,
+            "a": 1
+          },
+          "Dark": {
+            "r": 0.1725,
+            "g": 0.1412,
+            "b": 0.098,
+            "a": 1
+          }
+        },
+        "scopes": [
+          "ALL_FILLS"
+        ]
+      },
+      "r1": {
+        "type": "FLOAT",
+        "value": 6,
+        "scopes": [
+          "CORNER_RADIUS"
+        ]
+      },
+      "r2": {
+        "type": "FLOAT",
+        "value": 12,
+        "scopes": [
+          "CORNER_RADIUS"
+        ]
+      },
+      "r3": {
+        "type": "FLOAT",
+        "value": 20,
+        "scopes": [
+          "CORNER_RADIUS"
+        ]
+      },
+      "rPill": {
+        "type": "FLOAT",
+        "value": 999,
+        "scopes": [
+          "CORNER_RADIUS"
+        ]
+      },
+      "s1": {
+        "type": "FLOAT",
+        "value": 4,
+        "scopes": [
+          "GAP"
+        ]
+      },
+      "s2": {
+        "type": "FLOAT",
+        "value": 8,
+        "scopes": [
+          "GAP"
+        ]
+      },
+      "s3": {
+        "type": "FLOAT",
+        "value": 12,
+        "scopes": [
+          "GAP"
+        ]
+      },
+      "s4": {
+        "type": "FLOAT",
+        "value": 16,
+        "scopes": [
+          "GAP"
+        ]
+      },
+      "s5": {
+        "type": "FLOAT",
+        "value": 24,
+        "scopes": [
+          "GAP"
+        ]
+      },
+      "s6": {
+        "type": "FLOAT",
+        "value": 32,
+        "scopes": [
+          "GAP"
+        ]
+      },
+      "s7": {
+        "type": "FLOAT",
+        "value": 48,
+        "scopes": [
+          "GAP"
+        ]
+      },
+      "s8": {
+        "type": "FLOAT",
+        "value": 64,
+        "scopes": [
+          "GAP"
+        ]
+      },
+      "t12": {
+        "type": "FLOAT",
+        "value": 12,
+        "scopes": [
+          "FONT_SIZE"
+        ]
+      },
+      "t13": {
+        "type": "FLOAT",
+        "value": 13,
+        "scopes": [
+          "FONT_SIZE"
+        ]
+      },
+      "t14": {
+        "type": "FLOAT",
+        "value": 14,
+        "scopes": [
+          "FONT_SIZE"
+        ]
+      },
+      "t15": {
+        "type": "FLOAT",
+        "value": 15,
+        "scopes": [
+          "FONT_SIZE"
+        ]
+      },
+      "t17": {
+        "type": "FLOAT",
+        "value": 17,
+        "scopes": [
+          "FONT_SIZE"
+        ]
+      },
+      "t18": {
+        "type": "FLOAT",
+        "value": 18,
+        "scopes": [
+          "FONT_SIZE"
+        ]
+      },
+      "t22": {
+        "type": "FLOAT",
+        "value": 22,
+        "scopes": [
+          "FONT_SIZE"
+        ]
+      },
+      "t28": {
+        "type": "FLOAT",
+        "value": 28,
+        "scopes": [
+          "FONT_SIZE"
+        ]
+      },
+      "t36": {
+        "type": "FLOAT",
+        "value": 36,
+        "scopes": [
+          "FONT_SIZE"
+        ]
+      }
+    }
+  }
+}

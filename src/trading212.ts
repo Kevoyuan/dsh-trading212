@@ -23,6 +23,8 @@ export interface Position {
   quantityInPies?: number
   instrument?: { currency?: string; isin?: string; name?: string; ticker?: string }
   walletImpact?: { currency?: string; currentValue?: number; fxImpact?: number; totalCost?: number; unrealizedProfitLoss?: number }
+  dailyChangePercent?: number
+  dailyProfitLoss?: number
 }
 
 export interface PendingOrder {
@@ -67,6 +69,8 @@ export interface PortfolioAllocation {
   fxImpact: number
   weightPercent: number
   returnPercent?: number
+  dailyChangePercent?: number
+  dailyProfitLoss?: number
 }
 
 export interface CurrencyExposure {
@@ -248,6 +252,8 @@ export function parsePositions(value: unknown): Position[] {
         totalCost: optionalFinite(wallet.totalCost, `${path}.walletImpact.totalCost`),
         unrealizedProfitLoss: optionalFinite(wallet.unrealizedProfitLoss, `${path}.walletImpact.unrealizedProfitLoss`),
       },
+      dailyChangePercent: optionalFinite(item.dailyChangePercent ?? (typeof item.frontend === 'object' && item.frontend !== null ? (item.frontend as Record<string, unknown>).dailyChangePercent : undefined), `${path}.dailyChangePercent`),
+      dailyProfitLoss: optionalFinite(item.dailyProfitLoss ?? (typeof item.frontend === 'object' && item.frontend !== null ? (item.frontend as Record<string, unknown>).dailyProfitLoss : undefined), `${path}.dailyProfitLoss`),
     }
   })
 }
@@ -476,6 +482,8 @@ export function analyzePortfolio(account: AccountSummary, positions: Position[])
   const allocation = positions.map((item, index): PortfolioAllocation => {
     const currentValue = item.walletImpact?.currentValue ?? 0
     const cost = item.walletImpact?.totalCost ?? 0
+    const dailyChangePercent = item.dailyChangePercent
+    const dailyProfitLoss = item.dailyProfitLoss ?? (dailyChangePercent !== undefined ? currentValue * (dailyChangePercent / 100) : undefined)
     return {
       ticker: item.instrument?.ticker ?? `position-${index + 1}`,
       name: item.instrument?.name ?? item.instrument?.ticker ?? '未知资产',
@@ -486,6 +494,8 @@ export function analyzePortfolio(account: AccountSummary, positions: Position[])
       fxImpact: item.walletImpact?.fxImpact ?? 0,
       weightPercent: percentage(currentValue, positionMarketValue) ?? 0,
       returnPercent: percentage(item.walletImpact?.unrealizedProfitLoss ?? currentValue - cost, cost),
+      dailyChangePercent,
+      dailyProfitLoss,
     }
   }).sort((a, b) => b.currentValue - a.currentValue)
   const exposureMap = new Map<string, { currentValue: number; positions: number }>()

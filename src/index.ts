@@ -228,6 +228,49 @@ export function apply(ctx: Context, config: Config): void {
           json(res, 200, await marketData.series(instrument, parseMarketRange(url.searchParams.get('range')), controller.signal))
           return
         }
+        if (path === '/api/trading212/quotes') {
+          if (req.method !== 'GET') return methodNotAllowed(res, 'GET')
+          const unknown = [...url.searchParams.keys()].filter(key => key !== 'tickers')
+          if (unknown.length > 0) throw new AppError('INVALID_REQUEST', '包含不支持的查询参数', 400, `未知参数：${unknown.join(', ')}`, '移除未知参数后重试')
+          const snapshot = await service.snapshot(false, controller.signal)
+          const rawTickers = url.searchParams.get('tickers')
+          const requestedTickers = rawTickers
+            ? rawTickers.split(',').map(t => t.trim()).filter(Boolean)
+            : undefined
+          const positions = requestedTickers && requestedTickers.length > 0
+            ? snapshot.positions.filter(p => p.instrument?.ticker && requestedTickers.includes(p.instrument.ticker))
+            : snapshot.positions.slice(0, 10)
+          const settled = await Promise.allSettled(
+            positions.map(async pos => {
+              if (!pos.instrument?.ticker) return null
+              const series = await marketData.series(pos.instrument, '1d', controller.signal)
+              const currentPrice = series.regularMarketPrice ?? (series.candles.length > 0 ? series.candles[series.candles.length - 1].close : undefined)
+              const prevClose = series.previousClose ?? (series.candles.length > 1 ? series.candles[0].open ?? series.candles[0].close : undefined)
+              const dailyChangePercent = currentPrice !== undefined && prevClose !== undefined && prevClose > 0
+                ? ((currentPrice - prevClose) / prevClose) * 100
+                : undefined
+              const currentValue = pos.walletImpact?.currentValue ?? 0
+              const dailyProfitLoss = dailyChangePercent !== undefined
+                ? currentValue * (dailyChangePercent / 100)
+                : undefined
+              return {
+                ticker: pos.instrument.ticker,
+                currentPrice,
+                previousClose: prevClose,
+                dailyChangePercent,
+                dailyProfitLoss,
+              }
+            })
+          )
+          const result: Record<string, { currentPrice?: number; previousClose?: number; dailyChangePercent?: number; dailyProfitLoss?: number }> = {}
+          for (const item of settled) {
+            if (item.status === 'fulfilled' && item.value) {
+              result[item.value.ticker] = item.value
+            }
+          }
+          json(res, 200, result)
+          return
+        }
         if (path === '/api/trading212/logo') {
           if (req.method !== 'GET') return methodNotAllowed(res, 'GET')
           const unknown = [...url.searchParams.keys()].filter(key => key !== 'ticker')

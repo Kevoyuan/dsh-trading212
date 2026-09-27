@@ -19,7 +19,7 @@ A read-only Trading 212 portfolio workspace for **dsh**. Configure your API cred
 - Responsive desktop and mobile dashboard with overview, holdings, history, settings, and help views
 - One-click privacy masking (eye toggle) to hide all balances, holding values, share quantities, average purchase prices, and returns
 - Holdings, order history, cash transactions, and dividends
-- ECharts price history from 1 day to 5 years, including minute-level short ranges and actual Trading 212 buy/sell fills
+- TradingView Lightweight Charts price history from 1 day to 5 years, including minute-level short ranges and actual Trading 212 buy/sell fills
 - English and Chinese UI that follows dsh by default, with a manual override in Settings
 - Read-only `trading212_portfolio` and `trading212_history` tools for normal dsh conversations
 - Sanitized errors for authentication, permission, rate-limit, timeout, and upstream failures
@@ -122,4 +122,4 @@ Issues and pull requests are welcome. Never include an API key, API secret, real
 
 ## License
 
-Licensed under the [MIT License](LICENSE).
+Licensed under the [MIT License](LICENSE). Charting uses [TradingView Lightweight Charts](https://www.tradingview.com/lightweight-charts/) (Apache-2.0); the in-chart TradingView mark is kept visible.

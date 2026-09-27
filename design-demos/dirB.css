@@ -1,0 +1,656 @@
+/* =====================================================================
+   KERNEL — dark instrument desk
+   dsh-trading212 · direction B · single stylesheet, no override layers
+   ---------------------------------------------------------------------
+   SYSTEM
+   type      8 steps, nominal ratio 1.18 : 12 / 13.5 / 15 / 17 / 20 / 24 / 30 / 38
+             micro 12 (wide tracking) · body 13.5 · row 15 · title 17
+             plate 20 · pot 24 · price 30 · hero 38 — figures in ui-monospace
+   space     4 / 8 / 12 / 16 / 24 / 32 / 48 — gaps 0-16, vertical rhythm by margin
+   radius    2px controls · 50% circles · 999px badge  (plates are square)
+   hairlines two ink alphas only; accent reserved for keylines/focus
+   elevation surface lightness + hairline — ZERO box-shadow, ZERO gradient
+   motion    cubic-bezier(.2,.7,.3,1) · 140ms control · 240ms entry
+   ===================================================================== */
+
+/* ============ 01 · TOKENS ============ */
+:root{
+  --fs-micro:12px; --fs-body:13.5px; --fs-row:15px;  --fs-title:17px;
+  --fs-plate:20px; --fs-pot:24px;    --fs-price:30px; --fs-hero:38px;
+
+  --sp1:4px; --sp2:8px; --sp3:12px; --sp4:16px; --sp5:24px; --sp6:32px; --sp7:48px;
+
+  --r-ctl:2px; --r-round:50%; --r-pill:999px;
+
+  --ease:cubic-bezier(.2,.7,.3,1); --t-fast:140ms; --t-base:240ms;
+
+  --font-sans:-apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono:ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+
+  /* KERNEL dark desk — warm neutral charcoal, one ice-blue instrument accent */
+  --canvas:#121110; --plate:#1A1918; --raised:#242322; --field:#0B0A0A;
+  --hair:rgba(242,243,245,.09); --hair-strong:rgba(242,243,245,.17);
+  --ink:#F2F3F5; --ink-2:#9BA1A9; --ink-3:#8A9098;
+  --accent:#8FB8D8; --accent-soft:rgba(143,184,216,.10); --on-accent:#121110;
+  --pos:#56D6A0; --pos-soft:rgba(86,214,160,.12);
+  --neg:#FF8A73; --neg-soft:rgba(255,138,115,.14);
+  --negative-bright:var(--neg);
+
+  --rail:64px;
+}
+
+/* ============ 02 · RESET & BASE ============ */
+*,*::before,*::after{box-sizing:border-box; font-family:inherit; font-size:inherit; margin:0; padding:0}
+html{font-family:var(--font-sans); font-size:var(--fs-body); line-height:1.45;
+  color-scheme:dark; background:var(--canvas); -webkit-text-size-adjust:100%}
+body{background:var(--canvas); color:var(--ink); min-height:100dvh;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility}
+button,input{color:inherit; background:none; border:0; font:inherit; letter-spacing:inherit}
+button{cursor:pointer; text-align:inherit; -webkit-appearance:none; appearance:none}
+input{-webkit-appearance:none; appearance:none}
+table{border-collapse:collapse; border-spacing:0; width:100%}
+h1,h2,h3,h4{font-weight:600; line-height:1.2; letter-spacing:-.01em}
+strong,b{font-weight:600}
+small{line-height:1.3}
+p{text-wrap:pretty}
+ul,ol{list-style:none}
+svg{display:block}
+::selection{background:var(--accent); color:var(--on-accent)}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+/* every figure is monospace + tabular: the numbers are the product */
+.js-balance,.account-hero-val,.pot-val,.invest-sum-val,.inst-price-main,
+.inv-metric-row strong,.metric-card strong,.sub-metric-block strong,.exposure-summary span,
+.bar-row b,.holdings-table td,.tile-percent,.tile-weight,.tile-daypl,.inst-ticker-tag,
+.portfolio-context-strip b,.account-label,.pot-label,.chart-count,.price-chart text{
+  font-family:var(--font-mono); font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1}
+
+/* micro labels — 12px wide-tracked instrument voice for every meta line */
+.account-label,.pot-label,.pot-sub,.metric-card span,.metric-card small,.sub-metric-block span,
+.portfolio-context-strip>span,.ai-strip-title,.inst-ticker-tag,.inst-price-sub,.read-only-status,
+.invest-head-title h3,.cockpit-section-title,.inv-metric-row span,.pos-stream-ident small,
+.pos-stream-num-col span,.ai-analysis-header h3,.ai-badge,.ask-banner span,.bar-label small,
+.exposure-summary strong,.exposure-summary small,.holdings-table th,.holdings-table td>small,
+.asset-text small,.section-title,.section-caption,.treemap-mode-pill,.tile-ticker,.tile-weight,
+.tile-daypl,.cockpit-see-all-btn,.t212-pill-action,.t212-deposit-pill-btn,.t212-legal-disclaimer,
+.legal,.hud-pill,kbd,.invest-env-badge,.invest-triangle-glyph,.invest-title-text,
+.topbar-nav-tab span,.chart-count,.section-heading p,.range-switcher button,.ai-prompt-card-chip,
+.chart-legend span,.price-chart text{font-size:var(--fs-micro)}
+/* the instrument's own mark reads at title weight */
+.inst-profile .ticker-avatar{font-size:var(--fs-title)}
+
+@media (prefers-reduced-motion:no-preference){
+  .t212-native-topbar,.topbar-nav-tab,.topbar-tool-btn,.topbar-search-field,.pos-stream-item,
+  .treemap-tile,.treemap-mode-pill,.ai-prompt-card-chip,.cockpit-see-all-btn,.t212-pill-action,
+  .t212-deposit-pill-btn,.icon-btn-ghost,.hud-help-btn,.collapse-arrow,.range-thumb,
+  .range-switcher button,.bar-positive,.bar-negative,.ask-banner button,.holdings-table tbody tr{
+    transition-property:color,background-color,border-color,outline-color,transform,opacity;
+    transition-duration:var(--t-fast); transition-timing-function:var(--ease)}
+  .range-thumb{transition-duration:var(--t-base)}
+}
+
+/* ============ 03 · ICON RAIL (top nav → 64px left rail) ============ */
+.t212-native-app-root{min-height:100dvh}
+.t212-native-topbar{
+  position:fixed; inset:0 auto 0 0; width:var(--rail); z-index:40;
+  display:flex; flex-direction:column; align-items:stretch;
+  padding:8px 0 12px;
+  background:var(--plate); border-right:1px solid var(--hair)}
+.topbar-left-zone{display:flex; padding-bottom:8px; border-bottom:1px solid var(--hair)}
+.t212-invest-brand-pill{
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:var(--sp1); min-height:64px; color:var(--ink-2); border-radius:var(--r-ctl)}
+.invest-triangle-glyph{color:var(--accent); line-height:1}
+.invest-title-text{font-weight:600; letter-spacing:.14em; color:var(--ink)}
+.invest-env-badge{
+  letter-spacing:.08em; line-height:1.2; color:var(--accent); background:var(--accent-soft);
+  border-radius:var(--r-pill); padding:2px 8px}
+.invest-chevron-icon{display:none}
+
+.topbar-center-nav{display:flex; flex-direction:column; margin-top:var(--sp3)}
+.topbar-nav-tab{
+  position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:var(--sp1); min-height:56px; color:var(--ink-3)}
+.topbar-nav-tab+.topbar-nav-tab{border-top:1px solid var(--hair)}
+.topbar-nav-tab span{letter-spacing:.06em}
+.topbar-nav-tab svg{width:18px; height:18px}
+.topbar-nav-tab:hover{color:var(--ink); background:var(--raised)}
+.topbar-nav-tab.active{color:var(--accent); background:var(--accent-soft)}
+.topbar-nav-tab.active::before{
+  content:""; position:absolute; left:0; top:10px; bottom:10px; width:2px; background:var(--accent)}
+
+.topbar-right-zone{
+  margin-top:auto; display:flex; flex-direction:column; align-items:center;
+  gap:var(--sp2); padding-top:var(--sp3); border-top:1px solid var(--hair)}
+.topbar-search-slot{
+  position:relative; display:flex; align-items:center; justify-content:center;
+  width:40px; height:40px; color:var(--ink-3);
+  background:var(--field); border:1px solid var(--hair); border-radius:var(--r-ctl)}
+.topbar-search-slot:focus-within{color:var(--accent); border-color:var(--accent)}
+.topbar-search-field{
+  position:absolute; left:44px; width:0; opacity:0; background:var(--raised);
+  border-radius:var(--r-ctl)}
+.topbar-search-slot:focus-within .topbar-search-field{
+  width:264px; opacity:1; padding:8px 12px; border:1px solid var(--accent)}
+.topbar-search-field::placeholder{color:var(--ink-3)}
+.topbar-tool-btn{
+  display:flex; align-items:center; justify-content:center;
+  width:40px; height:40px; color:var(--ink-3); border-radius:var(--r-ctl)}
+.topbar-tool-btn:hover{color:var(--ink); background:var(--raised)}
+.topbar-tool-btn:active{color:var(--accent)}
+
+/* ============ 04 · DECK (command deck grid) ============ */
+.t212-cockpit-layout{
+  margin-left:var(--rail);
+  display:grid; grid-template-columns:repeat(12,minmax(0,1fr));
+  column-gap:var(--sp4); row-gap:0;
+  padding:16px 20px 40px}
+.t212-cockpit-layout>*,
+.cockpit-account-card,.cockpit-cash-summary,.portfolio-context-strip,.cockpit-ai-prompt-strip,
+.cockpit-instrument-container,.cockpit-investments-section,.cockpit-analytics-strip,
+.cockpit-treemap-section,.cockpit-pane-footer,.legal{
+  grid-column:var(--cc,1/-1); grid-row:var(--rr,auto); align-self:start}
+/* the two pane wrappers are flattened so deck rows can interleave their children */
+.cockpit-left-pane,.cockpit-main-pane{display:contents}
+
+/* ============ 05 · ACCOUNT BLOCK — hairline readout matrix ============ */
+.cockpit-account-card{
+  --rr:1;
+  display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,1fr) 56px;
+  align-items:center; background:var(--plate); border-top:1px solid var(--hair-strong)}
+.account-card-header{display:contents}
+.account-label{grid-area:1/1/2/2; padding:16px 20px 0; letter-spacing:.06em; color:var(--ink-3)}
+.account-hero-val{
+  grid-area:2/1/3/2; padding:0 20px 20px; font-size:var(--fs-hero); line-height:1.05;
+  letter-spacing:-.02em}
+.account-sub-metrics-grid{
+  grid-area:1/2/3/4; display:grid; grid-template-columns:1fr 1fr; align-self:stretch}
+.sub-metric-block{
+  display:flex; flex-direction:column; justify-content:center; gap:var(--sp1);
+  padding:16px 20px; border-left:1px solid var(--hair)}
+.sub-metric-block span{letter-spacing:.06em; color:var(--ink-3)}
+.sub-metric-block strong{font-size:var(--fs-title)}
+.icon-btn-ghost{
+  grid-area:1/4/3/5; justify-self:center; display:flex; align-items:center; justify-content:center;
+  width:36px; height:36px; color:var(--ink-3); border-radius:var(--r-ctl)}
+.icon-btn-ghost:hover{color:var(--ink); background:var(--raised)}
+
+.cockpit-cash-summary{
+  --rr:2;
+  display:grid; grid-template-columns:minmax(0,320px) minmax(0,1fr); align-items:stretch;
+  background:var(--plate); border-top:1px solid var(--hair)}
+.cockpit-main-pot-card{
+  display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center;
+  gap:var(--sp4); padding:16px 20px}
+.pot-info{display:flex; flex-direction:column; gap:var(--sp1)}
+.pot-label{letter-spacing:.06em; color:var(--ink-3)}
+.pot-val{font-size:var(--fs-pot); line-height:1.1; letter-spacing:-.015em}
+.pot-sub{color:var(--ink-3)}
+.t212-deposit-pill-btn{
+  padding:6px 10px; letter-spacing:.06em; color:var(--ink-2);
+  background:var(--raised); border-radius:var(--r-ctl)}
+.t212-deposit-pill-btn:hover{color:var(--ink)}
+.portfolio-stat-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr))}
+.metric-card{
+  display:flex; flex-direction:column; justify-content:center; gap:var(--sp1);
+  padding:16px 20px; border-left:1px solid var(--hair)}
+.metric-card span{letter-spacing:.06em; color:var(--ink-3)}
+.metric-card strong{font-size:var(--fs-row)}
+.metric-card small{color:var(--ink-3)}
+
+.portfolio-context-strip{
+  --rr:3; --cc:1/8;
+  display:flex; align-items:stretch; background:var(--plate); border-top:1px solid var(--hair)}
+.portfolio-context-strip>span{
+  flex:1; display:flex; flex-direction:column-reverse; gap:var(--sp1);
+  padding:16px 20px; color:var(--ink-3)}
+.portfolio-context-strip>span+span{border-left:1px solid var(--hair)}
+.portfolio-context-strip b{font-size:var(--fs-row)}
+
+.cockpit-ai-prompt-strip{
+  --rr:3; --cc:8/-1;
+  display:flex; flex-direction:column; gap:var(--sp2); justify-content:center;
+  padding:16px 20px; background:var(--plate); border-top:1px solid var(--hair)}
+.ai-strip-title{letter-spacing:.08em; color:var(--accent)}
+.ai-prompt-scroller{display:flex; gap:var(--sp2); overflow-x:auto; scrollbar-width:thin}
+.ai-prompt-card-chip{
+  flex:0 0 auto; padding:6px 10px; color:var(--ink-2); background:var(--raised);
+  border-radius:var(--r-ctl); white-space:nowrap}
+.ai-prompt-card-chip:hover{color:var(--ink)}
+.ai-prompt-card-chip:active{color:var(--accent)}
+
+/* ============ 06 · CHART HERO ============ */
+.cockpit-instrument-container{
+  --rr:4;
+  display:grid; grid-template-columns:minmax(0,1fr) 320px; column-gap:var(--sp4);
+  background:var(--plate); border-top:1px solid var(--hair-strong)}
+.cockpit-inst-head{
+  grid-column:1/-1; display:flex; align-items:center; flex-wrap:wrap; gap:var(--sp4);
+  padding:16px 20px; border-bottom:1px solid var(--hair)}
+.inst-profile{display:flex; align-items:center; gap:var(--sp3); flex:1 1 260px; min-width:0}
+.inst-tag-row{display:flex; align-items:center; gap:var(--sp2)}
+.inst-ticker-tag{letter-spacing:.08em; color:var(--accent)}
+.inst-title{font-size:var(--fs-title)}
+.inst-price-box{display:flex; flex-direction:column; align-items:flex-end; gap:var(--sp1);
+  text-align:right}
+.inst-price-main{font-size:var(--fs-price); line-height:1.05; letter-spacing:-.02em}
+.inst-actions{display:flex; align-items:center; gap:var(--sp2)}
+.read-only-status{
+  display:inline-flex; align-items:center; gap:var(--sp2); padding:6px 10px;
+  letter-spacing:.06em; color:var(--ink-2); background:var(--field); border-radius:var(--r-ctl)}
+.read-only-status::before{
+  content:""; width:6px; height:6px; border-radius:var(--r-round); background:var(--accent)}
+
+.range-switcher{
+  grid-column:1/-1; position:relative; display:flex; align-items:center;
+  margin:16px 20px 0; justify-self:end; background:var(--field);
+  border-radius:var(--r-ctl)}
+.range-switcher button{
+  position:relative; z-index:1; padding:6px 10px; color:var(--ink-3); border-radius:var(--r-ctl)}
+.range-switcher button:hover{color:var(--ink)}
+.range-switcher button.active{color:var(--accent)}
+.range-thumb{
+  position:absolute; left:0; bottom:0; height:2px; width:0; background:var(--accent)}
+
+.cockpit-chart-wrap{grid-column:1/2; padding:0 20px 16px; min-width:0}
+.price-chart-panel{
+  position:relative; display:grid; grid-template-columns:minmax(0,1fr);
+  grid-template-rows:auto 302px auto auto}
+/* every panel child is pinned to column 1 — definite rows with auto columns would
+   otherwise spawn an implicit second track and collapse the real one to 0px */
+.price-chart-panel>*{grid-column:1}
+.section-heading{grid-row:1}
+.price-chart{grid-row:2}
+/* live-price axis tag, pinned to the dashed guide (y=12 of 250 → 14.5px at 302) */
+.price-chart-panel::after{
+  content:"$198.17"; grid-area:2/1/3/2; justify-self:end; align-self:start; margin-top:4px;
+  padding:2px 8px; color:var(--on-accent); background:var(--accent);
+  border-radius:var(--r-ctl); white-space:nowrap}
+.section-heading{
+  display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp4);
+  padding:12px 16px 0}
+.section-heading h2{font-size:var(--fs-plate)}
+.section-heading p{color:var(--ink-3); margin-top:var(--sp1)}
+.section-heading strong{font-size:var(--fs-pot); white-space:nowrap}
+.section-heading strong small{font-weight:600}
+.chart-legend{grid-row:3; display:flex; align-items:center; gap:var(--sp4); padding:12px 16px 0}
+.chart-legend span{display:inline-flex; align-items:center; gap:var(--sp2); color:var(--ink-3)}
+.chart-legend i{width:12px; height:12px}
+.legend-dot{background:var(--accent); border-radius:var(--r-ctl)}
+.legend-dot.buy{background:var(--pos-soft); outline:1px solid var(--pos); outline-offset:-1px}
+.legend-dot.sell{background:var(--neg-soft); outline:1px solid var(--neg); outline-offset:-1px;
+  transform:rotate(45deg)}
+.chart-count{grid-row:4; padding:8px 16px 4px; color:var(--ink-3)}
+.price-chart{grid-row:2; width:100%; height:302px}
+.price-chart .timeline-grid line{stroke:var(--hair); stroke-width:1}
+.price-chart>line:last-of-type{stroke:var(--hair-strong); stroke-width:1}
+.price-chart>line:first-of-type{stroke:var(--accent); stroke-width:1; stroke-dasharray:2 4; opacity:.6}
+.price-chart>path{stroke:var(--accent); stroke-width:2; fill:none}
+.price-chart rect{fill:var(--pos); stroke:var(--field); stroke-width:1}
+.price-chart polygon{fill:var(--neg); stroke:var(--field); stroke-width:1}
+.price-chart text{font-family:var(--font-mono); fill:var(--ink-3)}
+
+.your-investment-cockpit{
+  grid-column:2/3; display:flex; flex-direction:column;
+  padding:12px 0 16px; border-left:1px solid var(--hair)}
+.cockpit-section-title{padding:0 0 8px 20px; letter-spacing:.08em; color:var(--ink-3)}
+.inv-metrics-list{display:flex; flex-direction:column}
+.inv-metric-row{
+  display:flex; align-items:baseline; justify-content:space-between; gap:var(--sp3);
+  padding:12px 12px 12px 20px; border-top:1px solid var(--hair)}
+.inv-metric-row span{color:var(--ink-3)}
+.inv-metric-row strong{font-size:var(--fs-row); white-space:nowrap}
+
+/* ============ 07 · LEDGER TAPE (positions, full width) ============ */
+.cockpit-investments-section{--rr:5; border-top:1px solid var(--hair-strong)}
+.investments-header{
+  display:flex; align-items:baseline; justify-content:space-between; gap:var(--sp4);
+  padding:12px 16px; background:var(--plate); cursor:pointer}
+.invest-head-title{display:flex; align-items:baseline; gap:var(--sp3)}
+.invest-head-title h3{letter-spacing:.08em; color:var(--ink-3)}
+.invest-sum-val{font-size:var(--fs-title)}
+.collapse-arrow{
+  position:relative; width:24px; height:24px; flex:0 0 auto; color:var(--ink-3);
+  -webkit-text-fill-color:transparent}
+.collapse-arrow::after{
+  content:""; position:absolute; inset:8px 5px 6px; background:currentColor;
+  clip-path:polygon(50% 0,100% 60%,100% 100%,50% 40%,0 100%,0 60%)}
+.collapse-arrow.collapsed{transform:rotate(180deg)}
+.investments-list-stream{
+  display:grid; grid-template-columns:repeat(5,minmax(0,1fr));
+  background:var(--plate); border-top:1px solid var(--hair)}
+.pos-stream-item{
+  position:relative; display:grid; grid-template-columns:34px minmax(0,1fr);
+  grid-template-rows:auto auto; column-gap:var(--sp3); row-gap:var(--sp1); align-items:center;
+  padding:12px 16px; text-align:left; border-left:1px solid var(--hair)}
+.pos-stream-item:first-child{border-left:0}
+.pos-stream-item:hover{background:var(--raised)}
+.pos-stream-item.selected{background:var(--accent-soft)}
+.pos-stream-item.selected::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--accent)}
+.ticker-ring-logo{
+  position:relative; grid-row:1/3; display:flex; align-items:center; justify-content:center;
+  width:34px; height:34px; background:var(--field); border-radius:var(--r-round);
+  overflow:hidden}
+.ticker-ring-logo img{width:100%; height:100%; object-fit:cover}
+.ring-svg{position:absolute; inset:0; width:100%; height:100%; z-index:2; transform:rotate(-90deg)}
+.ring-track{fill:none; stroke:var(--hair-strong); stroke-width:1.5}
+.ring-progress{fill:none; stroke:var(--accent); stroke-width:1.5; stroke-linecap:round}
+.ticker-avatar{
+  position:relative; letter-spacing:.02em; text-transform:uppercase; color:var(--ink-2)}
+.pos-stream-ident,.pos-stream-num-col{display:contents}
+.pos-stream-ident strong{
+  grid-column:2/3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.pos-stream-ident small{grid-column:2/3; color:var(--ink-3)}
+.pos-stream-num-col strong{grid-column:2/3; font-size:var(--fs-row)}
+.pos-stream-num-col span{grid-column:2/3}
+
+/* ============ 08 · ANALYTICS ============ */
+.cockpit-analytics-strip{--rr:6; --cc:1/9; display:flex; flex-direction:column; gap:var(--sp4)}
+.cockpit-ai-analysis-card{background:var(--plate); border-top:1px solid var(--hair-strong)}
+.ai-analysis-header{display:flex; align-items:center; gap:var(--sp3); padding:12px 16px}
+.ai-analysis-header h3{letter-spacing:.08em; color:var(--ink-3)}
+.ai-badge{
+  padding:2px 8px; letter-spacing:.06em; color:var(--accent); background:var(--accent-soft);
+  border-radius:var(--r-pill)}
+.ask-banner{
+  display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:var(--sp4);
+  margin:0 16px 16px; padding:12px 16px; background:var(--field);
+  border-left:2px solid var(--accent)}
+.ask-banner span{display:block; color:var(--ink-3)}
+.ask-banner strong{
+  display:block; margin-top:var(--sp1); font-family:var(--font-mono); font-weight:400}
+.ask-banner button{
+  display:inline-flex; align-items:center; gap:var(--sp2); padding:8px 12px; color:var(--ink-2);
+  background:var(--raised); border-radius:var(--r-ctl); white-space:nowrap}
+.ask-banner button:hover{color:var(--ink)}
+.cockpit-sub-analytics-grid{
+  display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);
+  background:var(--plate);
+  border-top:1px solid var(--hair-strong); border-bottom:1px solid var(--hair)}
+.sub-panel{padding:12px 16px 16px}
+.sub-panel+.sub-panel{border-left:1px solid var(--hair)}
+.bar-list{display:flex; flex-direction:column; margin-top:var(--sp3)}
+.bar-row{
+  display:grid; grid-template-columns:minmax(0,1fr) 180px 104px; align-items:center;
+  gap:var(--sp4); padding:8px 0; border-top:1px solid var(--hair)}
+.bar-label{display:flex; flex-direction:column; min-width:0}
+.bar-label strong{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.bar-label small{color:var(--ink-3)}
+.bar-measure{position:relative; height:16px}
+.bar-measure::before{content:""; position:absolute; left:0; right:0; top:8px;
+  border-top:1px solid var(--hair)}
+/* waterfall: gains above the baseline, losses hang below — geometry is the cue */
+.bar-positive{
+  position:absolute; left:0; bottom:8px; height:6px; background:var(--pos-soft);
+  outline:1px solid var(--pos); outline-offset:-1px}
+.bar-negative{
+  position:absolute; left:0; top:8px; height:6px; background:var(--neg-soft);
+  outline:1px solid var(--neg); outline-offset:-1px}
+.bar-row b{font-size:var(--fs-row); text-align:right; white-space:nowrap}
+.exposure-summary{
+  display:flex; flex-direction:column; margin-top:var(--sp3)}
+.exposure-summary>div{
+  display:grid; grid-template-columns:56px minmax(0,1fr) auto; align-items:baseline;
+  gap:var(--sp3); padding:12px 0; border-top:1px solid var(--hair)}
+.exposure-summary small{justify-self:end; text-align:right}
+.exposure-summary strong{letter-spacing:.08em; color:var(--accent)}
+.exposure-summary span{font-size:var(--fs-title)}
+.exposure-summary small{color:var(--ink-3)}
+
+.cockpit-holdings-preview{background:var(--plate); border-top:1px solid var(--hair-strong)}
+.cockpit-holdings-preview .section-heading{padding-bottom:12px}
+.table-scroll{overflow-x:auto; scrollbar-width:thin}
+.holdings-table{min-width:560px}
+.holdings-table th{
+  padding:10px 12px; letter-spacing:.08em; color:var(--ink-3); text-align:right;
+  border-top:1px solid var(--hair-strong); border-bottom:1px solid var(--hair-strong);
+  white-space:nowrap}
+.holdings-table th:first-child{text-align:left}
+.holdings-table td{
+  padding:10px 12px; font-size:var(--fs-row); text-align:right; vertical-align:middle;
+  border-bottom:1px solid var(--hair); white-space:nowrap}
+.holdings-table td:first-child{text-align:left; width:34%}
+.holdings-table th:last-child,.holdings-table td:last-child{padding-right:20px}
+.holdings-table tbody tr:hover{background:var(--raised)}
+.holdings-table td>small{display:block; color:var(--ink-3)}
+.holdings-table td>strong{display:block}
+.asset-cell{display:flex; align-items:center; gap:var(--sp3)}
+.asset-cell .ticker-ring-logo{width:30px; height:30px; grid-row:auto}
+.asset-text{display:flex; flex-direction:column; min-width:0}
+.asset-text small{color:var(--ink-3)}
+
+/* ============ 09 · ALLOCATION MOSAIC ============ */
+.cockpit-treemap-section{
+  --rr:6; --cc:9/-1; background:var(--plate); border-top:1px solid var(--hair-strong)}
+.pane-section-header{
+  display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp3);
+  padding:12px 16px; border-bottom:1px solid var(--hair)}
+.section-title{letter-spacing:.08em; color:var(--ink-3)}
+.section-caption{display:block; margin-top:var(--sp1); color:var(--ink-3)}
+.treemap-mode-toggles{
+  display:flex; flex:0 0 auto; background:var(--field); border-radius:var(--r-ctl);
+  overflow:hidden}
+.treemap-mode-pill{padding:2px 8px; color:var(--ink-3)}
+.treemap-mode-pill:hover{color:var(--ink)}
+.treemap-mode-pill.is-active{color:var(--on-accent); background:var(--accent)}
+.dynamic-treemap-container{position:relative; height:228px; margin:12px 16px}
+.treemap-rect-slot{
+  position:absolute; border-right:1px solid var(--hair); border-bottom:1px solid var(--hair)}
+.treemap-tile{
+  display:flex; flex-direction:column; justify-content:space-between; gap:var(--sp1);
+  width:100%; height:100%; padding:12px 12px; text-align:left; border-radius:0;
+  outline-offset:-2px}
+.treemap-tile.gain{background:var(--pos-soft)}
+.treemap-tile.loss{background:var(--neg-soft)}
+.treemap-tile:hover{outline:1px solid var(--hair-strong)}
+.treemap-tile.selected{outline:2px solid var(--accent)}
+.tile-top-row{display:flex; align-items:center; justify-content:space-between; gap:var(--sp2)}
+.tile-ticker{letter-spacing:.06em; color:var(--ink-2)}
+.tile-active-pip{width:6px; height:6px; border-radius:var(--r-round); background:var(--accent)}
+.tile-percent{font-size:var(--fs-plate); line-height:1.1}
+.tile-subrow{display:flex; align-items:baseline; justify-content:space-between; gap:var(--sp2)}
+.tile-weight,.tile-daypl{color:var(--ink-2)}
+.cockpit-see-all-btn{
+  display:flex; align-items:center; justify-content:space-between; gap:var(--sp3);
+  margin:0 16px 16px; padding:8px 12px; color:var(--ink-2); background:var(--raised);
+  border-radius:var(--r-ctl)}
+.cockpit-see-all-btn:hover{color:var(--ink)}
+.btn-action-chevron{font-family:var(--font-mono); color:var(--accent)}
+
+/* ============ 10 · COLOPHON ============ */
+.cockpit-pane-footer{
+  --rr:7; --cc:1/7; display:flex; align-items:center; flex-wrap:wrap; gap:var(--sp4);
+  margin-top:var(--sp6); border-top:1px solid var(--hair-strong)}
+.footer-action-pills-row{display:flex; align-items:center; gap:var(--sp2); margin-top:var(--sp4)}
+.t212-pill-action{
+  display:inline-flex; align-items:center; gap:var(--sp2); padding:8px 12px; color:var(--ink-2);
+  background:var(--raised); border-radius:var(--r-ctl)}
+.t212-pill-action:hover{color:var(--ink)}
+.t212-legal-disclaimer{margin-top:var(--sp4); color:var(--ink-3)}
+.legal{
+  --rr:7; --cc:7/-1; margin-top:var(--sp6); color:var(--ink-3);
+  text-align:right; border-top:1px solid var(--hair-strong)}
+.pro-shortcuts-hud{
+  --rr:8; display:flex; justify-content:flex-end; margin-top:var(--sp4); padding-top:var(--sp4);
+  border-top:1px solid var(--hair)}
+.shortcuts-hud-pills{display:flex; align-items:center; flex-wrap:wrap; gap:var(--sp4)}
+.hud-pill{display:inline-flex; align-items:center; gap:var(--sp2); color:var(--ink-3)}
+kbd{
+  padding:2px 8px; font-family:var(--font-mono); color:var(--ink-2); background:var(--field);
+  border-radius:var(--r-ctl)}
+.hud-help-btn{display:inline-flex; align-items:center; border-radius:var(--r-ctl)}
+.hud-help-btn:hover kbd{color:var(--accent)}
+
+/* ============ 11 · SEMANTIC TONE — sign is the non-colour cue ============ */
+.tone-positive,td.positive strong{color:var(--pos)}
+.tone-negative,td.negative strong{color:var(--neg)}
+td.positive small,td.negative small{color:var(--ink-2)}
+.treemap-tile .tile-daypl{color:var(--ink-2)}
+
+/* masked balances (eye toggle) stay designed: right-aligned dot masks */
+body.hide-balances .js-balance{position:relative; -webkit-text-fill-color:transparent}
+body.hide-balances .js-balance::after{
+  content:"••••••"; position:absolute; inset:0; text-align:inherit;
+  -webkit-text-fill-color:var(--ink-2); letter-spacing:.1em}
+
+/* ============ 12 · ENTRY MOTION — transform/opacity only, ≤480ms total ============ */
+@keyframes k-rise{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
+@keyframes k-rail{from{opacity:0; transform:translateX(-10px)} to{opacity:1; transform:none}}
+.cockpit-account-card,.cockpit-cash-summary,.portfolio-context-strip,.cockpit-ai-prompt-strip,
+.cockpit-instrument-container,.cockpit-investments-section,.cockpit-analytics-strip,
+.cockpit-treemap-section,.cockpit-pane-footer,.legal,.pro-shortcuts-hud{
+  animation:k-rise var(--t-base) var(--ease) both; animation-delay:var(--ad,0ms)}
+.cockpit-account-card{--ad:0ms}
+.cockpit-cash-summary{--ad:40ms}
+.portfolio-context-strip{--ad:80ms}
+.cockpit-ai-prompt-strip{--ad:80ms}
+.cockpit-instrument-container{--ad:120ms}
+.cockpit-investments-section{--ad:160ms}
+.cockpit-analytics-strip{--ad:200ms}
+.cockpit-treemap-section{--ad:200ms}
+.cockpit-pane-footer{--ad:240ms}
+.legal{--ad:240ms}
+.pro-shortcuts-hud{--ad:280ms}
+.t212-native-topbar{animation:k-rail var(--t-base) var(--ease) both}
+@media (prefers-reduced-motion:reduce){
+  .t212-native-topbar,.cockpit-account-card,.cockpit-cash-summary,.portfolio-context-strip,
+  .cockpit-ai-prompt-strip,.cockpit-instrument-container,.cockpit-investments-section,
+  .cockpit-analytics-strip,.cockpit-treemap-section,.cockpit-pane-footer,.legal,
+  .pro-shortcuts-hud{animation:none}
+}
+
+/* ============ 13 · RESPONSIVE ============ */
+@media (max-width:1099px){
+  :root{--rail:56px}
+  .cockpit-analytics-strip{--cc:1/-1}
+  .cockpit-treemap-section{--rr:7; --cc:1/-1; margin-top:var(--sp6)}
+  .cockpit-pane-footer{--rr:8; --cc:1/-1}
+  .legal{--rr:9; --cc:1/-1; text-align:left}
+  .cockpit-instrument-container{grid-template-columns:minmax(0,1fr)}
+  .your-investment-cockpit{grid-column:1/-1; padding:0 0 16px; border-left:0;
+    border-top:1px solid var(--hair)}
+  .cockpit-section-title{padding:12px 0 0 20px}
+  .inv-metrics-list{display:grid; grid-template-columns:repeat(3,minmax(0,1fr));
+    padding:0 20px 16px}
+  .inv-metric-row{flex-direction:column; align-items:flex-start; gap:var(--sp1);
+    padding:12px 12px 0 0}
+  .investments-list-stream{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pos-stream-item:nth-child(n+3){border-top:1px solid var(--hair)}
+  .pos-stream-item:nth-child(odd){border-left:0}
+}
+@media (max-width:900px){
+  .price-chart-panel{grid-template-rows:auto 260px auto auto}
+  .price-chart{height:260px}
+  .price-chart-panel::after{margin-top:2px}
+  .cockpit-chart-wrap{padding-right:16px}
+}
+@media (max-width:680px){
+  .t212-cockpit-layout{
+    margin-left:0; margin-bottom:var(--rail); padding:12px 12px 32px; column-gap:var(--sp3)}
+  .t212-native-topbar{
+    inset:auto 0 0 0; width:auto; flex-direction:row; align-items:stretch; padding:0;
+    border-right:0; border-top:1px solid var(--hair-strong)}
+  .topbar-left-zone{display:none}
+  .topbar-center-nav{flex:1; flex-direction:row; margin-top:0}
+  .topbar-nav-tab{flex:1; min-height:56px}
+  .topbar-nav-tab+.topbar-nav-tab{border-top:0; border-left:1px solid var(--hair)}
+  .topbar-nav-tab.active::before{
+    left:8px; right:8px; top:0; bottom:auto; width:auto; height:2px}
+  .topbar-right-zone{
+    margin-top:0; flex-direction:row; align-items:center; gap:0; padding-top:0;
+    border-top:0; border-left:1px solid var(--hair)}
+  .topbar-search-slot,.topbar-tool-btn{width:40px; height:56px; background:none; border:0}
+  .topbar-search-slot:focus-within .topbar-search-field{
+    left:auto; right:4px; bottom:calc(var(--rail) + 8px); width:calc(100vw - 24px)}
+  .topbar-right-zone .topbar-tool-btn:last-child{display:none}
+  .cockpit-account-card{grid-template-columns:minmax(0,1fr) 56px}
+  .account-sub-metrics-grid{grid-area:3/1/4/3; border-top:1px solid var(--hair)}
+  .icon-btn-ghost{grid-area:1/2/2/3}
+  .cockpit-cash-summary{grid-template-columns:minmax(0,1fr)}
+  .portfolio-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metric-card:nth-child(odd){border-left:0}
+  .metric-card:nth-child(n+3){border-top:1px solid var(--hair)}
+  .portfolio-context-strip{--cc:1/-1; --rr:3; flex-wrap:wrap}
+  .portfolio-context-strip>span{flex:1 1 50%; border-top:1px solid var(--hair)}
+  .portfolio-context-strip>span:nth-child(-n+2){border-top:0}
+  .portfolio-context-strip>span:nth-child(odd){border-left:0}
+  .cockpit-instrument-container{--rr:2}
+  .cockpit-cash-summary{--rr:3}
+  .portfolio-context-strip{--rr:4}
+  .cockpit-ai-prompt-strip{--cc:1/-1; --rr:5; margin-top:var(--sp5)}
+  .cockpit-investments-section{--rr:6; margin-top:var(--sp5)}
+  .cockpit-analytics-strip{--rr:7; margin-top:var(--sp5)}
+  .cockpit-treemap-section{--rr:8; margin-top:var(--sp5)}
+  .cockpit-pane-footer{--rr:9; margin-top:var(--sp5)}
+  .legal{--rr:10; margin-top:var(--sp5)}
+  .pro-shortcuts-hud{display:none}
+  .cockpit-inst-head{padding:12px 16px}
+  .inst-price-box{align-items:flex-start; text-align:left; flex:1 1 100%}
+  .range-switcher{margin:12px 16px 0; justify-self:stretch; justify-content:space-between}
+  .range-switcher button{flex:1; text-align:center}
+  /* one year of daily closes keeps a 1:1 scale — pan instead of distort */
+  .cockpit-chart-wrap{padding:0 0 12px; overflow-x:auto; direction:rtl; scrollbar-width:thin}
+  .price-chart-panel{min-width:820px; direction:ltr; text-align:left;
+    grid-template-rows:auto 250px auto auto}
+  .price-chart{height:250px}
+  .price-chart-panel::after{margin-top:2px}
+  .cockpit-sub-analytics-grid{grid-template-columns:minmax(0,1fr)}
+  .sub-panel+.sub-panel{border-left:0; border-top:1px solid var(--hair)}
+  .bar-row{grid-template-columns:minmax(0,1fr) 96px; grid-template-rows:auto auto}
+  .bar-row b{grid-column:2/3; text-align:right}
+  .bar-measure{grid-column:1/3}
+  .exposure-summary{margin-left:0; margin-right:0}
+  .holdings-table td:first-child{width:auto}
+  .ask-banner{grid-template-columns:minmax(0,1fr)}
+  .ai-prompt-card-chip{white-space:normal}
+  .investments-list-stream{grid-template-columns:minmax(0,1fr)}
+  .pos-stream-item{border-left:0}
+  .pos-stream-item:nth-child(n+2){border-top:1px solid var(--hair)}
+  .legal,.t212-legal-disclaimer{text-align:left}
+  .inv-metrics-list{grid-template-columns:minmax(0,1fr); padding:0 0 16px}
+  .inv-metric-row{flex-direction:row; align-items:baseline; justify-content:space-between;
+    padding:12px 0 0}
+  .dynamic-treemap-container{height:360px}
+}
+
+/* ============ 14 · THEME — daylight desk (designed light variant) ============ */
+:root[data-theme="light"]{
+  color-scheme:light;
+  --canvas:#F0EFEE; --plate:#FFFFFF; --raised:#E6E4E2; --field:#E2E1DF;
+  --hair:rgba(20,18,16,.10); --hair-strong:rgba(20,18,16,.20);
+  --ink:#0E0F10; --ink-2:#4C5158; --ink-3:#565C64;
+  --accent:#1C6091; --accent-soft:rgba(28,96,145,.10); --on-accent:#FFFFFF;
+  --pos:#0B6B45; --pos-soft:rgba(11,107,69,.12);
+  --neg:#A8271A; --neg-soft:rgba(168,39,26,.12);
+  --negative-bright:var(--neg)}
+
+/* ============ 15 · THEME — dark desk (explicit re-declaration) ============ */
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --canvas:#121110; --plate:#1A1918; --raised:#242322; --field:#0B0A0A;
+  --hair:rgba(242,243,245,.09); --hair-strong:rgba(242,243,245,.17);
+  --ink:#F2F3F5; --ink-2:#9BA1A9; --ink-3:#8A9098;
+  --accent:#8FB8D8; --accent-soft:rgba(143,184,216,.10); --on-accent:#121110;
+  --pos:#56D6A0; --pos-soft:rgba(86,214,160,.12);
+  --neg:#FF8A73; --neg-soft:rgba(255,138,115,.14);
+  --negative-bright:var(--neg)}
+
+/* ============ 16 · GUARDS ============ */
+/* wide/tabular content must never inflate a grid track — shave every wrapper, ellipsize the rest */
+.cockpit-main-pane,.cockpit-chart-wrap,.price-chart-panel,.cockpit-holdings-preview,
+.cockpit-investments-section,.cockpit-treemap-section,.portfolio-context-strip,
+.cockpit-ai-prompt-strip,.cockpit-cash-summary,.asset-text,.pos-stream-ident,.bar-label,
+.inv-metric-row,.tile-subrow,.tile-weight,.tile-daypl{min-width:0}
+.price-chart,.table-scroll{max-width:100%; min-width:0}
+.asset-text strong,.pos-stream-ident strong,.bar-label strong,
+.tile-weight,.tile-daypl{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.hud-pill{white-space:nowrap}
+.ticker-avatar{letter-spacing:0}
+/* the mosaic stacks its subrow: a 33%-wide tile has no room for two 12px figures inline */
+.tile-subrow{flex-direction:column; align-items:flex-start; gap:0}
+
+/* the shortcuts HUD is app chrome (App.tsx) — it stays, offset to the deck's rail */
+.pro-shortcuts-hud{margin-left:var(--rail); padding:16px 20px 0;
+  margin-top:var(--sp4); border-top:1px solid var(--hair)}
