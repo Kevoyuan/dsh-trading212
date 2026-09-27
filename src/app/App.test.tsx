@@ -158,4 +158,21 @@ describe('Trading 212 UI interactions', () => {
     const matches = await screen.findAllByText('+5.3%')
     expect(matches.length).toBeGreaterThanOrEqual(1)
   })
+
+  it('updates range change label in cockpit instrument view according to the active timeframe', async () => {
+    mocks.status.mockResolvedValue({ connected: true, environment: 'demo', writable: true, source: 'record' })
+    render(<App />)
+    const user = userEvent.setup()
+    await screen.findByText('账户总价值 · EUR')
+    // By default 1w is selected in cockpit view, label should be 1周, not hardcoded 今日
+    expect(await screen.findByText(/\+12\.5% 1周 ·/)).toBeTruthy()
+    // Switch to 1天
+    mocks.market.mockResolvedValueOnce({
+      source: 'Yahoo Finance', symbol: 'AAPL', exchange: 'NMS', currency: 'USD', range: '1d', interval: '1m',
+      fetchedAt: '2026-08-24T10:00:00Z', regularMarketPrice: 225, previousClose: 220,
+      candles: [{ time: '2026-08-24T10:00:00Z', close: 225 }],
+    })
+    await user.click(screen.getByRole('radio', { name: '1天' }))
+    expect(await screen.findByText(/\+2\.3% 今日 ·/)).toBeTruthy()
+  })
 })

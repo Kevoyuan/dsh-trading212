@@ -705,6 +705,8 @@ const rangeLabel = (range: MarketRange) => ({
   '5y': tx('5年', '5 years'),
 })[range]
 
+const rangeChangeLabel = (range: MarketRange) => range === '1d' ? tx('今日', 'Today') : rangeLabel(range)
+
 const intervalLabel = (series: MarketSeries) => series.interval === '1d'
   ? tx('每日收盘价', 'Daily close')
   : tx(`${series.interval === '1m' ? '1分钟' : '5分钟'}价格 · 含盘前盘后`, `${series.interval === '1m' ? '1-minute' : '5-minute'} prices · Extended hours`)
@@ -987,10 +989,11 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hide
   const returnPct = cost ? profit / cost * 100 : undefined
 
   const currentMarketPrice = series?.regularMarketPrice ?? position.currentPrice
-  const prevClose = series?.previousClose
-  const intradayChangePct = currentMarketPrice !== undefined && prevClose !== undefined && prevClose > 0
+  const prevClose = series?.previousClose ?? (series && series.candles.length > 1 ? (series.candles[0].open ?? series.candles[0].close) : undefined)
+  const rangeChangePct = currentMarketPrice !== undefined && prevClose !== undefined && prevClose > 0
     ? ((currentMarketPrice - prevClose) / prevClose) * 100
-    : undefined
+    : (series?.range === '1d' || (!series && range === '1d') ? position.dailyChangePercent : undefined)
+  const activeRange = series?.range ?? range
 
   return (
     <div className="cockpit-instrument-container">
@@ -1008,9 +1011,9 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hide
         <div className="inst-price-box">
           <strong className="inst-price-main">{money(position.currentPrice, currency)}</strong>
           <span className={`inst-price-sub ${profit >= 0 ? 'tone-positive' : 'tone-negative'}`}>
-            {intradayChangePct !== undefined && (
-              <strong className={intradayChangePct >= 0 ? 'tone-positive' : 'tone-negative'} style={{ marginRight: '6px' }}>
-                {percent(intradayChangePct)} {tx('今日', 'Today')} ·
+            {rangeChangePct !== undefined && (
+              <strong className={rangeChangePct >= 0 ? 'tone-positive' : 'tone-negative'} style={{ marginRight: '6px' }}>
+                {percent(rangeChangePct)} {rangeChangeLabel(activeRange)} ·
               </strong>
             )}
             {hideBalances ? '••••' : `${signedMoney(profit, accountCurrency)} (${percent(returnPct)} ${tx('累计', 'Total')})`}
