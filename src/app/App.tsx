@@ -1,10 +1,11 @@
 import { Children, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
-import { createChart, createSeriesMarkers, CrosshairMode, LineSeries, LineStyle, type IChartApi, type LineData, type MouseEventParams, type SeriesMarker, type Time, type UTCTimestamp } from 'lightweight-charts'
+import { createChart, CrosshairMode, AreaSeries, LineStyle, type IChartApi, type LineData, type MouseEventParams, type Time, type UTCTimestamp } from 'lightweight-charts'
 import {
   AlertTriangle, ArrowLeft, ArrowRight, BriefcaseBusiness, Check, ChevronDown, CircleHelp, Clipboard, Eye, EyeOff,
   History as HistoryIcon, LayoutDashboard, LoaderCircle, Moon, RefreshCw, Search, Settings, ShieldCheck, Sun, Unplug,
 } from 'lucide-react'
 import { ApiError, api, diagnosticText } from './api.ts'
+import { createTradeDots } from './trade-dots.ts'
 import { copyText } from './clipboard.ts'
 import { languageStore, localeCode, tx } from './i18n.ts'
 import { themeStore, type ThemePreference } from './theme.ts'
@@ -81,34 +82,36 @@ function TopNavBar({
 
   return (
     <header className="t212-native-topbar">
-      <div className="topbar-left-zone">
-        <button
-          type="button"
-          className="t212-invest-brand-pill"
-          onClick={() => onNavigate('settings')}
-          title={tx('账户环境与连接设置', 'Account settings')}
-        >
-          <span className="invest-triangle-glyph">▲</span>
-          <span className="invest-title-text">INVEST</span>
-          {status && <span className="invest-env-badge">{status.environment === 'live' ? 'LIVE' : 'DEMO'}</span>}
-          <ChevronDown strokeWidth={1.5} size={12} className="invest-chevron-icon" />
-        </button>
-      </div>
-
-      <nav className="topbar-center-nav" aria-label={tx('Trading 212 导航', 'Trading 212 navigation')}>
-        {items.map(([Icon, page, label]) => (
+      <div className="topbar-navigation-group">
+        <div className="topbar-left-zone">
           <button
-            key={page}
             type="button"
-            className={`topbar-nav-tab ${active === page ? 'active' : ''}`}
-            aria-current={active === page ? 'page' : undefined}
-            onClick={() => onNavigate(page as Page)}
+            className="t212-invest-brand-pill"
+            onClick={() => onNavigate('settings')}
+            title={tx('账户环境与连接设置', 'Account settings')}
           >
-            <Icon size={17} strokeWidth={1.4} />
-            <span>{label}</span>
+            <span className="invest-triangle-glyph">▲</span>
+            <span className="invest-title-text">INVEST</span>
+            {status && <span className="invest-env-badge">{status.environment === 'live' ? 'LIVE' : 'DEMO'}</span>}
+            <ChevronDown strokeWidth={1.5} size={12} className="invest-chevron-icon" />
           </button>
-        ))}
-      </nav>
+        </div>
+
+        <nav className="topbar-center-nav" aria-label={tx('Trading 212 导航', 'Trading 212 navigation')}>
+          {items.map(([Icon, page, label]) => (
+            <button
+              key={page}
+              type="button"
+              className={`topbar-nav-tab ${active === page ? 'active' : ''}`}
+              aria-current={active === page ? 'page' : undefined}
+              onClick={() => onNavigate(page as Page)}
+            >
+              <Icon size={17} strokeWidth={1.4} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
 
       <div className="topbar-right-zone">
         {connected && (
@@ -117,6 +120,7 @@ function TopNavBar({
             <input
               type="text"
               className="topbar-search-field"
+              aria-label={tx('搜索标的', 'Search holdings')}
               placeholder={tx('搜索标的…', 'Search…')}
               value={searchQuery}
               onChange={e => onSearchChange(e.target.value)}
@@ -252,6 +256,7 @@ interface TreemapRect {
   name: string
   returnPercent?: number
   unrealizedProfitLoss: number
+  currentValue: number
   weightPercent: number
   dailyChangePercent?: number
   dailyProfitLoss?: number
@@ -267,6 +272,7 @@ function computeTreemapLayout(
     name: string
     returnPercent?: number
     unrealizedProfitLoss: number
+    currentValue: number
     weightPercent: number
     dailyChangePercent?: number
     dailyProfitLoss?: number
@@ -327,19 +333,22 @@ function DynamicTreemapGrid({
   allocation,
   activeTicker,
   metricMode = 'daily',
+  positions,
+  hideBalances,
   currency,
   onSelect,
 }: {
   allocation: PortfolioSnapshot['analytics']['allocation']
+  positions: Position[]
+  hideBalances: boolean
   activeTicker?: string
   metricMode?: TreemapMetricMode
   currency?: string
   onSelect?: (ticker: string) => void
 }) {
   const topItems = allocation.slice(0, 6)
-  if (topItems.length === 0) return null
-
   const rects = useMemo(() => computeTreemapLayout(topItems), [topItems])
+  if (topItems.length === 0) return null
 
   return (
     <div className="dynamic-treemap-container">
@@ -351,7 +360,7 @@ function DynamicTreemapGrid({
         const isPositive = val !== undefined && val > 0
         const isNegative = val !== undefined && val < 0
         const isSelected = rect.ticker === activeTicker
-        const dayPl = metricMode === 'daily' ? rect.dailyProfitLoss : rect.unrealizedProfitLoss
+        const quantity = positions.find(position => position.instrument?.ticker === rect.ticker)?.quantity
         const displayVal = val === undefined ? (metricMode === 'daily' ? tx('同步中…', 'Syncing…') : '-') : percent(val)
 
         return (
@@ -369,15 +378,8 @@ function DynamicTreemapGrid({
               type="button"
               className={`treemap-tile dynamic-tile ${isPositive ? 'gain' : isNegative ? 'loss' : 'neutral'} ${isSelected ? 'selected' : ''}`}
               onClick={() => onSelect?.(rect.ticker)}
-              title={`${tickerLabel(rect.ticker)} · ${rect.name} · ${metricMode === 'daily' ? tx('今日变化', 'Today') : tx('累计收益', 'Total')} ${val !== undefined ? percent(val) : tx('数据同步中', 'Syncing...')} · ${tx('权重', 'Weight')} ${plainPercent(rect.weightPercent)}${dayPl !== undefined && currency ? ` · ${signedMoney(dayPl, currency)}` : ''}`}
+              title={`${tickerLabel(rect.ticker)} · ${rect.name} · ${metricMode === 'daily' ? tx('今日变化', 'Today') : tx('累计收益', 'Total')} ${val !== undefined ? percent(val) : tx('数据同步中', 'Syncing...')} · ${tx('权重', 'Weight')} ${plainPercent(rect.weightPercent)}${!hideBalances && currency ? ` · ${money(rect.currentValue, currency)}` : ''}${!hideBalances && quantity !== undefined ? ` · ${decimal(quantity, 4)} ${tx('股', 'shares')}` : ''}`}
             >
-              {/* Three rows, always, on every tile: ticker, the percentage, then
-                  weight and account-currency amount side by side. The smallest
-                  tile used to drop the last row through a JS test that compared
-                  a percentage against a pixel threshold, which hid the weight
-                  and the loss from exactly the tile that was losing money. The
-                  tight case is now a container query on type leading, not a
-                  missing row. */}
               <div className="tile-top-row">
                 <strong className="tile-ticker">{tickerLabel(rect.ticker)}</strong>
                 {isSelected && <span className="tile-active-pip" aria-hidden="true" />}
@@ -387,11 +389,8 @@ function DynamicTreemapGrid({
               </span>
               <div className="tile-subrow">
                 <span className="tile-weight">{plainPercent(rect.weightPercent)}</span>
-                {dayPl !== undefined && currency && (
-                  <span className={`tile-daypl ${dayPl >= 0 ? 'tone-positive' : 'tone-negative'}`}>
-                    {signedMoney(dayPl, currency)}
-                  </span>
-                )}
+                {currency && <span className="tile-value">{hideBalances ? '••••' : money(rect.currentValue, currency)}</span>}
+                {quantity !== undefined && <span className="tile-quantity">{hideBalances ? '••••' : decimal(quantity, 4)} {tx('股', 'shares')}</span>}
               </div>
             </button>
           </div>
@@ -580,7 +579,7 @@ function TradeTimeline({ orders }: { orders: HistoricalOrder[] }) {
       <line x1={margin.left} x2={margin.left} y1={margin.top} y2={height - margin.bottom} className="timeline-axis" />
       <text x={margin.left} y={height - 15} textAnchor="start" className="timeline-axis-label">{new Date(minTime).toLocaleDateString(localeCode())}</text>
       <text x={width - margin.right} y={height - 15} textAnchor="end" className="timeline-axis-label">{new Date(maxTime).toLocaleDateString(localeCode())}</text>
-      {points.map(point => <g key={point.key} className="timeline-point"><line x1={x(point.time)} x2={x(point.time)} y1={y(point.price)} y2={height - margin.bottom} className="timeline-stem" />{point.side === 'BUY' ? <circle cx={x(point.time)} cy={y(point.price)} r="6" className="timeline-buy"><title>{`买入 · ${new Date(point.filledAt).toLocaleString('zh-CN')} · ${formatPrice(point.price)} · ${decimal(point.quantity, 4)} 股`}</title></circle> : <polygon points={`${x(point.time)},${y(point.price) - 7} ${x(point.time) + 7},${y(point.price)} ${x(point.time)},${y(point.price) + 7} ${x(point.time) - 7},${y(point.price)}`} className="timeline-sell"><title>{`卖出 · ${new Date(point.filledAt).toLocaleString('zh-CN')} · ${formatPrice(point.price)} · ${decimal(point.quantity, 4)} 股`}</title></polygon>}</g>)}
+      {points.map(point => <g key={point.key} className="timeline-point"><line x1={x(point.time)} x2={x(point.time)} y1={y(point.price)} y2={height - margin.bottom} className="timeline-stem" /><circle cx={x(point.time)} cy={y(point.price)} r="3.5" className={point.side === 'BUY' ? 'timeline-buy' : 'timeline-sell'}><title>{`${point.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} · ${new Date(point.filledAt).toLocaleString(localeCode())} · ${formatPrice(point.price)} · ${decimal(point.quantity, 4)} ${tx('股', 'shares')}`}</title></circle></g>)}
     </svg></div>}
     <div className="timeline-events" aria-label={tx('最近成交点', 'Recent fills')}>{latest.map(point => <div key={point.key}><i className={point.side === 'BUY' ? 'buy-marker' : 'sell-marker'} /><span><strong>{point.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} {decimal(point.quantity, 4)} {tx('股', 'shares')}</strong><small>{new Date(point.filledAt).toLocaleString(localeCode())}</small></span><b>{formatPrice(point.price)}</b></div>)}</div>
   </section>
@@ -664,7 +663,7 @@ interface ChartHover {
    so the compact cockpit chart gets the legend too - it is the only thing on
    that chart a reader cannot infer from the axis.
    The swatches are drawn by CSS (`.chart-legend span::before`) off --accent /
-   --pos / --warn, so the legend and the series can never drift apart. Each span
+   --pos / --neg, so the legend and the series can never drift apart. Each span
    used to carry an inline <i> as well, which painted every swatch twice. */
 function ChartLegend() {
   return <div className="chart-legend" aria-hidden="true">
@@ -716,18 +715,18 @@ function PriceHistoryChart({ series, orders, name, compact = false }: { series: 
     return {
       accent,
       buyColor: token('--pos', isDark ? '#10B981' : '#059669'),
-      sellColor: token('--warn', isDark ? '#FBBF24' : '#D97706'),
+      sellColor: token('--neg', isDark ? '#FB7185' : '#E11D48'),
+      surface: token('--surface', isDark ? '#111620' : '#FFFFFF'),
+      areaTop: withAlpha(accent, 0.22),
+      areaBottom: withAlpha(accent, 0),
+      priceLabelBackground: token('--chart-price-label-bg', '#2563EB'),
       axisColor: token('--ink-3', isDark ? '#8290A4' : '#64748B'),
-      gridColor: withAlpha(token('--hair', isDark ? '#232C3B' : '#E2E8F0'), 0.75),
+      gridColor: withAlpha(token('--hair', isDark ? '#232C3B' : '#E2E8F0'), 0.55),
       crosshairColor: withAlpha(accent, 0.6),
-      priceLineColor: withAlpha(accent, 0.55),
-      /* The axis type is canvas text, so the 12px floor in DESIGN.md is not
-         enforced by the DOM audit. It was 10.5px in a font stack the product
-         does not otherwise use; both are now the tokens. */
       fontFamily: token('--font-mono', 'ui-monospace, "SF Mono", Menlo, monospace'),
     }
   }, [isDark])
-  const { accent, buyColor, sellColor, axisColor, gridColor, crosshairColor, priceLineColor, fontFamily: chartFont } = palette
+  const { accent, buyColor, sellColor, surface, areaTop, areaBottom, priceLabelBackground, axisColor, gridColor, crosshairColor, fontFamily: chartFont } = palette
 
   /* 价格点与成交点统一转成图表时间基；日内另建时间桶索引，供 tooltip 命中同一根 K 线的成交。 */
   const model = useMemo(() => {
@@ -748,15 +747,13 @@ function PriceHistoryChart({ series, orders, name, compact = false }: { series: 
       /* 十字光标吸附到 K 线后，用它的 time 反查同一时间桶的成交。 */
       hoverBucket: (time: Time) => intraday ? Math.floor(((time as number) - shift) / bucketSeconds) : String(time),
       points: candles.map(item => ({ time: toChartTime(Date.parse(item.time)), value: item.close })),
-      markers: trades.map((trade): SeriesMarker<Time> => ({
-        time: toChartTime(trade.time),
-        position: trade.side === 'BUY' ? 'belowBar' : 'aboveBar',
-        shape: trade.side === 'BUY' ? 'arrowUp' : 'arrowDown',
-        color: trade.side === 'BUY' ? buyColor : sellColor,
-        size: compact ? 0.35 : 0.4,
-      })),
+      markers: trades.map(trade => {
+        // Place the fill in its actual candle bucket, including intraday intervals.
+        const candle = candles.findLast(item => Date.parse(item.time) <= trade.time) ?? candles[0]!
+        return { time: toChartTime(Date.parse(candle.time)), price: trade.price, color: trade.side === 'BUY' ? buyColor : sellColor }
+      }),
     }
-  }, [buyColor, candles, compact, sellColor, series.interval, start, trades])
+  }, [buyColor, candles, sellColor, series.interval, start, trades])
 
   useEffect(() => {
     const element = chartRef.current
@@ -770,18 +767,18 @@ function PriceHistoryChart({ series, orders, name, compact = false }: { series: 
         background: { color: 'transparent' },
         textColor: axisColor,
         fontFamily: chartFont,
-        fontSize: 12,
+        fontSize: 10.5,
         /* 保留 TradingView 归属标记：Lightweight Charts 的许可要求。 */
         attributionLogo: true,
       },
-      grid: { vertLines: { visible: false }, horzLines: { color: gridColor } },
+      grid: { vertLines: { visible: false }, horzLines: { color: gridColor, style: LineStyle.Dashed } },
       crosshair: {
         mode: CrosshairMode.Magnet,
         vertLine: { color: crosshairColor, width: 1, style: LineStyle.Dashed, labelBackgroundColor: isDark ? '#171E2B' : '#0F172A' },
         horzLine: { color: crosshairColor, width: 1, style: LineStyle.Dashed, labelBackgroundColor: isDark ? '#171E2B' : '#0F172A' },
       },
-      rightPriceScale: { borderVisible: false, entireTextOnly: true, scaleMargins: { top: 0.12, bottom: 0.14 } },
-      timeScale: { borderVisible: false, timeVisible: model.intraday, secondsVisible: false, rightOffset: 1, minBarSpacing: 0.4, lockVisibleTimeRangeOnResize: true, fixLeftEdge: true, fixRightEdge: true },
+      rightPriceScale: { borderVisible: false, ticksVisible: false, entireTextOnly: true, scaleMargins: { top: 0.12, bottom: 0.14 } },
+      timeScale: { borderVisible: false, ticksVisible: false, timeVisible: model.intraday, secondsVisible: false, rightOffset: 1, minBarSpacing: 0.4, lockVisibleTimeRangeOnResize: true, fixLeftEdge: true, fixRightEdge: true },
       localization: {
         locale: localeCode(),
         priceFormatter: (value: number) => money(value, series.currency),
@@ -790,20 +787,25 @@ function PriceHistoryChart({ series, orders, name, compact = false }: { series: 
       handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
       handleScale: { axisPressedMouseMove: false, mouseWheel: true, pinch: true },
     })
-    const priceLine = chart.addSeries(LineSeries, {
-      color: accent,
+    const priceLine = chart.addSeries(AreaSeries, {
+      lineColor: accent,
+      topColor: areaTop,
+      bottomColor: areaBottom,
       lineWidth: 2,
       /* 最新价：虚线 + 轴端价格牌，对应旧 ECharts 的 markLine 展示。 */
-      priceLineVisible: true,
-      priceLineStyle: LineStyle.Dashed,
-      priceLineColor,
-      lastValueVisible: true,
+      priceLineVisible: false,
+      lastValueVisible: false,
       crosshairMarkerVisible: true,
       crosshairMarkerRadius: 4,
       priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
     })
     priceLine.setData(model.points)
-    createSeriesMarkers(priceLine, model.markers, { zOrder: 'aboveSeries' })
+    priceLine.createPriceLine({
+      price: last, color: accent, lineWidth: 1, lineStyle: LineStyle.Dashed,
+      axisLabelVisible: true, axisLabelColor: priceLabelBackground, axisLabelTextColor: '#FFFFFF',
+    })
+    const tradeDots = createTradeDots(model.markers, surface)
+    priceLine.attachPrimitive(tradeDots)
     chart.timeScale().fitContent()
     chartApiRef.current = chart
 
@@ -824,8 +826,8 @@ function PriceHistoryChart({ series, orders, name, compact = false }: { series: 
       })
     }
     chart.subscribeCrosshairMove(onCrosshair)
-    return () => { chartApiRef.current = null; chart.unsubscribeCrosshairMove(onCrosshair); chart.remove() }
-  }, [accent, axisColor, buyColor, chartFont, crosshairColor, gridColor, isDark, model, priceLineColor, series.currency, sellColor])
+    return () => { chartApiRef.current = null; chart.unsubscribeCrosshairMove(onCrosshair); priceLine.detachPrimitive(tradeDots); chart.remove() }
+  }, [accent, areaTop, areaBottom, surface, axisColor, buyColor, chartFont, crosshairColor, gridColor, isDark, last, model, priceLabelBackground, series.currency, sellColor])
 
   return <section className="price-chart-panel" aria-labelledby="price-chart-title">
     {!compact && <div className="section-heading"><div><h2 id="price-chart-title">{tx('历史价格与买卖点', 'Price history and trade markers')}</h2><p>{series.symbol} · {intervalLabel(series)} · {new Date(start).toLocaleDateString(localeCode())} - {new Date(end).toLocaleDateString(localeCode())} · {tx('纵轴聚焦价格区间', 'Scaled price axis')}</p></div><strong className={(change ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{money(last, series.currency)} <small>{percent(change)}</small></strong></div>}
@@ -1277,11 +1279,11 @@ function OverviewPage({
         </div>
 
         <div className="portfolio-context-strip" aria-label={tx('组合上下文', 'Portfolio context')}>
-          <span><b>{analytics.positionCount}</b>{tx(' 个持仓', ' holdings')}</span>
-          <span><b>{analytics.piePositionCount}</b>{tx(' 个 Pie 持仓', ' Pie holdings')}</span>
-          <span><b>{plainPercent(analytics.availableCashWeightPercent)}</b>{tx(' 现金占比', ' cash')}</span>
-          <span><b>{plainPercent(analytics.top3WeightPercent)}</b>{tx(' 前三大集中度', ' top 3 concentration')}</span>
-          {analytics.reservedForOrders > 0 && <span><b>{hideBalances ? '••••' : money(analytics.reservedForOrders, currency)}</b>{tx(' 订单预留', ' reserved')}</span>}
+          <span><b>{analytics.positionCount}</b><small>{tx('个持仓', 'Holdings')}</small></span>
+          <span><b>{analytics.piePositionCount}</b><small>{tx('个 Pie 持仓', 'Pie holdings')}</small></span>
+          <span><b>{plainPercent(analytics.availableCashWeightPercent)}</b><small>{tx('现金占比', 'Cash allocation')}</small></span>
+          <span><b>{plainPercent(analytics.top3WeightPercent)}</b><small>{tx('前三大集中度', 'Top 3 concentration')}</small></span>
+          {analytics.reservedForOrders > 0 && <span className="context-reserved"><b>{hideBalances ? '••••' : money(analytics.reservedForOrders, currency)}</b><small>{tx('订单预留', 'Reserved for orders')}</small></span>}
         </div>
 
         {/* 待处理挂单 */}
@@ -1296,9 +1298,10 @@ function OverviewPage({
                 <div key={order.id} className="cockpit-order-row">
                   <TickerRingLogo ticker={order.ticker} />
                   <div className="order-row-info">
-                    <strong>{order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} {order.instrument?.name ?? order.ticker}</strong>
-                    <small>{decimal(order.quantity, 4)} · {order.type === 'LIMIT' ? tx('限价单', 'Limit') : order.type === 'STOP' ? tx('止损单', 'Stop') : tx('市价单', 'Market')} · {order.limitPrice ? money(order.limitPrice, order.currency ?? currency) : tx('市价', 'Market')}</small>
+                    <div className="order-row-title"><span className={`order-side ${order.side === 'BUY' ? 'buy' : 'sell'}`}>{order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')}</span><strong>{order.instrument?.name ?? tickerLabel(order.ticker)}</strong></div>
+                    <small>{hideBalances ? '••••' : order.quantity === undefined ? '-' : decimal(order.quantity, 4)} {tx('股', 'shares')} · {order.type === 'LIMIT' ? tx('限价单', 'Limit') : order.type === 'STOP' ? tx('止损单', 'Stop') : order.type === 'STOP_LIMIT' ? tx('止损限价单', 'Stop limit') : order.type === 'MARKET' ? tx('市价单', 'Market') : order.type}{order.type === 'MARKET' || order.type === 'STOP' ? ` · ${tx('市价', 'Market')}` : ''}</small>
                   </div>
+                  {(order.type === 'LIMIT' || order.type === 'STOP_LIMIT') && order.limitPrice !== undefined && <strong className="order-limit-price">{hideBalances ? '••••' : money(order.limitPrice, order.currency ?? order.instrument?.currency ?? currency)}</strong>}
                 </div>
               ))}
             </div>
@@ -1331,6 +1334,8 @@ function OverviewPage({
           </div>
           <DynamicTreemapGrid
             allocation={enrichedAllocation}
+            positions={portfolio.positions}
+            hideBalances={hideBalances}
             activeTicker={activePosition?.instrument?.ticker}
             metricMode={treemapMode}
             currency={currency}

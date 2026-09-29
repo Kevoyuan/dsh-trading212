@@ -38,6 +38,35 @@ describe('Trading 212 UI interactions', () => {
   ] } : { kind, items: [] }); mocks.disconnect.mockResolvedValue({ connected: false }) })
   afterEach(cleanup)
 
+  it('separates pending order details and shows a right-hand price only for limit orders', async () => {
+    mocks.status.mockResolvedValue({ connected: true, environment: 'demo', writable: true, source: 'record' })
+    mocks.portfolio.mockResolvedValue({ ...snapshot, pendingOrders: [
+      { id: 1, ticker: 'NET_US_EQ', side: 'SELL', status: 'NEW', type: 'STOP', quantity: 1.7, stopPrice: 180, instrument: { name: 'Cloudflare', currency: 'USD' } },
+      { id: 2, ticker: 'NVDA_US_EQ', side: 'BUY', status: 'NEW', type: 'LIMIT', quantity: 2, limitPrice: 150.25, currency: 'USD', instrument: { name: 'NVIDIA', currency: 'USD' } },
+    ] })
+    const { container } = render(<App />)
+    await screen.findByText('待处理订单')
+    const rows = container.querySelectorAll('.cockpit-order-row')
+    expect(rows[0]?.querySelector('.order-side')?.textContent).toBe('卖出')
+    expect(rows[0]?.querySelector('small')?.textContent).toBe('1.7 股 · 止损单 · 市价')
+    expect(rows[0]?.querySelector('.order-limit-price')).toBeNull()
+    expect(rows[1]?.querySelector('.order-limit-price')?.textContent).toContain('150.25')
+  })
+
+  it('masks new treemap amounts and quantities, including the tooltip, in privacy mode', async () => {
+    mocks.status.mockResolvedValue({ connected: true, environment: 'demo', writable: true, source: 'record' })
+    const { container } = render(<App />)
+    await screen.findByText('账户总价值 · EUR')
+    const tile = container.querySelector('.treemap-tile')!
+    expect(tile.querySelector('.tile-value')?.textContent).toContain('1,000.00')
+    expect(tile.querySelector('.tile-quantity')?.textContent).toBe('2 股')
+    await userEvent.setup().click(screen.getByRole('button', { name: '隐藏金额' }))
+    expect(tile.querySelector('.tile-value')?.textContent).toBe('••••')
+    expect(tile.querySelector('.tile-quantity')?.textContent).toBe('•••• 股')
+    expect(tile.getAttribute('title')).not.toContain('1,000')
+    expect(tile.getAttribute('title')).not.toContain('2 股')
+  })
+
   it('shows current public tickers while retaining Trading 212 instrument keys internally', () => {
     expect(tickerLabel('YNDX_US_EQ')).toBe('NBIS')
     expect(tickerLabel('SNDK1_US_EQ')).toBe('SNDK')

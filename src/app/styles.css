@@ -1,42 +1,8 @@
-/* ==========================================================================
-   dsh x Trading 212 - "Cartographer" design system
-   --------------------------------------------------------------------------
-   ONE system. One token block, one type scale, one radius rule, one motion
-   curve. No override layers, no !important, no second theme bolted on.
-
-   Direction: warm paper, single focus. A warm neutral ramp replaces the cool
-   blue cast, one desaturated indigo carries every interactive affordance, and
-   green/red stay reserved strictly for signed finance.
-
-   Scope of this revision: the TOKEN LAYER only. Palette, type scale, radii and
-   elevation below are Cartographer's; the layout and component structure are
-   still Lumen's and are migrated next. Two values deviate from the Cartographer
-   mock, both because the mock does not meet AA where the product actually puts
-   the token:
-
-     --ink-3  light  6E7682 -> 616873   the mock scores 4.07:1 on the canvas and
-                                        3.72:1 on the well. 4.5:1 is the floor
-                                        for the 12px captions this token carries,
-                                        and it is the most-used ink in the file.
-     --hair   dark   2E333B -> 3A4049   the mock's own --hair-2. Lumen has a
-                                        single hairline token, so it has to stay
-                                        legible dividing a well (1.13:1 -> 1.38:1;
-                                        Lumen shipped 1.30:1).
-
-   Colour rule   one focus colour (#2F4D7A light / #7B9DD9 dark). Green/red are
-                 reserved for signed finance only and each verified >=4.5:1 on
-                 every surface it can land on. No pure #000 / #fff.
-   Shape rule    --r-1 6 chips/inputs, --r-2 12 inner cards, --r-3 20 hero
-                 plates, --r-pill interactive controls. Nothing else.
-   Type rule     12 / 14 / 17 / 18 / 22 / 28 / 36. Seven whole-pixel steps, one
-                 hero per page (36 desktop / 28 mobile). Nothing below 12px.
-                 Integer sizes keep figures on the pixel grid at every zoom.
-   Motion rule   one curve (--ease), three beats (140/260/420ms),
-                 transform + opacity only, reduced-motion honoured.
-   Verified      0 contrast failures, 0 overflow, 0 overlap, 0 gradients,
-                 7 type sizes, 4 radii, 1 hairline, 2 shadows, 1 easing,
-                 in both themes at 1440 and 390.
-   ========================================================================== */
+/* Trading 212 portfolio UI. Blue is the interactive accent; green/red encode
+   signed financial values. Native system fonts, tabular figures, pill controls.
+   Account figures: 40 / 26 / 14px. Compact data labels: 11px.
+   Cards: 12 / 20px; treemap tiles: 11px; order avatars: 6px.
+   Layers: sticky navigation 60, modal backdrops 80. */
 /* == 01 TOKENS =========================================================== */
 :root{
   color-scheme: light;
@@ -52,16 +18,17 @@
   /*— ink ramp: 18.2 · 9.3 · 5.2 : 1 on the card, strict WCAG AA+ readability —*/
   --ink-1:        #0F172A;
   --ink-2:        #475569;
-  --ink-3:        #64748B;
+  --ink-3:        #5D6B80;
 
   /*— financial semantics + authoritative accent —*/
   --accent:       #2563EB;
+  --chart-price-label-bg: #2563EB;
   --accent-deep:  #1D4ED8;
   --accent-soft:  #EFF6FF;
   --accent-plate: #2563EB;
   --accent-plate-ink: #FFFFFF;
-  --pos:          #059669;
-  --neg:          #E11D48;
+  --pos:          #047857;
+  --neg:          #BE123C;
   --negative-bright: var(--neg);
   --warn:         #D97706;
   --pos-soft:     #ECFDF5;
@@ -86,7 +53,7 @@
   --s-5: 18px; --s-6: 24px; --s-7: 32px;
 
   /*— bento rhythm: 6 steps, macro 28 / 40 ———————————————————*/
-  --g-1: 6px; --g-2: 10px; --g-3: 16px; --g-4: 22px; --g-5: 28px; --g-6: 40px;
+  --g-1: 6px; --g-2: 10px; --g-3: 16px; --g-4: 22px; --g-5: 28px; --g-6: 40px; --g-7: 48px;
 
   /*— radii: shell 20 -> core 12 -> well 6, every step 6 ——————*/
   --r-1: 6px; --r-2: 12px; --r-3: 20px; --r-pill: 999px;
@@ -112,7 +79,7 @@ html{
   font-size: var(--fs-body);
   line-height: 1.5;
 }
-body{ background: var(--canvas); }
+body{ background: var(--canvas); font-variant-numeric: tabular-nums; }
 img, svg, video{ display: block; max-width: 100%; }
 button, input, select, textarea{ font: inherit; color: inherit; letter-spacing: inherit; }
 input, select, textarea{ padding: 0; border: 0; background: none; }
@@ -142,11 +109,11 @@ fieldset{ border: 0; }
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-.account-hero-val{ font-size: var(--fs-hero); font-weight: 600; letter-spacing: -.034em; line-height: 1.03; }
+.account-hero-val{ font-size: 40px; font-weight: 600; letter-spacing: -.035em; line-height: 1.03; }
 .inst-price-main{ font-size: var(--fs-title); font-weight: 600; letter-spacing: -.026em; line-height: 1.06; }
 .inst-title{ font-size: var(--fs-fig); font-weight: 600; letter-spacing: -.012em; }
 .section-heading strong{ font-size: var(--fs-title); font-weight: 600; letter-spacing: -.012em; }
-.pot-val, .cockpit-section-title, .section-heading h2, .invest-metric-row strong{
+.cockpit-section-title, .section-heading h2, .invest-metric-row strong{
   font-size: var(--fs-fig); font-weight: 600; letter-spacing: -.01em;
 }
 .pos-stream-num-col strong, .sub-metric-block strong, .metric-card strong, .tile-percent,
@@ -173,13 +140,13 @@ fieldset{ border: 0; }
 
 /* == 05 ISLAND TOPBAR =================================================== */
 .t212-native-topbar{
-  position: fixed;
-  top: 14px;
+  position: sticky;
+  top: max(12px, env(safe-area-inset-top));
   inset-inline: 0;
   z-index: 60;
   width: max-content;
   max-width: calc(100% - 32px);
-  margin-inline: auto;
+  margin: 14px auto 0;
   display: flex;
   align-items: center;
   gap: var(--g-2);
@@ -313,7 +280,7 @@ fieldset{ border: 0; }
 .icon-btn-ghost:hover{ background: var(--well); color: var(--ink-1); }
 .account-hero-val{ margin-top: var(--s-1); padding-bottom: var(--s-5); }
 .account-sub-metrics-grid{
-  display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--g-3);
+  display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); column-gap: var(--g-3);
   border-top: 1px solid var(--hair);
 }
 .sub-metric-block{ padding-top: var(--s-5); }
@@ -330,7 +297,7 @@ fieldset{ border: 0; }
 }
 .cockpit-main-pot-card{ display: flex; align-items: center; justify-content: space-between; column-gap: var(--g-3); }
 .pot-info{ display: flex; flex-direction: column; min-width: 0; }
-.pot-val{ display: block; margin-top: var(--s-1); }
+.pot-val{ display:block; margin-top:var(--s-1); font-size:26px; font-weight:600; letter-spacing:-.025em; line-height:1.2; }
 .pot-sub{ display: block; margin-top: 2px; }
 .t212-deposit-pill-btn{
   flex: none; padding: 8px 12px;
@@ -708,8 +675,8 @@ fieldset{ border: 0; }
    magnitudes, and painting those green asserted a gain that was never in the
    data - the one rule the token block states outright is that green and red are
    reserved for signed finance. Magnitudes take the accent. */
-.bar-positive{ background: var(--pos); }
-.bar-negative{ background: var(--neg); }
+.bar-positive{ background:linear-gradient(90deg, color-mix(in srgb, var(--pos) 40%, transparent), var(--pos)); }
+.bar-negative{ background:linear-gradient(90deg, rgba(234,57,67,.4), #EA3943); }
 .bar-accent{ background: var(--accent); }
 .bar-row b{ text-align: right; white-space: nowrap; }
 .exposure-summary{ display: grid; }
@@ -753,7 +720,7 @@ fieldset{ border: 0; }
 .asset-text{ display: flex; flex-direction: column; min-width: 0; }
 .holdings-table td.positive strong{ color: var(--pos); }
 .holdings-table td.negative strong{ color: var(--neg); }
-.holdings-table-compact td{ padding-block: 10px; }
+.holdings-table-compact td{ padding-block:14px; }
 
 /* == 18 SHORTCUTS ======================================================= */
 /* The floating shortcuts legend is gone. A 412x34 fixed bar sat over the holdings
@@ -842,11 +809,11 @@ fieldset{ border: 0; }
 }
 .error-panel, .fatal-screen{ color: var(--ink-1); }
 .error-actions, .settings-actions{ display: flex; flex-wrap: wrap; gap: var(--g-2); }
-.dialog-backdrop, .shortcuts-modal-backdrop, .confirm-dialog{
+.dialog-backdrop, .shortcuts-modal-backdrop{
   position: fixed; inset: 0; z-index: 80; display: grid; place-items: center;
   background: rgba(21, 23, 26, .38);
 }
-.dialog-backdrop > *, .shortcuts-modal-card, .confirm-dialog > *{
+.dialog-backdrop > *, .shortcuts-modal-card{
   width: min(560px, calc(100% - 32px));
   padding: 24px; border-radius: var(--r-3);
   background: var(--surface); box-shadow: var(--sh-float);
@@ -948,7 +915,7 @@ fieldset{ border: 0; }
   .cockpit-cash-summary, .price-chart-panel, .cockpit-holdings-preview{ padding: 14px; }
   .inv-metrics-list{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .holdings-table{ min-width: 520px; }
-  .account-hero-val{ font-size: var(--fs-hero-sm); }
+  .account-hero-val{ font-size:40px; }
   /* Every section heading stacks on phones, not just the chart's. */
   .section-heading{ flex-direction: column; row-gap: var(--g-1); }
   .pane-section-header{ flex-direction: column; row-gap: var(--g-2); }
@@ -1089,7 +1056,7 @@ input[type="radio"], input[type="checkbox"]{ accent-color:var(--accent); }
    and the table gets an explicit scroll contract instead. */
 .workspace{
   display: block; max-width: 1560px; margin-inline: auto;
-  padding: 104px 36px 40px;
+  padding: clamp(24px, 3vw, 40px) clamp(16px, 3vw, 36px) 40px;
 }
 /* The shell already pays the page gutter. A page container nested inside it was
    paying it a second time, which left the settings page 246px of usable width on
@@ -1113,10 +1080,8 @@ input[type="radio"], input[type="checkbox"]{ accent-color:var(--accent); }
    needed 192px, so the paragraph pushed 4px past its column. Stacking is the
    correct mobile layout for a label plus a control anyway. */
 @media (max-width:680px){
-  /* The topbar wraps to a nav row here: it is 96px tall and ends at y=110, so the
-     page has to clear 110 with air. Sits after the base .workspace rule above,
-     which would otherwise win on source order at equal specificity. */
-  .workspace{ padding: 132px 16px 32px; }
+  /* Navigation remains in flow; the workspace only needs a content gutter. */
+  .workspace{ padding: 24px 16px 32px; }
   /* .cockpit-inst-head stayed a 2-column grid on phones: its `auto` second column
      took the price block's 266px max-content first, so the `minmax(0,1fr)` first
      column absorbed the shortfall and squeezed the instrument profile to 70px
@@ -1209,7 +1174,7 @@ img, svg, video, canvas{ max-width:100%; }
    ======================================================================== */
 
 /* ---- 20.1 app shell + content pages ---- */
-.app-shell{ display:flex; flex-direction:column; flex:1; min-height:100dvh; }
+.app-shell{ display:flex; flex-direction:column; flex:1; min-width:0; }
 .content-page{
   display:flex; flex-direction:column; gap:var(--g-4);
   padding-top:var(--g-5);
@@ -1341,7 +1306,7 @@ img, svg, video, canvas{ max-width:100%; }
 
 /* ---- 20.4 dialogs, toast, shortcuts modal ---- */
 .dialog-backdrop, .shortcuts-modal-backdrop{
-  position:fixed; inset:0; z-index:40;
+  position:fixed; inset:0; z-index:80;
   display:flex; align-items:center; justify-content:center; padding:var(--g-5);
   background:rgba(21, 23, 26, .42);
   backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
@@ -1364,8 +1329,8 @@ img, svg, video, canvas{ max-width:100%; }
 .close-modal-btn:hover{ color:var(--ink-1); background:var(--well); }
 .shortcuts-modal-header{ display:flex; align-items:center; justify-content:space-between; gap:var(--g-3); }
 .shortcuts-modal-header h2{ font-size:var(--fs-row); font-weight:630; }
-.shortcuts-modal-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:var(--g-1) var(--g-4); }
-.shortcuts-modal-grid > div, .shortcuts-modal-grid > span{ display:flex; align-items:center; justify-content:space-between; gap:var(--g-3); font-size:var(--fs-micro); color:var(--ink-2); }
+.shortcuts-modal-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr)); gap:var(--g-1) var(--g-4); }
+.shortcuts-modal-grid > .shortcut-group{ display:flex; flex-direction:column; align-items:stretch; gap:var(--g-3); font-size:var(--fs-micro); color:var(--ink-2); }
 .help-page kbd, .shortcuts-modal-grid kbd{ font-family:var(--font-mono); font-size:var(--fs-micro); padding:2px var(--g-1); border-radius:var(--r-1); background:var(--well); color:var(--ink-1); }
 .toast{
   position:fixed; left:50%; bottom:var(--g-5); transform:translateX(-50%); z-index:60;
@@ -1450,7 +1415,7 @@ img, svg, video, canvas{ max-width:100%; }
 .timeline-stem{ stroke:var(--hair); stroke-width:1.4; }
 .timeline-point circle{ stroke:var(--surface); stroke-width:2; }
 .timeline-buy{ fill:var(--pos); stroke:var(--surface); stroke-width:2; }
-.timeline-sell{ fill:var(--warn); stroke:var(--surface); stroke-width:2; }
+.timeline-sell{ fill:var(--neg); stroke:var(--surface); stroke-width:2; }
 .timeline-events{ display:flex; flex-direction:column; gap:var(--g-1); margin-top:var(--g-3); }
 .single-trade{
   display:flex; flex-direction:column; gap:var(--s-1); margin-top:var(--g-3);
@@ -1516,7 +1481,7 @@ img, svg, video, canvas{ max-width:100%; }
   transition:color var(--d-2) var(--ease);
 }
 .asset-link:hover strong{ color:var(--accent); }
-.compact .holdings-table td, .holdings-table-compact td{ padding-top:var(--s-2); padding-bottom:var(--s-2); }
+.compact .holdings-table td, .holdings-table-compact td{ padding-block:14px; }
 .ticker-avatar.fallback{ background:var(--well); color:var(--ink-2); }
 .pane-section-sub{ display:block; margin-top:var(--s-1); font-size:var(--fs-micro); color:var(--ink-3); }
 /* The percentage is a second line on both sub-metrics, always. Left inline it
@@ -1566,3 +1531,208 @@ img, svg, video, canvas{ max-width:100%; }
 
 /* ---- 20.11 hidden-balance state stays deliberate ---- */
 .hide-balances .js-balance, .hide-balances .js-balance strong{ color:var(--ink-3); letter-spacing:.08em; }
+
+/* Responsive finishing: content stays in flow as navigation gains rows. */
+.t212-native-app-root{ display:flex; flex-direction:column; }
+.topbar-left-zone, .topbar-right-zone, .topbar-nav-tab, .topbar-tool-btn{ flex-shrink:0; }
+.topbar-search-field{ min-width:0; }
+.cockpit-inst-head, .inst-profile, .inst-profile > div:not(.ticker-ring-logo){ min-width:0; }
+.inst-title{ overflow-wrap:anywhere; }
+.inst-tag-row{ flex-wrap:wrap; row-gap:var(--g-1); }
+.range-switcher{ max-width:100%; overflow-x:auto; scrollbar-width:thin; }
+.range-switcher button{ white-space:nowrap; min-width:max-content; padding-inline:8px; }
+.confirm-dialog, .shortcuts-modal-card{
+  max-height:calc(100dvh - 56px); overflow-y:auto; overscroll-behavior:contain;
+  padding:clamp(20px, 4vw, 40px);
+}
+.shortcuts-modal-card{ max-width:640px; }
+.shortcut-group h4{ margin-bottom:var(--g-1); color:var(--ink-1); }
+.shortcut-row{ gap:var(--g-3); align-items:baseline; }
+.shortcut-row > span{ flex-shrink:0; }
+.shortcut-row label{ text-align:right; }
+.close-modal-btn{ flex-shrink:0; }
+.confirm-dialog > div:last-child{ display:flex; flex-wrap:wrap; gap:var(--g-2); }
+.connection-card{ align-items:stretch; padding:clamp(22px, 4vw, 40px); }
+.setup-guide{ padding:clamp(22px, 4vw, 40px); }
+.app-shell > .setup-page{ padding:var(--g-5) max(16px, env(safe-area-inset-left)) 40px; }
+.history-metrics{ grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr)); }
+
+@media (max-width:1280px){
+  .cockpit-instrument-container{ grid-template-columns:minmax(0,1fr); }
+  .cockpit-inst-head{ grid-column:1; grid-row:1; }
+  .range-switcher{ grid-column:1; grid-row:2; justify-self:start; }
+  .cockpit-chart-wrap{ grid-row:3; }
+  .your-investment-cockpit{ grid-row:4; }
+}
+@media (min-width:681px) and (max-width:1100px){
+  .t212-native-topbar{ flex-wrap:wrap; width:calc(100% - 48px); border-radius:var(--r-3); }
+  .topbar-left-zone{ margin-right:auto; }
+  .topbar-center-nav{ order:3; flex:1 0 100%; justify-content:center; }
+  .topbar-nav-tab{ justify-content:center; flex:1; }
+}
+@media (max-width:680px){
+  .t212-native-topbar{
+    inset-inline:auto; width:calc(100% - 24px); max-width:none;
+    margin:12px auto 0; padding:8px; border-radius:var(--r-3);
+  }
+  .topbar-left-zone{ min-width:0; }
+  .t212-invest-brand-pill{ padding:8px; column-gap:4px; }
+  .invest-env-badge{ padding-inline:6px; }
+  .topbar-tool-btn{ width:40px; height:40px; }
+  .topbar-center-nav{ gap:2px; padding:3px; }
+  .topbar-nav-tab{ flex:1 1 0; min-width:0; flex-direction:column; gap:4px; justify-content:center; padding:8px 2px; min-height:44px; }
+  .topbar-nav-tab svg{ flex-shrink:0; }
+  .topbar-nav-tab span{ font-size:var(--fs-micro); }
+  .cockpit-inst-head{ grid-template-columns:minmax(0,1fr); }
+  .range-switcher{ width:100%; }
+  .range-switcher button{ min-width:max-content; min-height:40px; padding-inline:8px; white-space:nowrap; }
+  .inv-metrics-list{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--g-3); }
+  .inv-metric-row strong{ overflow-wrap:anywhere; }
+  .dialog-backdrop, .shortcuts-modal-backdrop{ padding:16px; }
+  .confirm-dialog, .shortcuts-modal-card{ max-height:calc(100dvh - 32px); }
+  .shortcuts-modal-grid{ grid-template-columns:minmax(0,1fr); gap:var(--g-4); }
+  .history-tabs{ width:100%; border-radius:var(--r-2); }
+  .history-tabs button{ flex:1 0 auto; min-height:40px; }
+  .language-options button, .settings-actions button{ min-height:44px; height:auto; padding-block:8px; }
+  .field input, .field select{ font-size:16px; }
+}
+
+/* Account hierarchy and compact supporting data. */
+.account-label, .pot-label{
+  font-size:11px; font-weight:500; text-transform:uppercase;
+  letter-spacing:.07em; color:var(--ink-3);
+}
+.account-hero-val{ overflow-wrap:anywhere; }
+.account-sub-metrics-grid{ margin-top:auto; }
+.sub-metric-block{ min-width:0; }
+.sub-metric-block > span{ font-size:11px; letter-spacing:.04em; }
+.sub-metric-block strong{ font-size:14px; overflow-wrap:anywhere; }
+.sub-metric-pct{ font-size:11px; font-weight:400; }
+.portfolio-stat-grid .metric-card > strong{ font-size:14px; font-weight:600; }
+.portfolio-stat-grid .metric-card > span, .portfolio-stat-grid .metric-card > small{ font-size:11px; letter-spacing:0; }
+.portfolio-context-strip{
+  grid-template-columns:repeat(2,minmax(0,1fr)); gap:0;
+  border:1px solid var(--hair); border-radius:var(--r-2); background:var(--surface);
+  overflow:hidden;
+}
+.portfolio-context-strip::before{ content:none; }
+.portfolio-context-strip > span{ flex-direction:column; align-items:flex-start; gap:3px; padding:14px 16px; letter-spacing:0; }
+.portfolio-context-strip > span:nth-child(even){ border-left:1px solid var(--hair); }
+.portfolio-context-strip > span:nth-child(n+3){ border-top:1px solid var(--hair); }
+.portfolio-context-strip b{ font-size:17px; font-weight:600; }
+.portfolio-context-strip small{ font-size:11px; color:var(--ink-3); }
+.portfolio-context-strip > .context-reserved{ grid-column:1 / -1; }
+
+/* Orders: logo / side and instrument / optional limit price. */
+.cockpit-order-row{ grid-template-columns:26px minmax(0,1fr) auto; gap:10px; padding-block:14px; }
+.cockpit-order-row .ticker-ring-logo{ width:26px; height:26px; }
+.cockpit-order-row .ticker-ring-logo svg{ display:none; }
+.cockpit-order-row .ticker-avatar{ inset:0; width:26px; height:26px; border-radius:6px; }
+.cockpit-order-row .ticker-avatar.fallback{ background:var(--accent-soft); color:var(--accent-deep); font-size:11px; }
+.order-row-info{ min-width:0; }
+.order-row-title{ display:flex; align-items:baseline; gap:6px; }
+.order-row-title strong{ min-width:0; font-size:13px; font-weight:600; overflow-wrap:anywhere; }
+.order-side{ flex:none; padding:1px 5px; border-radius:4px; font-size:11px; font-weight:600; }
+.order-side.buy{ color:var(--pos); background:var(--pos-soft); }
+.order-side.sell{ color:var(--neg); background:var(--neg-soft); }
+.order-row-info > small{ display:block; margin-top:4px; font-size:11px; line-height:1.6; }
+.order-limit-price{ font-family:var(--font-mono); font-size:12px; text-align:right; white-space:nowrap; }
+
+/* Allocation: 6px gutters, quiet semantic fill, three levels of information. */
+.treemap-tile{
+  --tile-color:var(--ink-3);
+  inset:3px; padding:12px; border-radius:11px;
+  border:1px solid color-mix(in srgb, var(--tile-color) 22%, transparent);
+}
+.treemap-tile.gain{ --tile-color:var(--pos); background:color-mix(in srgb, var(--pos) 10%, var(--surface)); }
+.treemap-tile.loss{ --tile-color:var(--neg); background:color-mix(in srgb, var(--neg) 10%, var(--surface)); }
+.treemap-tile.neutral{ background:color-mix(in srgb, var(--ink-3) 10%, var(--surface)); }
+.treemap-tile:hover{ box-shadow:none; border-color:var(--tile-color); transform:translateY(-1px); }
+.treemap-tile.selected{ outline:none; border-color:color-mix(in srgb, var(--tile-color) 65%, transparent); }
+.treemap-tile:focus-visible{ outline:2px solid var(--focus); outline-offset:1px; }
+.tile-ticker{ font-size:12px; font-weight:600; color:var(--ink-1); letter-spacing:.06em; }
+.tile-percent{ font-size:11px; font-weight:500; margin-block:auto; line-height:1.4; }
+.treemap-tile .tile-percent::before{ font-size:9px; }
+.tile-subrow{ gap:2px 6px; margin-top:5px; justify-content:flex-start; }
+.tile-weight, .tile-value, .tile-quantity{ font-size:11px; font-weight:400; color:var(--ink-3); letter-spacing:0; line-height:1.4; }
+.tile-value::before{ content:'·'; margin-right:6px; }
+.tile-quantity{ flex-basis:100%; }
+@container (max-width:120px){
+  .treemap-tile{ padding:7px; }
+  .tile-subrow{ flex-direction:column; align-items:flex-start; }
+  .tile-value::before{ content:none; }
+}
+@container (max-height:105px){
+  .treemap-tile{ padding:6px 8px; }
+  .tile-subrow{ margin-top:2px; gap:0 5px; }
+  .tile-quantity{ flex-basis:auto; }
+}
+
+/* The chart, its legend and tooltip use the same buy/sell dots. */
+.chart-legend span:not(:first-child)::before, .legend-marker, .legend-marker.sell,
+.buy-marker, .sell-marker{
+  width:7px; height:7px; flex:0 0 7px; border-radius:50%; clip-path:none;
+  transform:none; outline:1.5px solid var(--surface);
+}
+.chart-legend span:nth-child(2)::before, .legend-marker:not(.sell), .buy-marker{
+  background:var(--pos); box-shadow:0 0 8px color-mix(in srgb, var(--pos) 60%, transparent);
+}
+.chart-legend span:nth-child(3)::before, .legend-marker.sell, .sell-marker{
+  background:var(--neg); box-shadow:0 0 8px color-mix(in srgb, var(--neg) 60%, transparent);
+}
+.holdings-table th, .holdings-table td{ padding-block:14px; }
+.holdings-table td strong{ font-size:13px; font-weight:600; }
+.holdings-table td small{ font-size:11px; font-weight:400; color:var(--ink-3); line-height:1.6; }
+.holdings-table th:not(:first-child), .holdings-table td:not(:first-child){ text-align:right; font-variant-numeric:tabular-nums; }
+.cockpit-pane-footer{ border-top:1px solid var(--hair); padding-top:16px; }
+.legal{ border-top:1px solid var(--hair); padding-top:16px; margin-top:24px; }
+.legal, .t212-legal-disclaimer, .footer-action-pills-row .t212-pill-action{ font-size:11.5px; line-height:1.7; color:var(--ink-3); letter-spacing:0; }
+
+/* One navigation capsule, with search and tools grouped independently. */
+.t212-native-topbar{
+  display:flex; flex-wrap:nowrap; gap:12px; padding:0;
+  width:max-content; max-width:calc(100% - 32px);
+  border:0; border-radius:0; background:transparent;
+  box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none;
+}
+.topbar-navigation-group{
+  display:flex; align-items:center; gap:4px; min-width:0; padding:3px;
+  border:1px solid var(--hair); border-radius:var(--r-pill); background:var(--surface);
+  box-shadow:var(--sh-plate);
+}
+.topbar-left-zone{ margin:0; flex:none; }
+.t212-invest-brand-pill{ border-color:transparent; background:transparent; }
+.topbar-center-nav{ order:0; flex:0 1 auto; width:auto; padding:0; gap:2px; }
+.topbar-nav-tab{ flex:none; flex-direction:row; gap:6px; padding:9px 11px; white-space:nowrap; }
+.topbar-nav-tab.active{ background:var(--well); color:var(--ink-1); }
+.topbar-right-zone{ gap:4px; padding:3px; border:1px solid var(--hair); border-radius:var(--r-pill); background:var(--surface); }
+.topbar-search-slot{ border:0; padding-inline:10px; }
+.topbar-search-field{ width:120px; }
+@media (min-width:681px) and (max-width:1190px){
+  .t212-native-topbar{ gap:8px; }
+  .topbar-nav-tab{ padding-inline:8px; }
+  .topbar-search-field{ width:80px; }
+  .t212-invest-brand-pill{ padding-inline:8px; }
+  .invest-chevron-icon{ display:none; }
+}
+@media (min-width:681px) and (max-width:1023px){
+  .topbar-nav-tab{ min-width:38px; justify-content:center; }
+  .topbar-nav-tab span{ position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+}
+@media (max-width:680px){
+  .t212-native-topbar{ display:block; width:calc(100% - 24px); max-width:none; margin:12px auto 0; }
+  .topbar-navigation-group{ display:grid; grid-template-columns:minmax(0,1fr); gap:5px; padding:6px; border-radius:var(--r-3); }
+  .topbar-left-zone{ padding-right:124px; min-height:40px; }
+  .t212-invest-brand-pill{ padding:6px 4px; }
+  .topbar-center-nav{ grid-row:2; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); width:100%; overflow:visible; }
+  .topbar-center-nav:has(> :last-child:nth-child(2)){ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .topbar-nav-tab{ min-width:0; flex-direction:column; gap:4px; padding:8px 2px; }
+  .topbar-right-zone{ position:absolute; top:6px; right:6px; border:0; padding:0; background:transparent; }
+  .topbar-tool-btn{ width:38px; height:40px; }
+  .topbar-search-slot{ display:none; }
+  .order-limit-price{ font-size:11px; }
+}
+
+.cockpit-pending-section .pane-section-header{ flex-direction:row; align-items:center; }
+.timeline-buy{ filter:drop-shadow(0 0 4px color-mix(in srgb, var(--pos) 60%, transparent)); }
+.timeline-sell{ filter:drop-shadow(0 0 4px color-mix(in srgb, var(--neg) 60%, transparent)); }
