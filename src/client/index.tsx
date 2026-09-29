@@ -1,13 +1,17 @@
 import { useSyncExternalStore } from 'react'
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type { ConvViewProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
 
 type HostLanguage = 'zh' | 'en'
+/** The dashboard ships zh/en only; any other host locale falls back to zh, matching the iframe's own resolution. */
+const normalizeHostLanguage = (value: string): HostLanguage => value === 'en' ? 'en' : 'zh'
 const languageState = { active: 'zh' as HostLanguage, listeners: new Set<() => void>() }
-const setHostLanguage = (active: HostLanguage) => {
+const setHostLanguage = (next: string) => {
+  const active = normalizeHostLanguage(next)
   if (languageState.active !== active) {
     languageState.active = active
     languageState.listeners.forEach(listener => listener())
