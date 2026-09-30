@@ -45,7 +45,7 @@
   --fs-title:     22px;
   --fs-hero-sm:   28px;   /* the mobile hero; no longer a desktop content tier */
   --fs-hero:      36px;
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 
   /*— spacing scale ————————————————————————————————————————*/
@@ -55,12 +55,12 @@
   /*— bento rhythm: 6 steps, macro 28 / 40 ———————————————————*/
   --g-1: 6px; --g-2: 10px; --g-3: 16px; --g-4: 22px; --g-5: 28px; --g-6: 40px; --g-7: 48px;
 
-  /*— radii: shell 20 -> core 12 -> well 6, every step 6 ——————*/
-  --r-1: 6px; --r-2: 12px; --r-3: 20px; --r-pill: 999px;
+  /*— four-radius system: controls, wells, panels, cards ——————*/
+  --r-1: 6px; --r-2: 10px; --r-3: 14px; --r-4: 18px; --r-pill: var(--r-4);
 
   /*— two elevations: plate / float with refined micro-bevel —*/
-  --sh-plate: 0 1px 2px rgba(15,23,42,.04), 0 8px 16px -8px rgba(15,23,42,.08), inset 0 1px 0 rgba(255,255,255,1);
-  --sh-float: 0 4px 6px -1px rgba(15,23,42,.06), 0 20px 25px -5px rgba(15,23,42,.10);
+  --sh-plate: 0 1px 2px rgba(15,23,42,.035), 0 8px 22px -9px rgba(15,23,42,.09), 0 22px 48px -30px rgba(15,23,42,.12), inset 0 1px 0 rgba(255,255,255,.95);
+  --sh-float: 0 3px 8px rgba(15,23,42,.05), 0 18px 36px -12px rgba(15,23,42,.12), 0 34px 62px -30px rgba(15,23,42,.14), inset 0 1px 0 rgba(255,255,255,.9);
 
   /*— motion: one curve, three beats ———————————————————————*/
   --ease: cubic-bezier(.32,.72,0,1);
@@ -109,8 +109,8 @@ fieldset{ border: 0; }
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-.account-hero-val{ font-size: 40px; font-weight: 600; letter-spacing: -.035em; line-height: 1.03; }
-.inst-price-main{ font-size: var(--fs-title); font-weight: 600; letter-spacing: -.026em; line-height: 1.06; }
+.account-hero-val{ font-size: 40px; font-weight: 550; letter-spacing: -.03em; line-height: 1.03; }
+.inst-price-main{ font-size: var(--fs-title); font-weight: 550; letter-spacing: -.03em; line-height: 1.06; }
 .inst-title{ font-size: var(--fs-fig); font-weight: 600; letter-spacing: -.012em; }
 .section-heading strong{ font-size: var(--fs-title); font-weight: 600; letter-spacing: -.012em; }
 .cockpit-section-title, .section-heading h2, .invest-metric-row strong{
@@ -128,7 +128,7 @@ fieldset{ border: 0; }
 .metric-card > small, .inv-metric-row > span, .pot-sub{
   font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: .045em;
 }
-.account-label, .inst-ticker-tag{ text-transform: uppercase; }
+.account-label{ text-transform: none; }
 .tone-positive{ color: var(--pos); }
 .tone-negative{ color: var(--neg); }
 .tone-muted{ color: var(--ink-3); }
@@ -297,7 +297,7 @@ fieldset{ border: 0; }
 }
 .cockpit-main-pot-card{ display: flex; align-items: center; justify-content: space-between; column-gap: var(--g-3); }
 .pot-info{ display: flex; flex-direction: column; min-width: 0; }
-.pot-val{ display:block; margin-top:var(--s-1); font-size:26px; font-weight:600; letter-spacing:-.025em; line-height:1.2; }
+.pot-val{ display:block; margin-top:var(--s-1); font-size:26px; font-weight:550; letter-spacing:-.03em; line-height:1.2; }
 .pot-sub{ display: block; margin-top: 2px; }
 .t212-deposit-pill-btn{
   flex: none; padding: 8px 12px;
@@ -602,7 +602,7 @@ fieldset{ border: 0; }
   flex-wrap: wrap; column-gap: var(--g-4); row-gap: var(--s-1);
 }
 .chart-compact-meta .chart-count{ margin: 0; }
-.chart-legend{ display: flex; align-items: center; column-gap: var(--g-4); }
+.chart-legend{ display: flex; align-items: center; flex-wrap:wrap; gap:var(--s-1) var(--g-4); }
 .chart-legend span{ display: inline-flex; align-items: center; column-gap: var(--s-2); color: var(--ink-2); }
 .legend-dot{ display: none; }
 /* The swatches are the marks the series actually draws: a 2px close line, an
@@ -621,6 +621,11 @@ fieldset{ border: 0; }
 }
 .chart-legend span:nth-child(2)::before{ background: var(--pos); }
 .chart-legend span:nth-child(3)::before{ background: var(--warn); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.chart-legend .chart-cost-legend::before{
+  width:14px; height:0; border-top:1px dashed var(--ink-3);
+  background:none; clip-path:none;
+}
+.chart-cost-legend{ font-variant-numeric:tabular-nums; white-space:nowrap; }
 .price-chart{ width: 100%; height: auto; aspect-ratio: 820 / 300; min-height: 220px; margin-top: var(--s-1); }
 .price-chart .timeline-grid line{ stroke: var(--hair); stroke-width: 1; }
 .price-chart > path{ stroke: var(--accent); stroke-width: 1.8; }
@@ -854,8 +859,8 @@ fieldset{ border: 0; }
   --pos-soft:     rgba(16, 185, 129, 0.14);
   --neg-soft:     rgba(251, 113, 133, 0.14);
   --hair:         #232C3B;   /* refined precision hairline for obsidian night */
-  --sh-plate: 0 1px 0 rgba(0,0,0,.5), 0 8px 20px -6px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.07);
-  --sh-float: 0 4px 12px rgba(0,0,0,.6), 0 24px 38px -12px rgba(0,0,0,.8);
+  --sh-plate: 0 1px 2px rgba(0,0,0,.25), 0 10px 26px -9px rgba(0,0,0,.5), 0 25px 50px -30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09);
+  --sh-float: 0 4px 10px rgba(0,0,0,.3), 0 18px 40px -12px rgba(0,0,0,.6), 0 36px 68px -30px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.1);
   --focus: #60A5FA;
 }
 [data-theme="dark"] .dialog-backdrop,
@@ -1017,7 +1022,7 @@ fieldset{ border: 0; }
 
 /* ---- 21.2 kill the remaining browser-default form chrome ---- */
 fieldset{ display:flex; flex-direction:column; gap:var(--g-2); min-width:0; padding:0; margin:0; border:0; }
-legend{ padding:0; font-size:var(--fs-micro); font-weight:620; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+legend{ padding:0; font-size:var(--fs-micro); font-weight:620; letter-spacing:.025em; text-transform:none; color:var(--ink-3); }
 select{ appearance:none; -webkit-appearance:none; background-image:none; }
 select, input, textarea, button{ font-family:inherit; }
 input[type="radio"], input[type="checkbox"]{ accent-color:var(--accent); }
@@ -1193,7 +1198,7 @@ img, svg, video, canvas{ max-width:100%; }
 .back-button:hover{ color:var(--ink-1); border-color:var(--ink-3); }
 .eyebrow{
   display:inline-flex; align-items:center; gap:var(--s-2);
-  font-size:var(--fs-micro); font-weight:650; letter-spacing:.1em; text-transform:uppercase;
+  font-size:var(--fs-micro); font-weight:650; letter-spacing:.025em; text-transform:none;
   color:var(--ink-3);
 }
 
@@ -1213,7 +1218,7 @@ img, svg, video, canvas{ max-width:100%; }
 .connection-card .eyebrow{ color:var(--accent); }
 .field{ display:flex; flex-direction:column; gap:var(--s-2); }
 .field > span, .field > label{
-  font-size:var(--fs-micro); font-weight:620; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3);
+  font-size:var(--fs-micro); font-weight:620; letter-spacing:.025em; text-transform:none; color:var(--ink-3);
 }
 .field input, .secret-wrap input{
   width:100%; height:44px; padding:0 var(--g-3);
@@ -1398,7 +1403,7 @@ img, svg, video, canvas{ max-width:100%; }
 /* timeline (SVG fills must be real colours, not CSS vars on <svg> text) */
 .timeline-header{ display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:var(--g-3); }
 .timeline-header label{ display:flex; flex-direction:column; gap:var(--s-1); }
-.timeline-header label > span{ font-size:var(--fs-micro); font-weight:620; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+.timeline-header label > span{ font-size:var(--fs-micro); font-weight:620; letter-spacing:.025em; text-transform:none; color:var(--ink-3); }
 .timeline-header select{
   height:38px; padding:0 var(--g-3);
   background:var(--well); border:1px solid var(--hair); border-radius:var(--r-1);
@@ -1463,12 +1468,12 @@ img, svg, video, canvas{ max-width:100%; }
   padding:var(--g-3) 0; border-bottom:1px solid var(--hair);
 }
 .invest-row:last-child{ border-bottom:0; }
-.invest-row > span{ font-size:var(--fs-micro); font-weight:620; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+.invest-row > span{ font-size:var(--fs-micro); font-weight:620; letter-spacing:.025em; text-transform:none; color:var(--ink-3); }
 .invest-row > strong{ font-size:var(--fs-fig); font-weight:620; letter-spacing:-.02em; }
 .invest-row > strong small{ font-size:var(--fs-micro); color:var(--ink-3); font-weight:500; }
 .instrument-price-action{ display:flex; flex-direction:column; align-items:flex-end; gap:var(--s-1); }
-.instrument-price-action > span{ font-size:var(--fs-micro); font-weight:620; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
-.instrument-price-action > strong{ font-size:var(--fs-hero); font-weight:640; letter-spacing:-.03em; line-height:1.08; }
+.instrument-price-action > span{ font-size:var(--fs-micro); font-weight:620; letter-spacing:.025em; text-transform:none; color:var(--ink-3); }
+.instrument-price-action > strong{ font-size:var(--fs-hero); font-weight:550; letter-spacing:-.03em; line-height:1.08; }
 .instrument-price-action > small{ font-size:var(--fs-micro); font-weight:620; }
 
 /* ---- 20.8 allocation + treemap extras ---- */
@@ -1505,7 +1510,7 @@ img, svg, video, canvas{ max-width:100%; }
 }
 .chart-tooltip-time{ color:var(--ink-3); font-family:var(--font-mono); }
 .chart-tooltip-row{ display:flex; align-items:center; gap:var(--s-2); font-variant-numeric:tabular-nums; }
-.chart-tooltip-row b{ font-family:var(--font-mono); font-weight:640; }
+.chart-tooltip-row b{ font-family:var(--font-sans); font-weight:600; }
 .legend-line{ display:inline-block; width:14px; height:3px; flex:0 0 14px; }
 /* Tooltip swatches: same two arrows the series draws, so a reader can match the
    tooltip row to the marker under the pointer. Was a square rotated 45deg. */
@@ -1599,8 +1604,8 @@ img, svg, video, canvas{ max-width:100%; }
 
 /* Account hierarchy and compact supporting data. */
 .account-label, .pot-label{
-  font-size:11px; font-weight:500; text-transform:uppercase;
-  letter-spacing:.07em; color:var(--ink-3);
+  font-size:11px; font-weight:500; text-transform:none;
+  letter-spacing:.025em; color:var(--ink-3);
 }
 .account-hero-val{ overflow-wrap:anywhere; }
 .account-sub-metrics-grid{ margin-top:auto; }
@@ -1636,7 +1641,7 @@ img, svg, video, canvas{ max-width:100%; }
 .order-side.buy{ color:var(--pos); background:var(--pos-soft); }
 .order-side.sell{ color:var(--neg); background:var(--neg-soft); }
 .order-row-info > small{ display:block; margin-top:4px; font-size:11px; line-height:1.6; }
-.order-limit-price{ font-family:var(--font-mono); font-size:12px; text-align:right; white-space:nowrap; }
+.order-limit-price{ font-family:var(--font-sans); font-size:12px; text-align:right; white-space:nowrap; }
 
 /* Allocation: 6px gutters, quiet semantic fill, three levels of information. */
 .treemap-tile{
@@ -1680,6 +1685,10 @@ img, svg, video, canvas{ max-width:100%; }
 .chart-legend span:nth-child(3)::before, .legend-marker.sell, .sell-marker{
   background:var(--neg); box-shadow:0 0 8px color-mix(in srgb, var(--neg) 60%, transparent);
 }
+.chart-legend span.chart-cost-legend:not(:first-child)::before{
+  width:14px; height:0; border-radius:0; border-top:1px dashed var(--ink-3);
+  background:none; outline:0; box-shadow:none;
+}
 .holdings-table th, .holdings-table td{ padding-block:14px; }
 .holdings-table td strong{ font-size:13px; font-weight:600; }
 .holdings-table td small{ font-size:11px; font-weight:400; color:var(--ink-3); line-height:1.6; }
@@ -1697,15 +1706,15 @@ img, svg, video, canvas{ max-width:100%; }
 }
 .topbar-navigation-group{
   display:flex; align-items:center; gap:4px; min-width:0; padding:3px;
-  border:1px solid var(--hair); border-radius:var(--r-pill); background:var(--surface);
-  box-shadow:var(--sh-plate);
+  border:1px solid color-mix(in srgb, var(--hair) 72%, white 28%); border-radius:var(--r-4); background:var(--glass);
+  box-shadow:var(--sh-float); -webkit-backdrop-filter:blur(18px) saturate(145%); backdrop-filter:blur(18px) saturate(145%);
 }
 .topbar-left-zone{ margin:0; flex:none; }
 .t212-invest-brand-pill{ border-color:transparent; background:transparent; }
 .topbar-center-nav{ order:0; flex:0 1 auto; width:auto; padding:0; gap:2px; }
 .topbar-nav-tab{ flex:none; flex-direction:row; gap:6px; padding:9px 11px; white-space:nowrap; }
 .topbar-nav-tab.active{ background:var(--well); color:var(--ink-1); }
-.topbar-right-zone{ gap:4px; padding:3px; border:1px solid var(--hair); border-radius:var(--r-pill); background:var(--surface); }
+.topbar-right-zone{ gap:4px; padding:3px; border:1px solid color-mix(in srgb, var(--hair) 72%, white 28%); border-radius:var(--r-4); background:var(--glass); box-shadow:var(--sh-float); -webkit-backdrop-filter:blur(18px) saturate(145%); backdrop-filter:blur(18px) saturate(145%); }
 .topbar-search-slot{ border:0; padding-inline:10px; }
 .topbar-search-field{ width:120px; }
 @media (min-width:681px) and (max-width:1190px){
@@ -1727,7 +1736,7 @@ img, svg, video, canvas{ max-width:100%; }
   .topbar-center-nav{ grid-row:2; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); width:100%; overflow:visible; }
   .topbar-center-nav:has(> :last-child:nth-child(2)){ grid-template-columns:repeat(2,minmax(0,1fr)); }
   .topbar-nav-tab{ min-width:0; flex-direction:column; gap:4px; padding:8px 2px; }
-  .topbar-right-zone{ position:absolute; top:6px; right:6px; border:0; padding:0; background:transparent; }
+  .topbar-right-zone{ position:absolute; top:6px; right:6px; border:0; padding:0; background:transparent; box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none; }
   .topbar-tool-btn{ width:38px; height:40px; }
   .topbar-search-slot{ display:none; }
   .order-limit-price{ font-size:11px; }
@@ -1736,3 +1745,13 @@ img, svg, video, canvas{ max-width:100%; }
 .cockpit-pending-section .pane-section-header{ flex-direction:row; align-items:center; }
 .timeline-buy{ filter:drop-shadow(0 0 4px color-mix(in srgb, var(--pos) 60%, transparent)); }
 .timeline-sell{ filter:drop-shadow(0 0 4px color-mix(in srgb, var(--neg) 60%, transparent)); }
+
+/* Four-level shape language and a fine upper edge on elevated cards. */
+.cockpit-account-card, .cockpit-holdings-preview, .price-chart-panel,
+.connection-card, .confirm-dialog, .shortcuts-modal-card{ border-radius:var(--r-4); box-shadow:var(--sh-plate); }
+.cockpit-account-card::before{ border-radius:var(--r-3); }
+.cockpit-cash-summary, .portfolio-context-strip{ border-radius:var(--r-3); }
+.treemap-tile{ border-radius:var(--r-2); }
+@media (prefers-reduced-transparency:reduce){
+  .topbar-navigation-group, .topbar-right-zone{ background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none; }
+}

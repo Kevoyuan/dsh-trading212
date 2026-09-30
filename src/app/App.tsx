@@ -1,5 +1,5 @@
 import { Children, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
-import { createChart, CrosshairMode, AreaSeries, LineStyle, type IChartApi, type LineData, type MouseEventParams, type Time, type UTCTimestamp } from 'lightweight-charts'
+import { createChart, CrosshairMode, AreaSeries, LineStyle, type AutoscaleInfo, type IChartApi, type LineData, type MouseEventParams, type Time, type UTCTimestamp } from 'lightweight-charts'
 import {
   AlertTriangle, ArrowLeft, ArrowRight, BriefcaseBusiness, Check, ChevronDown, CircleHelp, Clipboard, Eye, EyeOff,
   History as HistoryIcon, LayoutDashboard, LoaderCircle, Moon, RefreshCw, Search, Settings, ShieldCheck, Sun, Unplug,
@@ -665,15 +665,16 @@ interface ChartHover {
    The swatches are drawn by CSS (`.chart-legend span::before`) off --accent /
    --pos / --neg, so the legend and the series can never drift apart. Each span
    used to carry an inline <i> as well, which painted every swatch twice. */
-function ChartLegend() {
+function ChartLegend({ costBasis, currency }: { costBasis?: number; currency: string }) {
   return <div className="chart-legend" aria-hidden="true">
     <span>{tx('收盘价', 'Close')}</span>
     <span>{tx('买入', 'Buy')}</span>
     <span>{tx('卖出', 'Sell')}</span>
+    {costBasis !== undefined && <span className="chart-cost-legend">{tx('成本线', 'Cost basis')} {money(costBasis, currency)}</span>}
   </div>
 }
 
-function PriceHistoryChart({ series, orders, name, compact = false }: { series: MarketSeries; orders: HistoricalOrder[]; name: string; compact?: boolean }) {
+function PriceHistoryChart({ series, orders, name, averagePricePaid, instrumentCurrency, hideBalances = false, compact = false }: { series: MarketSeries; orders: HistoricalOrder[]; name: string; averagePricePaid?: number; instrumentCurrency?: string; hideBalances?: boolean; compact?: boolean }) {
   const chartRef = useRef<HTMLDivElement>(null)
   const chartApiRef = useRef<IChartApi | null>(null)
   const theme = useSyncExternalStore(themeStore.subscribe, themeStore.getSnapshot)
@@ -691,6 +692,8 @@ function PriceHistoryChart({ series, orders, name, compact = false }: { series: 
   }), [name, orders, series.currency, start, end])
   const first = candles[0]!.close; const last = candles[candles.length - 1]!.close
   const change = first === 0 ? undefined : (last - first) / first * 100
+  const costBasis = !hideBalances && instrumentCurrency === series.currency && averagePricePaid !== undefined && Number.isFinite(averagePricePaid) && averagePricePaid > 0
+    ? averagePricePaid : undefined
 
   /* Chart colours are read from the design tokens, never from a parallel
      palette. The literals that used to sit here were TradingView's defaults -
@@ -720,13 +723,15 @@ function PriceHistoryChart({ series, orders, name, compact = false }: { series: 
       areaTop: withAlpha(accent, 0.22),
       areaBottom: withAlpha(accent, 0),
       priceLabelBackground: token('--chart-price-label-bg', '#2563EB'),
+      costLineColor: token('--ink-3', isDark ? '#8290A4' : '#5D6B80'),
+      costLabelBackground: '#59677B',
       axisColor: token('--ink-3', isDark ? '#8290A4' : '#64748B'),
       gridColor: withAlpha(token('--hair', isDark ? '#232C3B' : '#E2E8F0'), 0.55),
       crosshairColor: withAlpha(accent, 0.6),
       fontFamily: token('--font-mono', 'ui-monospace, "SF Mono", Menlo, monospace'),
     }
   }, [isDark])
-  const { accent, buyColor, sellColor, surface, areaTop, areaBottom, priceLabelBackground, axisColor, gridColor, crosshairColor, fontFamily: chartFont } = palette
+  const { accent, buyColor, sellColor, surface, areaTop, areaBottom, priceLabelBackground, costLineColor, costLabelBackground, axisColor, gridColor, crosshairColor, fontFamily: chartFont } = palette
 
   /* 价格点与成交点统一转成图表时间基；日内另建时间桶索引，供 tooltip 命中同一根 K 线的成交。 */
   const model = useMemo(() => {
@@ -792,6 +797,14 @@ function PriceHistoryChart({ series, orders, name, compact = false }: { series: 
       topColor: areaTop,
       bottomColor: areaBottom,
       lineWidth: 2,
+      autoscaleInfoProvider: (original: () => AutoscaleInfo | null) => {
+        const info = original()
+        if (info?.priceRange && costBasis !== undefined) {
+          info.priceRange.minValue = Math.min(info.priceRange.minValue, costBasis)
+          info.priceRange.maxValue = Math.max(info.priceRange.maxValue, costBasis)
+        }
+        return info
+      },
       /* 最新价：虚线 + 轴端价格牌，对应旧 ECharts 的 markLine 展示。 */
       priceLineVisible: false,
       lastValueVisible: false,
@@ -803,6 +816,11 @@ function PriceHistoryChart({ series, orders, name, compact = false }: { series: 
     priceLine.createPriceLine({
       price: last, color: accent, lineWidth: 1, lineStyle: LineStyle.Dashed,
       axisLabelVisible: true, axisLabelColor: priceLabelBackground, axisLabelTextColor: '#FFFFFF',
+    })
+    if (costBasis !== undefined) priceLine.createPriceLine({
+      price: costBasis, color: costLineColor, lineWidth: 1, lineStyle: LineStyle.Dashed,
+      title: tx('成本线', 'Cost basis'), axisLabelVisible: true,
+      axisLabelColor: costLabelBackground, axisLabelTextColor: '#FFFFFF',
     })
     const tradeDots = createTradeDots(model.markers, surface)
     priceLine.attachPrimitive(tradeDots)
@@ -827,18 +845,18 @@ function PriceHistoryChart({ series, orders, name, compact = false }: { series: 
     }
     chart.subscribeCrosshairMove(onCrosshair)
     return () => { chartApiRef.current = null; chart.unsubscribeCrosshairMove(onCrosshair); priceLine.detachPrimitive(tradeDots); chart.remove() }
-  }, [accent, areaTop, areaBottom, surface, axisColor, buyColor, chartFont, crosshairColor, gridColor, isDark, last, model, priceLabelBackground, series.currency, sellColor])
+  }, [accent, areaTop, areaBottom, surface, axisColor, buyColor, chartFont, costBasis, costLabelBackground, costLineColor, crosshairColor, gridColor, isDark, last, model, priceLabelBackground, series.currency, sellColor])
 
   return <section className="price-chart-panel" aria-labelledby="price-chart-title">
     {!compact && <div className="section-heading"><div><h2 id="price-chart-title">{tx('历史价格与买卖点', 'Price history and trade markers')}</h2><p>{series.symbol} · {intervalLabel(series)} · {new Date(start).toLocaleDateString(localeCode())} - {new Date(end).toLocaleDateString(localeCode())} · {tx('纵轴聚焦价格区间', 'Scaled price axis')}</p></div><strong className={(change ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{money(last, series.currency)} <small>{percent(change)}</small></strong></div>}
     {!compact && <div className="chart-meta"><p className="chart-count">{tx(`区间内 ${trades.length} 个 Trading 212 成交点 · 滚轮或双指缩放，拖动平移`, `${trades.length} Trading 212 trades in range · Scroll or pinch to zoom, drag to pan`)}</p><button type="button" className="chart-reset" onClick={() => chartApiRef.current?.timeScale().fitContent()}>{tx('重置缩放', 'Reset zoom')}</button></div>}
     {compact && <div className="chart-compact-meta">
-      <ChartLegend />
+      <ChartLegend costBasis={costBasis} currency={series.currency} />
       <p className="chart-count">{tx(`${intervalLabel(series)} · 区间内 ${trades.length} 个成交点`, `${intervalLabel(series)} · ${trades.length} trades in range`)}</p>
     </div>}
-    {!compact && <ChartLegend />}
+    {!compact && <ChartLegend costBasis={costBasis} currency={series.currency} />}
     <div className="price-chart-wrap">
-      <div ref={chartRef} className="price-chart" role="img" aria-label={compact ? tx(`${name} ${rangeLabel(series.range)}历史价格曲线`, `${name} price chart`) : tx(`${name} ${rangeLabel(series.range)}历史价格曲线，包含 ${trades.length} 个买卖成交点`, `${name} ${rangeLabel(series.range)} price chart with ${trades.length} trade markers`)} />
+      <div ref={chartRef} className="price-chart" role="img" aria-label={compact ? tx(`${name} ${rangeLabel(series.range)}历史价格曲线${costBasis !== undefined ? `，成本线 ${money(costBasis, series.currency)}` : ''}`, `${name} price chart${costBasis !== undefined ? `, cost basis ${money(costBasis, series.currency)}` : ''}`) : tx(`${name} ${rangeLabel(series.range)}历史价格曲线，包含 ${trades.length} 个买卖成交点${costBasis !== undefined ? `，成本线 ${money(costBasis, series.currency)}` : ''}`, `${name} ${rangeLabel(series.range)} price chart with ${trades.length} trade markers${costBasis !== undefined ? ` and cost basis ${money(costBasis, series.currency)}` : ''}`)} />
       {hover !== null && <div className="chart-tooltip" style={{ left: hover.x, top: hover.y, transform: `${hover.flipX ? 'translateX(calc(-100% - 13px))' : 'translateX(13px)'} ${hover.flipY ? 'translateY(calc(-100% - 13px))' : 'translateY(13px)'}` }}>
         <span className="chart-tooltip-time">{hover.label}</span>
         {hover.close !== undefined && <span className="chart-tooltip-row"><i className="legend-line" style={{ background: accent }} />{tx('收盘价', 'Close')}<b>{money(hover.close, series.currency)}</b></span>}
@@ -928,7 +946,7 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hide
             <span>{tx('正在读取行情…', 'Loading chart…')}</span>
           </div>
         ) : series ? (
-          <PriceHistoryChart series={series} orders={orders} name={name} compact />
+          <PriceHistoryChart series={series} orders={orders} name={name} averagePricePaid={position.averagePricePaid} instrumentCurrency={currency} hideBalances={hideBalances} compact />
         ) : (
           <div className="empty-inline">{tx('暂无走势行情', 'No price data')}</div>
         )}
@@ -939,25 +957,25 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hide
         <h3 className="cockpit-section-title">{tx('持仓明细', 'Your investment')}</h3>
         <div className="inv-metrics-list">
           <div className="inv-metric-row">
-            <span>{tx('当前市值', 'VALUE')}</span>
+            <span>{tx('当前市值', 'Value')}</span>
             <strong className="js-balance">{hideBalances ? '••••••' : money(position.walletImpact?.currentValue, accountCurrency)}</strong>
           </div>
           <div className="inv-metric-row">
-            <span>{tx('未实现收益', 'RETURN')}</span>
+            <span>{tx('未实现收益', 'Return')}</span>
             <strong className={profit >= 0 ? 'tone-positive' : 'tone-negative'}>
               {hideBalances ? '••••' : `${signedMoney(profit, accountCurrency)} (${percent(returnPct)})`}
             </strong>
           </div>
           <div className="inv-metric-row">
-            <span>{tx('持股数量', 'SHARES')}</span>
+            <span>{tx('持股数量', 'Shares')}</span>
             <strong>{hideBalances ? '••••' : decimal(position.quantity, 4)}</strong>
           </div>
           <div className="inv-metric-row">
-            <span>{tx('平均买入价', 'AVERAGE PRICE')}</span>
+            <span>{tx('平均买入价', 'Average price')}</span>
             <strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '-' : money(position.averagePricePaid, currency))}</strong>
           </div>
           <div className="inv-metric-row">
-            <span>{tx('持仓成本', 'COST')}</span>
+            <span>{tx('持仓成本', 'Cost')}</span>
             <strong className="js-balance">{hideBalances ? '••••••' : money(cost, accountCurrency)}</strong>
           </div>
         </div>
@@ -1022,18 +1040,18 @@ function InstrumentDetailPage({ position, accountCurrency, hideBalances = false,
     </div>
     <RangeSwitcher value={range} onChange={setRange} labels={rangeLabel} />
     {marketError && <ErrorPanel error={marketError} onRetry={() => void loadMarket(range)} compact />}
-    {marketLoading ? <div className="chart-loading"><LoaderCircle strokeWidth={1.5} className="spin" />{tx('正在读取 Yahoo Finance 行情…', 'Loading Yahoo Finance prices…')}</div> : series && <PriceHistoryChart series={series} orders={orders} name={name} />}
+    {marketLoading ? <div className="chart-loading"><LoaderCircle strokeWidth={1.5} className="spin" />{tx('正在读取 Yahoo Finance 行情…', 'Loading Yahoo Finance prices…')}</div> : series && <PriceHistoryChart series={series} orders={orders} name={name} averagePricePaid={position.averagePricePaid} instrumentCurrency={currency} hideBalances={hideBalances} />}
     <p className="market-source">{tx('价格来源：Yahoo Finance（非官方接口，可能延迟或暂时不可用）；买卖点来源：Trading 212 真实成交记录。Yahoo 只接收公开的 ISIN/股票名称，不会收到你的 API 密钥、持仓数量或账户金额。', 'Prices: Yahoo Finance (unofficial endpoint; may be delayed or unavailable). Trade markers: actual Trading 212 fills. Yahoo receives only the public ISIN/name, never your API key, quantities, or account values.')}</p>
     <section className="your-investment-section">
       <div className="section-heading">
         <h2>{tx('持仓明细', 'Your investment')}</h2>
       </div>
       <div className="investment-grid">
-        <div className="invest-row"><span>{tx('当前市值', 'VALUE')}</span><strong className="js-balance">{hideBalances ? '••••••' : money(position.walletImpact?.currentValue, accountCurrency)}</strong></div>
-        <div className="invest-row"><span>{tx('未实现收益', 'RETURN')}</span><strong className={profit >= 0 ? 'tone-positive' : 'tone-negative'}>{hideBalances ? '••••' : signedMoney(profit, accountCurrency)} <small>({hideBalances ? '••••' : percent(cost ? profit / cost * 100 : undefined)})</small></strong></div>
-        <div className="invest-row"><span>{tx('持股数量', 'SHARES')}</span><strong>{hideBalances ? '••••' : decimal(position.quantity, 4)} <small>({tx('可交易', 'Tradable')} {hideBalances ? '••••' : decimal(position.quantityAvailableForTrading, 4)})</small></strong></div>
-        <div className="invest-row"><span>{tx('平均买入价', 'AVERAGE PRICE')}</span><strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '-' : money(position.averagePricePaid, currency))}</strong></div>
-        <div className="invest-row"><span>{tx('持仓成本', 'COST')}</span><strong className="js-balance">{hideBalances ? '••••••' : money(cost, accountCurrency)}</strong></div>
+        <div className="invest-row"><span>{tx('当前市值', 'Value')}</span><strong className="js-balance">{hideBalances ? '••••••' : money(position.walletImpact?.currentValue, accountCurrency)}</strong></div>
+        <div className="invest-row"><span>{tx('未实现收益', 'Return')}</span><strong className={profit >= 0 ? 'tone-positive' : 'tone-negative'}>{hideBalances ? '••••' : signedMoney(profit, accountCurrency)} <small>({hideBalances ? '••••' : percent(cost ? profit / cost * 100 : undefined)})</small></strong></div>
+        <div className="invest-row"><span>{tx('持股数量', 'Shares')}</span><strong>{hideBalances ? '••••' : decimal(position.quantity, 4)} <small>({tx('可交易', 'Tradable')} {hideBalances ? '••••' : decimal(position.quantityAvailableForTrading, 4)})</small></strong></div>
+        <div className="invest-row"><span>{tx('平均买入价', 'Average price')}</span><strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '-' : money(position.averagePricePaid, currency))}</strong></div>
+        <div className="invest-row"><span>{tx('持仓成本', 'Cost')}</span><strong className="js-balance">{hideBalances ? '••••••' : money(cost, accountCurrency)}</strong></div>
       </div>
     </section>
     <section className="instrument-history"><div className="section-heading"><div><h2>{tx('这只股票的买卖历史', 'Trade history for this instrument')}</h2><p>{tx(`Trading 212 返回的真实成交记录 · 已加载 ${orders.length} 笔`, `Actual Trading 212 fills · ${orders.length} loaded`)}</p></div></div>{historyError && <ErrorPanel error={historyError} onRetry={() => void loadHistory()} compact />}{historyLoading && orders.length === 0 ? <div className="history-loading"><LoaderCircle strokeWidth={1.5} className="spin" />{tx('正在读取买卖历史…', 'Loading trade history…')}</div> : <HistoryRows kind="orders" items={orders} />}{cursor && <button className="load-more" type="button" disabled={historyLoading} onClick={() => void loadHistory(cursor, true)}>{historyLoading ? tx('正在加载…', 'Loading…') : tx('加载更多', 'Load more')}</button>}</section>
@@ -1212,7 +1230,7 @@ function OverviewPage({
         {/* 1. ACCOUNT VALUE 卡片 */}
         <div className="cockpit-account-card">
           <div className="account-card-header">
-            <span className="account-label">{tx('账户总价值', 'ACCOUNT VALUE')} · {currency}</span>
+            <span className="account-label">{tx('账户总价值', 'Account value')} · {currency}</span>
             <button className="icon-btn-ghost" type="button" aria-label={tx('账户设置', 'Account settings')} title={tx('账户设置', 'Account settings')} onClick={() => onNavigate('settings')}>
               <Settings strokeWidth={1.5} size={14} />
             </button>
@@ -1220,7 +1238,7 @@ function OverviewPage({
           <strong className="account-hero-val">{hideBalances ? '••••••••' : money(analytics.totalValue, currency)}</strong>
           <div className="account-sub-metrics-grid">
             <div className="sub-metric-block">
-              <span>{tx('今日盈亏', 'TODAY P/L')}</span>
+              <span>{tx('今日盈亏', 'Today P/L')}</span>
               {todayProfitLoss !== undefined ? (
                 <strong className={todayProfitLoss >= 0 ? 'tone-positive' : 'tone-negative'}>
                   {hideBalances ? '••••' : signedMoney(todayProfitLoss, currency)}
@@ -1231,7 +1249,7 @@ function OverviewPage({
               )}
             </div>
             <div className="sub-metric-block">
-              <span>{tx('累计未实现', 'TOTAL UNREALIZED')}</span>
+              <span>{tx('累计未实现', 'Total unrealized')}</span>
               <strong className={analytics.unrealizedProfitLoss >= 0 ? 'tone-positive' : 'tone-negative'}>
                 {hideBalances ? '••••' : signedMoney(analytics.unrealizedProfitLoss, currency)}
                 <small className="sub-metric-pct"> ({percent(analytics.unrealizedReturnPercent)})</small>

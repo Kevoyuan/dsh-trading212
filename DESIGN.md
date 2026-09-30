@@ -1,5 +1,16 @@
 # dsh x Trading 212 - design system ("Lumen")
 
+## Current visual rules
+
+The implementation in `src/app/styles.css` is the source of truth for tokens. Cards use
+18px outer corners, 14px panel corners, 10px inset corners, and 6px compact controls.
+Elevated surfaces have a subtle upper inset highlight and layered soft shadows in both
+themes. Main interface text uses Inter with SF Pro as the system fallback; monospace is
+reserved for very small technical labels. Hero figures use weight 550 and −0.03em
+tracking. English interface labels use sentence case, while ticker symbols and the
+INVEST brand keep their original casing. The sticky navigation groups use translucent
+glass and a gentle blur, with an opaque reduced-transparency fallback.
+
 ## Design direction
 
 The interface is a **soft-structuralist data instrument**: a cool, faintly blue-cast neutral

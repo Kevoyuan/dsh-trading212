@@ -157,6 +157,26 @@ describe('Trading 212 UI interactions', () => {
     expect(await screen.findByRole('heading', { name: '持仓' })).toBeTruthy()
   })
 
+  it('shows the instrument cost basis on both charts and hides it in privacy mode', async () => {
+    mocks.status.mockResolvedValue({ connected: true, environment: 'demo', writable: true, source: 'record' })
+    render(<App />)
+    const user = userEvent.setup()
+    expect(await screen.findByText(/成本线.*200\.00/)).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: /Apple.*AAPL.*USD/ }))
+    expect(await screen.findByRole('img', { name: /成本线.*200\.00/ })).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: '隐藏金额' }))
+    expect(screen.queryByText(/成本线.*200\.00/)).toBeNull()
+    expect(screen.queryByRole('img', { name: /成本线/ })).toBeNull()
+  })
+
+  it('omits the cost line when market and instrument currencies differ', async () => {
+    mocks.status.mockResolvedValue({ connected: true, environment: 'demo', writable: true, source: 'record' })
+    mocks.market.mockResolvedValue({ source: 'Yahoo Finance', symbol: 'AAPL', exchange: 'NMS', currency: 'GBP', range: '1w', interval: '1d', fetchedAt: '2026-08-24T10:00:00Z', regularMarketPrice: 225, candles: [{ time: '2026-08-01T00:00:00Z', close: 200 }, { time: '2026-08-02T00:00:00Z', close: 225 }] })
+    render(<App />)
+    await screen.findByRole('img', { name: /Apple.*历史价格曲线/ })
+    expect(screen.queryByText(/成本线/)).toBeNull()
+  })
+
   it('toggles privacy mode and masks account totals and holding details', async () => {
     mocks.status.mockResolvedValue({ connected: true, environment: 'demo', writable: true, source: 'record' })
     render(<App />)
