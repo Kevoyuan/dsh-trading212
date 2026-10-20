@@ -20,3 +20,6 @@ site/
 promo-video/
 # published-app pointer written by the deploy tool
 .wbapp_*.genie
+
+# release tarballs built by npm pack
+*.tgz
