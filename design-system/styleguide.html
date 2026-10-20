@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lumen · dsh × Trading 212 设计规范</title>
+<link rel="stylesheet" href="./tokens.css" />
+<style>
+/* ==========================================================================
+   Styleguide shell. It consumes the same tokens the product does — nothing here
+   defines a colour, a radius or a type size of its own.
+   ========================================================================== */
+*, *::before, *::after{ box-sizing: border-box; }
+*{ margin: 0; }
+html{
+  background: var(--canvas); color: var(--ink-1);
+  font-family: var(--font-sans); font-size: var(--fs-body); line-height: 1.5;
+  font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased;
+}
+body{ min-height: 100dvh; }
+button{ font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+code{ font-family: var(--font-mono); font-size: 12px; }
+
+.shell{
+  max-width: 1180px; margin-inline: auto; padding: 40px 40px 96px;
+  display: grid; grid-template-columns: 188px minmax(0, 1fr); gap: 56px;
+  align-items: start;
+}
+@media (max-width: 900px){ .shell{ grid-template-columns: minmax(0,1fr); gap: 32px; padding: 24px 20px 64px; } }
+
+/* ---- masthead ---- */
+.masthead{ grid-column: 1 / -1; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding-bottom: 28px; border-bottom: 1px solid var(--hair); }
+.masthead h1{ font-size: var(--fs-hero); line-height: 1.05; letter-spacing: -0.022em; font-weight: 560; }
+.masthead .eyebrow{ font-size: var(--fs-micro); letter-spacing: 0.02em; color: var(--ink-3); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.masthead .eyebrow b{ font-weight: 600; color: var(--ink-1); }
+.masthead p{ margin-top: 10px; color: var(--ink-2); max-width: 62ch; }
+.masthead-actions{ display: flex; gap: 8px; flex: none; }
+
+/* ---- side nav ---- */
+.toc{ position: sticky; top: 24px; display: grid; gap: 2px; }
+.toc a{
+  display: block; padding: 6px 10px; border-radius: var(--r-2);
+  color: var(--ink-2); text-decoration: none; font-size: var(--fs-body);
+}
+.toc a:hover{ background: var(--well); color: var(--ink-1); }
+.toc .toc-label{ font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: 0.02em; padding: 16px 10px 6px; }
+
+/* ---- sections ---- */
+.section{ display: grid; gap: 20px; padding-top: 8px; }
+.section + .section{ margin-top: 40px; }
+.section-head{ display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.section-head h2{ font-size: var(--fs-title); line-height: 1.25; letter-spacing: -0.022em; font-weight: 600; }
+.section-head span{ font-size: var(--fs-micro); color: var(--ink-3); }
+.lede{ color: var(--ink-2); max-width: 74ch; }
+.lede code{ background: var(--well); border: 1px solid var(--hair); border-radius: var(--r-1); padding: 1px 5px; }
+
+.panel{
+  background: var(--surface); border: 1px solid var(--hair);
+  border-radius: var(--r-4); box-shadow: var(--sh-plate); padding: 24px;
+}
+.panel-flat{ background: var(--well); border: 1px solid var(--hair); border-radius: var(--r-3); padding: 20px; }
+.panel-head{ display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.panel-head h3{ font-size: var(--fs-fig); letter-spacing: -0.011em; font-weight: 600; }
+.panel-head .meta{ font-size: var(--fs-micro); color: var(--ink-3); }
+
+/* ---- colour ---- */
+.swatches{ display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 12px; }
+.swatch{ border: 1px solid var(--hair); border-radius: var(--r-2); overflow: hidden; background: var(--surface); }
+.swatch .chip{ height: 60px; }
+.swatch .body{ padding: 8px 10px 10px; display: grid; gap: 1px; }
+.swatch b{ font-size: var(--fs-micro); font-weight: 600; }
+.swatch span{ font-size: var(--fs-micro); color: var(--ink-3); font-family: var(--font-mono); }
+.swatch em{ font-style: normal; font-size: var(--fs-micro); color: var(--ink-3); }
+
+/* ---- type ---- */
+.type-row{ display: grid; grid-template-columns: 124px minmax(0,1fr); gap: 24px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--hair); }
+.type-row:last-child{ border-bottom: 0; }
+.type-row .spec{ font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); line-height: 1.55; white-space: nowrap; }
+.type-row .spec b{ display: block; color: var(--ink-1); font-family: var(--font-sans); font-weight: 600; }
+
+/* ---- spacing / radius / elevation ---- */
+.bars{ display: grid; gap: 8px; }
+.bar{ display: grid; grid-template-columns: 72px minmax(0,1fr) 56px; gap: 12px; align-items: center; font-size: var(--fs-micro); color: var(--ink-3); }
+.bar i{ display: block; height: 10px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); border-radius: 2px; }
+
+.shapes{ display: flex; flex-wrap: wrap; gap: 16px; }
+.shape{ display: grid; gap: 6px; justify-items: center; font-size: var(--fs-micro); color: var(--ink-3); }
+.shape i{ width: 72px; height: 56px; background: var(--well); border: 1px solid var(--hair-strong); display: block; }
+
+.elev{ display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+.elev div{ height: 96px; border-radius: var(--r-3); display: grid; place-items: center; font-size: var(--fs-micro); color: var(--ink-3); }
+
+/* ---- components ---- */
+.row{ display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.stack{ display: grid; gap: 12px; }
+.grid-2{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 20px; }
+.label{ font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: 0.02em; margin-bottom: 8px; }
+
+.btn{ display: inline-flex; align-items: center; gap: 6px; height: var(--control-h); padding: 0 12px; border-radius: var(--r-2); font-size: var(--fs-body); font-weight: 500; transition: background-color 140ms cubic-bezier(.32,.72,0,1), border-color 140ms, color 140ms, transform 140ms; }
+.btn-primary{ background: var(--accent-plate); color: var(--accent-plate-ink); }
+.btn-primary:hover{ background: var(--accent-deep); }
+.btn-secondary{ background: var(--surface); color: var(--ink-1); box-shadow: inset 0 0 0 1px var(--hair); }
+.btn-secondary:hover{ background: var(--well); }
+.btn-ghost{ color: var(--ink-2); }
+.btn-ghost:hover{ background: var(--well); color: var(--ink-1); }
+.btn-danger{ color: var(--neg); box-shadow: inset 0 0 0 1px var(--neg-soft); }
+.btn-danger:hover{ background: var(--neg-soft); }
+.btn:active{ transform: scale(.98); }
+.btn:disabled{ opacity: .45; cursor: not-allowed; }
+.btn-sm{ height: var(--control-h-sm); padding: 0 10px; font-size: var(--fs-micro); }
+.btn-lg{ height: var(--control-h-lg); padding: 0 16px; }
+
+.seg{ display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--r-2); background: var(--well); box-shadow: inset 0 0 0 1px var(--hair); }
+.seg button{ min-height: 28px; padding: 0 12px; border-radius: var(--r-1); font-size: var(--fs-micro); color: var(--ink-3); }
+.seg button[aria-pressed="true"]{ background: var(--surface); color: var(--ink-1); font-weight: 600; box-shadow: var(--sh-plate), inset 0 0 0 1px var(--hair); }
+
+.badge{ display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 8px; border-radius: var(--r-1); font-size: var(--fs-micro); background: var(--well); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--hair); }
+.badge-pos{ background: var(--pos-soft); color: var(--pos); box-shadow: none; }
+.badge-neg{ background: var(--neg-soft); color: var(--neg); box-shadow: none; }
+.dot{ width: 5px; height: 5px; border-radius: 999px; background: currentColor; }
+
+.field{ display: grid; gap: 6px; max-width: 280px; }
+.field label{ font-size: var(--fs-micro); color: var(--ink-3); }
+.field input{ height: var(--control-h); padding: 0 12px; border-radius: var(--r-2); background: var(--surface); color: var(--ink-1); box-shadow: inset 0 0 0 1px var(--hair); font: inherit; border: 0; }
+.field input:focus{ outline: none; box-shadow: inset 0 0 0 1px var(--accent), var(--focus-ring); }
+
+/* table */
+table{ width: 100%; border-collapse: collapse; }
+th{ text-align: left; font-size: var(--fs-micro); font-weight: 500; letter-spacing: 0.02em; color: var(--ink-3); padding: 0 12px 8px; border-bottom: 1px solid var(--hair); white-space: nowrap; }
+td{ height: var(--row-h); padding: 8px 12px; border-bottom: 1px solid var(--hair); font-size: var(--fs-body); }
+tbody tr:last-child td{ border-bottom: 0; }
+tbody tr:hover{ background: var(--well); }
+th:not(:first-child), td:not(:first-child){ text-align: right; }
+td b{ font-weight: 600; }
+td small{ display: block; font-size: var(--fs-micro); color: var(--ink-3); }
+.pos{ color: var(--pos); }
+.neg{ color: var(--neg); }
+.asset{ display: flex; align-items: center; gap: 12px; }
+.avatar{ width: 32px; height: 32px; border-radius: var(--r-1); background: var(--well); color: var(--ink-2); display: grid; place-items: center; font-size: var(--fs-micro); font-weight: 600; box-shadow: inset 0 0 0 1px var(--hair); }
+
+/* bar list */
+.bars-list{ display: grid; }
+.bars-list .row-bar{ display: grid; grid-template-columns: minmax(0,1fr) minmax(96px,1.35fr) 104px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--hair); }
+.bars-list .row-bar:last-child{ border-bottom: 0; }
+.row-bar .name{ display: grid; }
+.row-bar .name b{ font-size: var(--fs-body); font-weight: 600; }
+.row-bar .name small{ font-size: var(--fs-micro); color: var(--ink-3); }
+.track{ display: flex; height: 8px; border-radius: 2px; background: var(--hair-strong); overflow: hidden; }
+.track i{ display: block; height: 100%; border-radius: 2px; background: var(--pos); }
+.track i.neg{ background: var(--neg); margin-inline-start: auto; }
+.track i.accent{ background: var(--accent); }
+.row-bar .val{ text-align: right; font-size: var(--fs-row); font-weight: 600; }
+
+/* mosaic */
+.mosaic{ display: grid; grid-template-columns: 1.05fr 1fr; gap: 6px; height: 260px; }
+.tile{ position: relative; display: flex; flex-direction: column; padding: 12px; border-radius: var(--r-2); border: 1px solid color-mix(in srgb, var(--tile) 20%, var(--hair)); background: color-mix(in srgb, var(--tile) 7%, var(--surface)); }
+.tile.gain{ --tile: var(--pos); }
+.tile.loss{ --tile: var(--neg); }
+.tile.selected{ border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.tile .tk{ font-size: var(--fs-micro); font-weight: 600; color: var(--ink-2); letter-spacing: 0.04em; }
+.tile .pct{ margin-block: auto; font-size: var(--fs-title); font-weight: 600; line-height: 1.1; }
+.tile.gain .pct{ color: var(--pos); }
+.tile.loss .pct{ color: var(--neg); }
+.tile .sub{ display: flex; justify-content: space-between; font-size: var(--fs-micro); color: var(--ink-3); }
+
+/* metric band */
+.metrics{ display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); }
+.metrics div{ position: relative; padding: 12px 16px 0 0; display: grid; gap: 2px; }
+.metrics div + div{ padding-left: 16px; }
+.metrics div + div::after{ content:""; position:absolute; inset-block: 12px 0; inset-inline-start:0; width:1px; background: var(--hair); }
+.metrics div::before{ content:""; position:absolute; inset-inline:0; top:0; height:1px; background: var(--hair); }
+.metrics span{ font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: 0.02em; }
+.metrics b{ font-size: var(--fs-row); font-weight: 600; }
+
+/* nav */
+.navcap{ display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: var(--r-3); background: var(--surface); border: 1px solid var(--hair); box-shadow: var(--sh-float); }
+.navcap .tab{ display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; border-radius: var(--r-2); font-size: var(--fs-body); color: var(--ink-2); }
+.navcap .tab.active{ background: var(--accent-soft); color: var(--accent-deep); font-weight: 600; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent); }
+
+/* do / don't */
+.dd{ display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 720px){ .dd{ grid-template-columns: 1fr; } }
+.dd .box{ border-radius: var(--r-3); border: 1px solid var(--hair); padding: 16px; display: grid; gap: 10px; background: var(--surface); }
+.dd h4{ font-size: var(--fs-micro); letter-spacing: 0.02em; display: flex; align-items: center; gap: 6px; }
+.dd .yes h4{ color: var(--pos); }
+.dd .no h4{ color: var(--neg); }
+.dd p{ font-size: var(--fs-body); color: var(--ink-2); }
+
+.note{ font-size: var(--fs-micro); color: var(--ink-3); }
+.footer{ grid-column: 1 / -1; margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--hair); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: var(--fs-micro); color: var(--ink-3); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="masthead">
+    <div>
+      <div class="eyebrow"><b>LUMEN</b> · v2.0 · dsh × Trading 212</div>
+      <h1>设计规范</h1>
+      <p>一份可执行的规范：token、类型、形状、层级，以及每个组件的状态与禁忌。页面上的每个值都来自 <code>tokens.css</code>，没有例外。</p>
+    </div>
+    <div class="masthead-actions">
+      <button class="btn btn-secondary" id="theme-toggle">切换深色</button>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <span class="toc-label">基础</span>
+    <a href="#colour">颜色</a>
+    <a href="#type">文字</a>
+    <a href="#space">间距</a>
+    <a href="#shape">形状</a>
+    <a href="#elevation">层级</a>
+    <span class="toc-label">组件</span>
+    <a href="#button">按钮</a>
+    <a href="#segmented">分段控件</a>
+    <a href="#badge">标签</a>
+    <a href="#table">数据表</a>
+    <a href="#bars">排名条</a>
+    <a href="#mosaic">配置拼盘</a>
+    <a href="#metrics">指标带</a>
+    <a href="#nav">导航</a>
+    <span class="toc-label">规则</span>
+    <a href="#rules">做与不做</a>
+  </nav>
+
+  <main class="stack" style="gap:0">
+
+    <!-- ================= COLOUR ================= -->
+    <section class="section" id="colour">
+      <div class="section-head"><h2>颜色</h2><span>3 层：表面 → 文字 → 信号</span></div>
+      <p class="lede">颜色只回答两个问题：这个东西在哪一层，这个数字是正是负。绿色和红色是<b>断言</b>，不是强调色——它们只出现在带符号的金额上。</p>
+
+      <div class="panel">
+        <div class="panel-head"><h3>表面</h3><span class="meta">卡片靠 1px 线可辨，阴影只负责抬起</span></div>
+        <div class="swatches">
+          <div class="swatch"><div class="chip" style="background:var(--canvas)"></div><div class="body"><b>--canvas</b><span>页面底色</span><em>#F1F4F9</em></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--surface)"></div><div class="body"><b>--surface</b><span>卡片 / 弹层</span><em>#FFFFFF</em></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--well)"></div><div class="body"><b>--well</b><span>凹陷 / 轨道</span><em>#F7F9FC</em></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--hair)"></div><div class="body"><b>--hair</b><span>唯一的分割线</span><em>#E3E9F2</em></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--hair-strong)"></div><div class="body"><b>--hair-strong</b><span>控件边 / 量尺轨道</span><em>#D2DAE6</em></div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>文字</h3><span class="meta">对比度 15.8 / 8.6 / 4.9 : 1</span></div>
+        <div class="swatches">
+          <div class="swatch"><div class="chip" style="background:var(--ink-1)"></div><div class="body"><b>--ink-1</b><span>数值、标题</span><em>#121822</em></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--ink-2)"></div><div class="body"><b>--ink-2</b><span>正文、浅底标签</span><em>#3E4759</em></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--ink-3)"></div><div class="body"><b>--ink-3</b><span>微标签、单位</span><em>#66707F</em></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--ink-4)"></div><div class="body"><b>--ink-4</b><span>仅图标与线，不用于文字</span><em>#8B95A5</em></div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>信号</h3><span class="meta">一个强调色；正负只属于金额</span></div>
+        <div class="swatches">
+          <div class="swatch"><div class="chip" style="background:var(--accent)"></div><div class="body"><b>--accent</b><span>交互、选中、量级</span><em>#2B57D6</em></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--accent-soft)"></div><div class="body"><b>--accent-soft</b><span>选中底、弱提示</span><em>#EDF1FE</em></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--pos)"></div><div class="body"><b>--pos</b><span>带符号盈利</span><em>#0B6547</em></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--neg)"></div><div class="body"><b>--neg</b><span>带符号亏损</span><em>#B03028</em></div></div>
+          <div class="swatch"><div class="chip" style="background:var(--warn)"></div><div class="body"><b>--warn</b><span>提示、卖出标记</span><em>#8A6212</em></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TYPE ================= -->
+    <section class="section" id="type">
+      <div class="section-head"><h2>文字</h2><span>6 级，下限 12px</span></div>
+      <p class="lede">每一级自带字号、行高与字距，标题不会继承正文的 leading。数字一律 tabular 且<b>零字距</b>——带字距的数字无法逐列比对。</p>
+      <div class="panel">
+        <div class="type-row"><div class="spec"><b>--fs-hero</b>40 / 44<br>−0.022em · 560</div><div style="font-size:40px;line-height:44px;letter-spacing:-0.022em;font-weight:560">€24,382.61</div></div>
+        <div class="type-row"><div class="spec"><b>--fs-title</b>26 / 32<br>−0.022em · 600</div><div style="font-size:26px;line-height:32px;letter-spacing:-0.022em;font-weight:600">账户总价值</div></div>
+        <div class="type-row"><div class="spec"><b>--fs-fig</b>20 / 26<br>−0.011em · 600</div><div style="font-size:20px;line-height:26px;letter-spacing:-0.011em;font-weight:600">未实现盈亏贡献</div></div>
+        <div class="type-row"><div class="spec"><b>--fs-row</b>16 / 22<br>−0.011em · 600</div><div style="font-size:16px;line-height:22px;letter-spacing:-0.011em;font-weight:600">+€1,311.75</div></div>
+        <div class="type-row"><div class="spec"><b>--fs-body</b>14 / 20<br>0 · 400</div><div style="font-size:14px;line-height:20px">NVIDIA Corp. · 16.8750 股 · 平均买入价 $213.40</div></div>
+        <div class="type-row"><div class="spec"><b>--fs-micro</b>12 / 16<br>+0.02em · 500</div><div style="font-size:12px;line-height:16px;letter-spacing:0.02em;color:var(--ink-3)">当前市值 · 持仓成本 · 汇兑影响</div></div>
+      </div>
+    </section>
+
+    <!-- ================= SPACE ================= -->
+    <section class="section" id="space">
+      <div class="section-head"><h2>间距</h2><span>4px 基准</span></div>
+      <div class="panel">
+        <div class="grid-2">
+          <div>
+            <div class="label">--s-1 … --s-8 · 内边距与间隙</div>
+            <div class="bars">
+              <div class="bar"><span>--s-1</span><i style="width:4px"></i><span>4</span></div>
+              <div class="bar"><span>--s-2</span><i style="width:8px"></i><span>8</span></div>
+              <div class="bar"><span>--s-3</span><i style="width:12px"></i><span>12</span></div>
+              <div class="bar"><span>--s-4</span><i style="width:16px"></i><span>16</span></div>
+              <div class="bar"><span>--s-5</span><i style="width:20px"></i><span>20</span></div>
+              <div class="bar"><span>--s-6</span><i style="width:24px"></i><span>24</span></div>
+              <div class="bar"><span>--s-7</span><i style="width:32px"></i><span>32</span></div>
+              <div class="bar"><span>--s-8</span><i style="width:40px"></i><span>40</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="label">密度契约</div>
+            <div class="stack" style="gap:8px">
+              <div class="panel-flat" style="display:grid;gap:4px">
+                <span class="note">--card-pad</span><b style="font-size:var(--fs-row)">20px 卡片内边距</b>
+                <span class="note">--row-h</span><b style="font-size:var(--fs-row)">48px 表格行高</b>
+                <span class="note">--control-h</span><b style="font-size:var(--fs-row)">28 / 34 / 40 控件高度</b>
+              </div>
+              <p class="note">密度用面积换，不用信息换。去密可以加留白、去装饰，不能删数字、抬字号下限、去有含义的线。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SHAPE ================= -->
+    <section class="section" id="shape">
+      <div class="section-head"><h2>形状</h2><span>形状跟随尺寸，不跟随流行</span></div>
+      <p class="lede">控件永远不是胶囊。一个 34px 高、999px 圆角的按钮是"药丸"，一排五个就是玩具。唯一合法的胶囊是分段控件的滑块，因为它要贴合轨道的端部。</p>
+      <div class="panel">
+        <div class="shapes">
+          <div class="shape"><i style="border-radius:var(--r-1)"></i><span>--r-1 · 6 标签</span></div>
+          <div class="shape"><i style="border-radius:var(--r-2)"></i><span>--r-2 · 10 控件</span></div>
+          <div class="shape"><i style="border-radius:var(--r-3)"></i><span>--r-3 · 14 卡片</span></div>
+          <div class="shape"><i style="border-radius:var(--r-4)"></i><span>--r-4 · 18 主卡</span></div>
+          <div class="shape"><i style="border-radius:999px;width:72px;height:28px"></i><span>--r-pill · 徽标/圆点</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ELEVATION ================= -->
+    <section class="section" id="elevation">
+      <div class="section-head"><h2>层级</h2><span>4 级，每级都是一个决定</span></div>
+      <div class="panel">
+        <div class="elev">
+          <div style="background:var(--canvas);border:1px dashed var(--hair-strong)">0 · bare 无边框无阴影</div>
+          <div style="background:var(--surface);border:1px solid var(--hair);box-shadow:var(--sh-plate)">1 · plate 卡片</div>
+          <div style="background:var(--surface);border:1px solid var(--hair);box-shadow:var(--sh-float)">2 · float 导航</div>
+          <div style="background:var(--surface);border:1px solid var(--hair);box-shadow:var(--sh-overlay)">3 · overlay 弹层</div>
+        </div>
+        <p class="note" style="margin-top:14px">永远不要"只有阴影没有线"。卡片边缘必须仅靠 1px 线就可辨认。</p>
+      </div>
+    </section>
+
+    <!-- ================= BUTTON ================= -->
+    <section class="section" id="button">
+      <div class="section-head"><h2>按钮</h2><span>一个视图里只有一个主按钮</span></div>
+      <div class="panel">
+        <div class="label">变体</div>
+        <div class="row" style="margin-bottom:20px">
+          <button class="btn btn-primary">存入资金</button>
+          <button class="btn btn-secondary">查看全部持仓</button>
+          <button class="btn btn-ghost">取消</button>
+          <button class="btn btn-danger">断开连接</button>
+        </div>
+        <div class="label">尺寸</div>
+        <div class="row" style="margin-bottom:20px">
+          <button class="btn btn-secondary btn-sm">28</button>
+          <button class="btn btn-secondary">34</button>
+          <button class="btn btn-secondary btn-lg">40</button>
+        </div>
+        <div class="label">状态</div>
+        <div class="row">
+          <button class="btn btn-secondary">默认</button>
+          <button class="btn btn-secondary" style="background:var(--well)">悬停</button>
+          <button class="btn btn-secondary" style="transform:scale(.98)">按下</button>
+          <button class="btn btn-secondary" style="outline:2px solid var(--accent);outline-offset:2px">聚焦</button>
+          <button class="btn btn-secondary" disabled>禁用</button>
+        </div>
+        <p class="note" style="margin-top:14px">禁用态必须在周围文案里给出原因。没有解释的死按钮是缺陷，不是状态。</p>
+      </div>
+    </section>
+
+    <!-- ================= SEGMENTED ================= -->
+    <section class="section" id="segmented">
+      <div class="section-head"><h2>分段控件</h2><span>选中不是"变灰"</span></div>
+      <div class="panel">
+        <div class="row" style="gap:24px">
+          <div class="seg"><button aria-pressed="true">今日变化</button><button aria-pressed="false">累计收益</button></div>
+          <div class="seg"><button aria-pressed="false">1天</button><button aria-pressed="false">1周</button><button aria-pressed="false">1个月</button><button aria-pressed="true">1年</button><button aria-pressed="false">5年</button></div>
+        </div>
+        <p class="note" style="margin-top:14px">白底灰槽看起来像"禁用"。选中项必须用 ink-1 + 600 字重 + 1px 描边，这样在灰度下也能读出来。</p>
+      </div>
+    </section>
+
+    <!-- ================= BADGE ================= -->
+    <section class="section" id="badge">
+      <div class="section-head"><h2>标签</h2><span>承载状态，不承载情绪</span></div>
+      <div class="panel">
+        <div class="row">
+          <span class="badge">DEMO</span>
+          <span class="badge"><i class="dot" style="color:var(--ink-4)"></i>只读账户</span>
+          <span class="badge badge-pos">+18.3%</span>
+          <span class="badge badge-neg">−5.7%</span>
+          <span class="badge">3 个持仓</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TABLE ================= -->
+    <section class="section" id="table">
+      <div class="section-head"><h2>数据表</h2><span>数字右对齐，行高 48</span></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>资产</th><th>数量</th><th>均价 / 现价</th><th>市值 / 权重</th><th>未实现盈亏</th></tr></thead>
+          <tbody>
+            <tr><td><div class="asset"><span class="avatar">AP</span><span><b>Apple Inc.</b><small>AAPL · USD</small></span></div></td><td>27.4</td><td><b>$167.44</b><small>$198.17</small></td><td><b>€5,428.10</b><small>24.4%</small></td><td class="pos"><b>+€840.60</b><small>+18.3%</small></td></tr>
+            <tr><td><div class="asset"><span class="avatar">NV</span><span><b>NVIDIA Corp.</b><small>NVDA · USD</small></span></div></td><td>16.875</td><td><b>$213.40</b><small>$234.52</small></td><td><b>€5,860.25</b><small>26.3%</small></td><td class="pos"><b>+€1,311.75</b><small>+28.8%</small></td></tr>
+            <tr><td><div class="asset"><span class="avatar">TS</span><span><b>Tesla Inc.</b><small>TSLA · GBP</small></span></div></td><td>9.5</td><td><b>$281.40</b><small>$265.40</small></td><td><b>€2,681.24</b><small>12.0%</small></td><td class="neg"><b>−€161.02</b><small>−5.7%</small></td></tr>
+          </tbody>
+        </table>
+        <p class="note" style="margin-top:14px">金额 2 位小数，数量最多 4 位且去掉末尾零（<code>27.4</code>，不是 <code>27.4000</code>）。</p>
+      </div>
+    </section>
+
+    <!-- ================= BARS ================= -->
+    <section class="section" id="bars">
+      <div class="section-head"><h2>排名条</h2><span>值列固定，方向表符号</span></div>
+      <p class="lede">每一行各自排版时，六个数字会落在六个不同的 x 位置，这一列就不再可比。所以值列是固定的 104px。亏损从右端的零点<b>向左</b>生长——符号不能只靠颜色。</p>
+      <div class="panel">
+        <div class="bars-list">
+          <div class="row-bar"><span class="name"><b>NVIDIA Corp.</b><small>NVDA · +28.8%</small></span><span class="track"><i style="width:100%"></i></span><span class="val pos">+€1,311.75</span></div>
+          <div class="row-bar"><span class="name"><b>Apple Inc.</b><small>AAPL · +18.3%</small></span><span class="track"><i style="width:64%"></i></span><span class="val pos">+€840.60</span></div>
+          <div class="row-bar"><span class="name"><b>Microsoft Corp.</b><small>MSFT · +7.9%</small></span><span class="track"><i style="width:28%"></i></span><span class="val pos">+€365.30</span></div>
+          <div class="row-bar"><span class="name"><b>Tesla Inc.</b><small>TSLA · −5.7%</small></span><span class="track"><i class="neg" style="width:12%"></i></span><span class="val neg">−€161.02</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= MOSAIC ================= -->
+    <section class="section" id="mosaic">
+      <div class="section-head"><h2>配置拼盘</h2><span>面积 = 市值，颜色 = 涨跌</span></div>
+      <p class="lede">如果所有格子一样大，面积就没有编码任何东西——那它是一组彩色方块，应该换成列表。填充是信号的 7%，边框 20%，颜色由数字承担。</p>
+      <div class="panel">
+        <div class="mosaic">
+          <div class="tile gain selected" style="grid-row:span 2"><span class="tk">AAPL</span><span class="pct">▲+1.85%</span><span class="sub"><span>24.4%</span><span>+€185.20</span></span></div>
+          <div class="tile gain"><span class="tk">MSFT</span><span class="pct">▲+0.64%</span><span class="sub"><span>22.3%</span><span>+€42.10</span></span></div>
+          <div class="tile loss"><span class="tk">TSLA</span><span class="pct">▼−2.15%</span><span class="sub"><span>12.0%</span><span>−€89.60</span></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= METRICS ================= -->
+    <section class="section" id="metrics">
+      <div class="section-head"><h2>指标带</h2><span>五个同权事实</span></div>
+      <div class="panel">
+        <div class="metrics">
+          <div><span>当前市值</span><b>€5,428.10</b></div>
+          <div><span>未实现收益</span><b class="pos">+€840.60</b></div>
+          <div><span>持股数量</span><b>27.4</b></div>
+          <div><span>平均买入价</span><b>$167.44</b></div>
+          <div><span>持仓成本</span><b>€4,587.50</b></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= NAV ================= -->
+    <section class="section" id="nav">
+      <div class="section-head"><h2>导航</h2><span>两个胶囊，不是一个长条</span></div>
+      <div class="panel" style="background:var(--canvas)">
+        <div class="row" style="gap:8px">
+          <div class="navcap">
+            <span class="tab active">概览</span><span class="tab">持仓</span><span class="tab">历史</span><span class="tab">设置</span>
+          </div>
+          <div class="navcap">
+            <span class="tab" style="background:var(--well);box-shadow:inset 0 0 0 1px var(--hair);min-width:140px;color:var(--ink-3)">搜索标的…</span>
+            <span class="tab">☀</span><span class="tab">◎</span>
+          </div>
+        </div>
+        <p class="note" style="margin-top:14px">选中是淡蓝底 + 深蓝字，不是实心蓝块：导航是外壳，账户总额才是页面。</p>
+      </div>
+    </section>
+
+    <!-- ================= RULES ================= -->
+    <section class="section" id="rules">
+      <div class="section-head"><h2>做与不做</h2><span>三个最常见的错误</span></div>
+      <div class="dd">
+        <div class="box yes">
+          <h4>✓ 选中态可读</h4>
+          <div class="seg" style="align-self:start"><button aria-pressed="true">1年</button><button aria-pressed="false">5年</button></div>
+          <p>描边 + 深墨 + 600 字重，灰度下依然成立。</p>
+        </div>
+        <div class="box no">
+          <h4>✕ 白底灰槽</h4>
+          <div class="seg" style="align-self:start"><button aria-pressed="false" style="background:var(--surface);color:var(--ink-2);box-shadow:none">1年</button><button aria-pressed="false">5年</button></div>
+          <p>看起来像禁用，读者会去找"为什么不能点"。</p>
+        </div>
+        <div class="box yes">
+          <h4>✓ 符号 + 方向</h4>
+          <div class="track" style="width:100%"><i class="neg" style="width:22%"></i></div>
+          <p>亏损向左生长，色盲与灰度都可读。</p>
+        </div>
+        <div class="box no">
+          <h4>✕ 只靠颜色</h4>
+          <div class="track" style="width:100%"><i style="width:22%;background:var(--neg)"></i></div>
+          <p>同一方向的红色条，符号只存在于色相里。</p>
+        </div>
+        <div class="box yes">
+          <h4>✓ 线 + 影</h4>
+          <div style="height:64px;background:var(--surface);border:1px solid var(--hair);border-radius:var(--r-3);box-shadow:var(--sh-plate)"></div>
+          <p>卡片边缘先靠线成立，阴影只负责抬起。</p>
+        </div>
+        <div class="box no">
+          <h4>✕ 只有影</h4>
+          <div style="height:64px;background:var(--surface);border-radius:var(--r-3);box-shadow:0 8px 24px -8px rgba(18,24,34,.2)"></div>
+          <p>浅底上边缘消失，卡片像浮在雾里。</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <span>Lumen v2.0 · token 唯一来源 <code>design-system/tokens.css</code> · 规范全文 <code>design-system/SPEC.md</code></span>
+    <span>6 级字号 · 4 级圆角 + 胶囊 · 4 级层级 · 1 个强调色</span>
+  </footer>
+</div>
+
+<script>
+  const root = document.documentElement
+  const btn = document.getElementById('theme-toggle')
+  const apply = t => {
+    root.setAttribute('data-theme', t)
+    root.style.colorScheme = t
+    btn.textContent = t === 'dark' ? '切换浅色' : '切换深色'
+  }
+  btn.addEventListener('click', () => apply(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'))
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) apply('dark')
+</script>
+</body>
+</html>

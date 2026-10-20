@@ -1,0 +1,197 @@
+/* ==========================================================================
+   dsh x Trading 212 — Design tokens
+   --------------------------------------------------------------------------
+   The canonical token layer. `src/app/styles.css` carries a byte-identical
+   copy of the `:root` / `[data-theme="dark"]` blocks (the preview inlines that
+   file, so it cannot @import); `scripts/check-tokens.mjs` fails the build when
+   the two drift apart.
+
+   Naming rules
+   ------------
+   Primitive ramps are documented here as values only. Everything the product
+   consumes is a *role*: `--canvas`, `--surface`, `--ink-2`, `--accent`. No
+   component may reference a raw hex, and no role may be named after a colour
+   (`--blue-500` is not a role).
+
+   Roles come in three tiers:
+     1. surface  — what a thing sits on   (canvas / surface / well / glass)
+     2. ink      — what a thing says      (ink-1 … ink-4)
+     3. signal   — what a thing means     (accent / pos / neg / warn)
+   ========================================================================== */
+
+/* == Primitive ramps (reference only — never consumed directly) =========== */
+:root{
+  --gray-0:   #FFFFFF;
+  --gray-25:  #FBFCFE;
+  --gray-50:  #F7F9FC;
+  --gray-100: #F1F4F9;
+  --gray-150: #E9EDF4;
+  --gray-200: #E3E9F2;
+  --gray-300: #D2DAE6;
+  --gray-400: #A9B3C2;
+  --gray-500: #8B95A5;
+  --gray-600: #66707F;
+  --gray-700: #3E4759;
+  --gray-800: #242C3A;
+  --gray-900: #121822;
+  --gray-950: #0B0F15;
+
+  --blue-50:  #EDF1FE;
+  --blue-100: #DCE4FC;
+  --blue-200: #B9C9F8;
+  --blue-400: #5C82EA;
+  --blue-500: #2B57D6;
+  --blue-600: #2246B8;
+  --blue-700: #1B3A96;
+
+  --green-50: #E7F3ED;
+  --green-500:#0B6547;
+  --green-600:#095239;
+
+  --red-50:   #FBEDEC;
+  --red-500:  #B03028;
+  --red-600:  #94251F;
+
+  --amber-50: #FBF2E2;
+  --amber-500:#8A6212;
+}
+
+/* == Light theme (default) =============================================== */
+:root{
+  color-scheme: light;
+
+  /* — surfaces: four steps, no pure-white canvas —————————————————
+     canvas → surface → well. The canvas is deliberately one step deeper than
+     the plate: a card edge must be legible from the surface step alone, so a
+     shadow is a decision rather than the only thing holding the layout up. */
+  --canvas:       #F1F4F9;
+  --surface:      #FFFFFF;
+  --well:         #F7F9FC;
+  --glass:        rgba(255, 255, 255, .86);
+
+  /* — ink: 15.8 / 8.6 / 4.9 : 1 on the plate ————————————————————
+     ink-4 is the icon-and-rule tier. It is never used for text. */
+  --ink-1:        #121822;
+  --ink-2:        #3E4759;
+  --ink-3:        #66707F;
+  --ink-4:        #8B95A5;
+
+  /* — signal: one accent, reserved for interaction ——————————————— */
+  --accent:       #2B57D6;
+  --accent-deep:  #2246B8;
+  --accent-soft:  #EDF1FE;
+  --accent-plate: #2B57D6;
+  --accent-plate-ink: #FFFFFF;
+
+  /* — signed finance: never decorative, never a magnitude ————————— */
+  --pos:          #0B6547;
+  --neg:          #B03028;
+  --warn:         #8A6212;
+  --pos-soft:     #E7F3ED;
+  --neg-soft:     #FBEDEC;
+
+  /* — lines: one hairline, one emphasis ————————————————————— */
+  --hair:         #E3E9F2;
+  --hair-strong:  #D2DAE6;
+
+  /* — type: six desktop tiers + one mobile hero ———————————————
+     12 / 14 / 16 / 20 / 26 / 40, mobile hero 32.
+     Ratio ≈ 1.25 between body tiers, 1.54 into the display tier.
+     The display tier ramps instead of stepping: 32px at the 680px
+     breakpoint, 40px from 1000px up, so a 700px window is not served
+     a 40px number inside a 320px card. */
+  --fs-micro:     12px;
+  --fs-body:      14px;
+  --fs-row:       16px;
+  --fs-fig:       20px;
+  --fs-title:     26px;
+  --fs-hero-sm:   32px;
+  --fs-hero:      clamp(32px, 2.4vw + 16px, 40px);
+
+  --lh-micro:     16px;
+  --lh-body:      20px;
+  --lh-row:       22px;
+  --lh-fig:       26px;
+  --lh-title:     32px;
+  --lh-hero-sm:   36px;
+  --lh-hero:      clamp(36px, 2.4vw + 20px, 44px);
+
+  --tr-tight:     -.022em;   /* display + title */
+  --tr-snug:      -.011em;   /* row + figure */
+  --tr-normal:    0;
+  --tr-wide:      .02em;     /* micro labels only */
+
+  --fw-regular:   400;
+  --fw-medium:    500;
+  --fw-semibold:  600;
+  --fw-display:   560;
+
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+
+  /* — spacing: 4px base ————————————————————————————————— */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 40px;
+
+  /* — vertical rhythm: block gaps inside a column ————————————— */
+  --g-1: 6px;  --g-2: 10px; --g-3: 16px; --g-4: 20px;
+  --g-5: 28px; --g-6: 40px; --g-7: 48px;
+
+  /* — radius: shape follows size, not fashion —————————————————
+     r-1 chip · r-2 control · r-3 card · r-4 plate · pill only for
+     single-line badges, avatars, dots and segmented thumbs. */
+  --r-1: 6px; --r-2: 10px; --r-3: 14px; --r-4: 18px; --r-pill: 999px;
+
+  /* — elevation: three levels, all tinted to the canvas hue ———————— */
+  --sh-plate:   0 1px 2px rgba(18, 24, 34, .05), 0 1px 3px rgba(18, 24, 34, .04);
+  --sh-float:   0 2px 6px rgba(18, 24, 34, .06), 0 10px 28px -10px rgba(18, 24, 34, .18);
+  --sh-overlay: 0 4px 12px rgba(18, 24, 34, .08), 0 24px 64px -16px rgba(18, 24, 34, .28);
+
+  /* — motion: one curve, three beats ————————————————————— */
+  --ease: cubic-bezier(.32, .72, 0, 1);
+  --d-1: 140ms; --d-2: 240ms; --d-3: 400ms;
+
+  /* — component contracts —————————————————————————————————
+     Components read these instead of inventing local values. */
+  --control-h-sm: 28px;
+  --control-h:    34px;
+  --control-h-lg: 40px;
+  --row-h:        48px;
+  --card-pad:     var(--s-5);
+  --focus:        var(--accent);
+  --focus-ring:   0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+/* == Dark theme ========================================================== */
+[data-theme="dark"]{
+  color-scheme: dark;
+
+  --canvas:       #0B0F15;
+  --surface:      #121821;
+  --well:         #1A212C;
+  --glass:        rgba(18, 24, 33, .82);
+
+  --ink-1:        #F3F6FA;
+  --ink-2:        #B9C2D0;
+  --ink-3:        #8590A2;
+  --ink-4:        #616C7D;
+
+  --accent:       #7C9DF7;
+  --accent-deep:  #A3BCFF;
+  --accent-soft:  #1B2A4D;
+  --accent-plate: #3A63E0;
+  --accent-plate-ink: #FFFFFF;
+
+  --pos:          #35C08B;
+  --neg:          #F1797F;
+  --warn:         #E0B357;
+  --pos-soft:     #12291F;
+  --neg-soft:     #2C1719;
+
+  --hair:         #232B38;
+  --hair-strong:  #303A4A;
+
+  --sh-plate:   0 1px 2px rgba(0, 0, 0, .40), inset 0 1px 0 rgba(255, 255, 255, .03);
+  --sh-float:   0 2px 8px rgba(0, 0, 0, .45), 0 12px 32px -12px rgba(0, 0, 0, .60);
+  --sh-overlay: 0 4px 16px rgba(0, 0, 0, .50), 0 28px 72px -20px rgba(0, 0, 0, .70);
+}

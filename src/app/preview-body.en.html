@@ -119,64 +119,12 @@
       </div>
 
 
-      <!-- 4. Investments stream -->
-      <section class="cockpit-investments-section">
-        <div class="investments-header" id="invHeader">
-          <div class="invest-head-title">
-            <h3>Investments</h3>
-            <span class="invest-sum-val js-balance">€22,267.21</span>
-          </div>
-          <span class="collapse-arrow" id="invArrow">⌃</span>
-        </div>
-        <div class="investments-list-stream" id="invList">
-          <button type="button" class="pos-stream-item selected">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:10"/></svg>
-              <span class="ticker-avatar">AP</span>
-            </span>
-            <div class="pos-stream-ident"><strong>Apple Inc.</strong><small>27.4000 AAPL</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€5,428.10</strong><span class="tone-positive">+€840.60 (+18.3%)</span></div>
-          </button>
-          <button type="button" class="pos-stream-item">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:21"/></svg>
-              <span class="ticker-avatar">NV</span>
-            </span>
-            <div class="pos-stream-ident"><strong>NVIDIA Corp.</strong><small>16.8750 NVDA</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€5,860.25</strong><span class="tone-positive">+€1,311.75 (+28.8%)</span></div>
-          </button>
-          <button type="button" class="pos-stream-item">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:28"/></svg>
-              <span class="ticker-avatar">MS</span>
-            </span>
-            <div class="pos-stream-ident"><strong>Microsoft Corp.</strong><small>13.2500 MSFT</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€4,965.12</strong><span class="tone-positive">+€365.30 (+7.9%)</span></div>
-          </button>
-          <button type="button" class="pos-stream-item">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:33"/></svg>
-              <span class="ticker-avatar">TS</span>
-            </span>
-            <div class="pos-stream-ident"><strong>Tesla Inc.</strong><small>9.5000 TSLA</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€2,681.24</strong><span class="tone-negative">−€161.02 (−5.7%)</span></div>
-          </button>
-          <button type="button" class="pos-stream-item">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:39"/></svg>
-              <span class="ticker-avatar">VO</span>
-            </span>
-            <div class="pos-stream-ident"><strong>Vanguard S&amp;P 500</strong><small>6.1200 VOO</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€3,332.50</strong><span class="tone-positive">+€287.01 (+9.4%)</span></div>
-          </button>
-        </div>
-      </section>
 
       <!-- 5. Asset allocation mosaic · Today's Movement -->
       <section class="cockpit-treemap-section">
         <div class="pane-section-header">
           <div>
-            <h3 class="section-title">Portfolio</h3>
+            <h3 class="section-title">Asset allocation</h3>
             <span class="section-caption">Dynamic allocation · Click to inspect</span>
           </div>
           <div class="treemap-mode-toggles" role="group" aria-label="Treemap view mode">
@@ -256,16 +204,14 @@
               <span class="ticker-avatar">AP</span>
             </span>
             <div>
-              <div class="inst-tag-row"><span class="inst-ticker-tag">AAPL · USD</span></div>
+              <div class="inst-tag-row"><span class="inst-ticker-tag">AAPL · USD</span><span class="read-only-status">Read-only account</span></div>
               <h2 class="inst-title">Apple Inc.</h2>
             </div>
           </div>
           <div class="inst-price-box">
             <strong class="inst-price-main">$198.17</strong>
             <span class="inst-price-sub tone-positive">+€440.17 (+4.30%)</span>
-          </div>
-          <div class="inst-actions">
-            <span class="read-only-status">Read-only account</span>
+            <small class="inst-price-note">Quoted in USD · return in EUR</small>
           </div>
         </div>
 
@@ -288,36 +234,37 @@
                 <h2>Price history and trade fills</h2>
                 <p>AAPL · Daily close · Aug 2025 - Aug 2026 · Scaled price axis</p>
               </div>
-              <strong class="tone-positive">$198.17 <small>+4.30%</small></strong>
+              <!-- The chart heading no longer repeats the price above: the same number twice within 60px, with two different +4.30%s (total return vs range change), is a reading trap. Keep the range change and name the range. -->
+              <strong class="tone-positive">+4.30% <small>1Y</small></strong>
             </div>
             <div class="chart-legend">
               <span><i class="legend-dot close"></i> Close</span>
               <span><i class="legend-dot buy"></i> Buy</span>
               <span><i class="legend-dot sell"></i> Sell</span>
+              <span class="chart-cost-legend">Avg. cost $167.44</span>
             </div>
-            <p class="chart-count">3 Trading 212 execution fills in range · Drag slider or pinch to zoom</p>
-            <svg class="price-chart" viewBox="0 0 820 250" preserveAspectRatio="none" role="img" aria-label="AAPL 1-year price chart with 3 execution fills">
+            <p class="chart-count">Daily close · 3 trades in range</p>
+            <svg class="price-chart" viewBox="0 0 820 250" preserveAspectRatio="none" role="img" aria-label="AAPL one-year price history with 3 execution markers">
               <g class="timeline-grid">
-                <line x1="72" y1="50" x2="790" y2="50"/>
-                <line x1="72" y1="100" x2="790" y2="100"/>
-                <line x1="72" y1="150" x2="790" y2="150"/>
-                <line x1="72" y1="200" x2="790" y2="200"/>
+                <line x1="8" y1="50" x2="764" y2="50"/>
+                <line x1="8" y1="100" x2="764" y2="100"/>
+                <line x1="8" y1="150" x2="764" y2="150"/>
+                <line x1="8" y1="200" x2="764" y2="200"/>
               </g>
-              <path d="M72 212 L128 200 L184 208 L240 186 L296 196 L352 168 L408 178 L464 150 L520 158 L576 128 L632 136 L688 106 L744 116 L790 100" fill="none" stroke="#1677ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-              <line x1="72" y1="12" x2="790" y2="12" stroke="rgba(112,129,150,0.35)" stroke-dasharray="5 5"/>
-              <line x1="72" y1="10" x2="72" y2="240" stroke="rgba(112,129,150,0.14)"/>
-              <rect x="290" y="190" width="12" height="12" fill="#18a957" stroke="#ffffff" stroke-width="2"/>
-              <rect x="570" y="122" width="12" height="12" fill="#18a957" stroke="#ffffff" stroke-width="2"/>
-              <polygon points="408,170 416,184 400,184" fill="#d88a15" stroke="#ffffff" stroke-width="2"/>
-              <text x="808" y="54" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$205</text>
-              <text x="808" y="104" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$190</text>
-              <text x="808" y="154" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$175</text>
-              <text x="808" y="204" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$160</text>
-              <text x="72" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace">Aug 2025</text>
-              <text x="250" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="middle">Nov 2025</text>
-              <text x="430" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="middle">Feb 2026</text>
-              <text x="610" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="middle">May 2026</text>
-              <text x="790" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">Aug 2026</text>
+              <line class="chart-cost-line" x1="8" y1="175" x2="764" y2="175" stroke-dasharray="4 4"/>
+              <path d="M8 212 L62 200 L116 208 L170 186 L224 196 L278 168 L332 178 L386 150 L440 158 L494 128 L548 136 L602 106 L656 116 L710 100 L764 94" fill="none" stroke="#1677ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <rect x="164" y="180" width="12" height="12"/>
+              <rect x="488" y="122" width="12" height="12"/>
+              <polygon points="332,170 340,184 324,184"/>
+              <text x="810" y="54" text-anchor="end">$205</text>
+              <text x="810" y="104" text-anchor="end">$190</text>
+              <text x="810" y="154" text-anchor="end">$175</text>
+              <text x="810" y="204" text-anchor="end">$160</text>
+              <text x="8" y="238">2025-08</text>
+              <text x="197" y="238" text-anchor="middle">2025-11</text>
+              <text x="386" y="238" text-anchor="middle">2026-02</text>
+              <text x="575" y="238" text-anchor="middle">2026-05</text>
+              <text x="764" y="238" text-anchor="end">2026-08</text>
             </svg>
           </section>
         </div>
@@ -328,7 +275,7 @@
           <div class="inv-metrics-list">
             <div class="inv-metric-row"><span>VALUE</span><strong class="js-balance">€5,428.10</strong></div>
             <div class="inv-metric-row"><span>RETURN</span><strong class="tone-positive">+€840.60 (+18.3%)</strong></div>
-            <div class="inv-metric-row"><span>SHARES</span><strong>27.4000</strong></div>
+            <div class="inv-metric-row"><span>SHARES</span><strong>27.4</strong></div>
             <div class="inv-metric-row"><span>AVERAGE PRICE</span><strong>$167.44</strong></div>
             <div class="inv-metric-row"><span>COST</span><strong class="js-balance">€4,587.50</strong></div>
           </div>
@@ -365,11 +312,11 @@
             <table class="holdings-table">
               <thead><tr><th>Asset</th><th>Quantity</th><th>Avg / Current</th><th>Value / Weight</th><th>Unrealized return</th></tr></thead>
               <tbody>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:10"/></svg><span class="ticker-avatar">AP</span></span><div class="asset-text"><strong>Apple Inc.</strong><small>AAPL · USD</small></div></div></td><td>27.4000</td><td><strong>$167.44</strong><small>$198.17</small></td><td><strong>€5,428.10</strong><small>24.4%</small></td><td class="positive"><strong>+€840.60</strong><small>+18.3%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:21"/></svg><span class="ticker-avatar">NV</span></span><div class="asset-text"><strong>NVIDIA Corp.</strong><small>NVDA · USD</small></div></div></td><td>16.8750</td><td><strong>$213.40</strong><small>$234.52</small></td><td><strong>€5,860.25</strong><small>26.3%</small></td><td class="positive"><strong>+€1,311.75</strong><small>+28.8%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:28"/></svg><span class="ticker-avatar">MS</span></span><div class="asset-text"><strong>Microsoft Corp.</strong><small>MSFT · USD</small></div></div></td><td>13.2500</td><td><strong>$312.60</strong><small>$337.40</small></td><td><strong>€4,965.12</strong><small>22.3%</small></td><td class="positive"><strong>+€365.30</strong><small>+7.9%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:33"/></svg><span class="ticker-avatar">TS</span></span><div class="asset-text"><strong>Tesla Inc.</strong><small>TSLA · GBP</small></div></div></td><td>9.5000</td><td><strong>$281.40</strong><small>$265.40</small></td><td><strong>€2,681.24</strong><small>12.0%</small></td><td class="negative"><strong>−€161.02</strong><small>−5.7%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:39"/></svg><span class="ticker-avatar">VO</span></span><div class="asset-text"><strong>Vanguard S&amp;P 500</strong><small>VOO · EUR</small></div></div></td><td>6.1200</td><td><strong>$521.80</strong><small>$544.70</small></td><td><strong>€3,332.50</strong><small>15.0%</small></td><td class="positive"><strong>+€287.01</strong><small>+9.4%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:10"/></svg><span class="ticker-avatar">AP</span></span><div class="asset-text"><strong>Apple Inc.</strong><small>AAPL · USD</small></div></div></td><td>27.4</td><td><strong>$167.44</strong><small>$198.17</small></td><td><strong>€5,428.10</strong><small>24.4%</small></td><td class="positive"><strong>+€840.60</strong><small>+18.3%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:21"/></svg><span class="ticker-avatar">NV</span></span><div class="asset-text"><strong>NVIDIA Corp.</strong><small>NVDA · USD</small></div></div></td><td>16.875</td><td><strong>$213.40</strong><small>$234.52</small></td><td><strong>€5,860.25</strong><small>26.3%</small></td><td class="positive"><strong>+€1,311.75</strong><small>+28.8%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:28"/></svg><span class="ticker-avatar">MS</span></span><div class="asset-text"><strong>Microsoft Corp.</strong><small>MSFT · USD</small></div></div></td><td>13.25</td><td><strong>$312.60</strong><small>$337.40</small></td><td><strong>€4,965.12</strong><small>22.3%</small></td><td class="positive"><strong>+€365.30</strong><small>+7.9%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:33"/></svg><span class="ticker-avatar">TS</span></span><div class="asset-text"><strong>Tesla Inc.</strong><small>TSLA · GBP</small></div></div></td><td>9.5</td><td><strong>$281.40</strong><small>$265.40</small></td><td><strong>€2,681.24</strong><small>12.0%</small></td><td class="negative"><strong>−€161.02</strong><small>−5.7%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:39"/></svg><span class="ticker-avatar">VO</span></span><div class="asset-text"><strong>Vanguard S&amp;P 500</strong><small>VOO · EUR</small></div></div></td><td>6.12</td><td><strong>$521.80</strong><small>$544.70</small></td><td><strong>€3,332.50</strong><small>15.0%</small></td><td class="positive"><strong>+€287.01</strong><small>+9.4%</small></td></tr>
               </tbody>
             </table>
           </div>

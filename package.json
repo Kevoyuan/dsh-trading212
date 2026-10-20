@@ -72,7 +72,10 @@
     "skills:search": "node scripts/link-agent-skills.mjs search",
     "skills:add": "node scripts/link-agent-skills.mjs add",
     "skills:remove": "node scripts/link-agent-skills.mjs remove",
-    "skills:status": "node scripts/link-agent-skills.mjs status"
+    "skills:status": "node scripts/link-agent-skills.mjs status",
+    "tokens:check": "node scripts/check-tokens.mjs",
+    "preview:build": "node scripts/make-preview.mjs",
+    "verify:design": "node scripts/check-tokens.mjs && node scripts/make-preview.mjs"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh-client-locale": ">=0.2.0-rc.2 <0.3.0-0",

@@ -6,107 +6,154 @@
 <meta name="color-scheme" content="light" />
 <title>dsh × Trading 212 - Portfolio preview</title>
 <style>
-/* ==========================================================================
-   dsh x Trading 212 - "Cartographer" design system
-   --------------------------------------------------------------------------
-   ONE system. One token block, one type scale, one radius rule, one motion
-   curve. No override layers, no !important, no second theme bolted on.
-
-   Direction: warm paper, single focus. A warm neutral ramp replaces the cool
-   blue cast, one desaturated indigo carries every interactive affordance, and
-   green/red stay reserved strictly for signed finance.
-
-   Scope of this revision: the TOKEN LAYER only. Palette, type scale, radii and
-   elevation below are Cartographer's; the layout and component structure are
-   still Lumen's and are migrated next. Two values deviate from the Cartographer
-   mock, both because the mock does not meet AA where the product actually puts
-   the token:
-
-     --ink-3  light  6E7682 -> 616873   the mock scores 4.07:1 on the canvas and
-                                        3.72:1 on the well. 4.5:1 is the floor
-                                        for the 12px captions this token carries,
-                                        and it is the most-used ink in the file.
-     --hair   dark   2E333B -> 3A4049   the mock's own --hair-2. Lumen has a
-                                        single hairline token, so it has to stay
-                                        legible dividing a well (1.13:1 -> 1.38:1;
-                                        Lumen shipped 1.30:1).
-
-   Colour rule   one focus colour (#2F4D7A light / #7B9DD9 dark). Green/red are
-                 reserved for signed finance only and each verified >=4.5:1 on
-                 every surface it can land on. No pure #000 / #fff.
-   Shape rule    --r-1 6 chips/inputs, --r-2 12 inner cards, --r-3 20 hero
-                 plates, --r-pill interactive controls. Nothing else.
-   Type rule     12 / 14 / 17 / 18 / 22 / 28 / 36. Seven whole-pixel steps, one
-                 hero per page (36 desktop / 28 mobile). Nothing below 12px.
-                 Integer sizes keep figures on the pixel grid at every zoom.
-   Motion rule   one curve (--ease), three beats (140/260/420ms),
-                 transform + opacity only, reduced-motion honoured.
-   Verified      0 contrast failures, 0 overflow, 0 overlap, 0 gradients,
-                 7 type sizes, 4 radii, 1 hairline, 2 shadows, 1 easing,
-                 in both themes at 1440 and 390.
-   ========================================================================== */
+/* Trading 212 portfolio UI — one system, one token layer.
+   Rules live in design-system/SPEC.md; tokens in design-system/tokens.css.
+   Blue marks interaction. Green/red encode signed money and nothing else.
+   Six desktop type tiers: 12 / 14 / 16 / 20 / 26 / 40. No text below 12px.
+   Shape follows size: 6 chip · 10 control · 14 card · 18 plate · pill badge.
+   Layers: sticky navigation 60, modal backdrops 80. */
 /* == 01 TOKENS =========================================================== */
+/* Canonical token layer. This block is a copy of design-system/tokens.css
+   (the preview inlines this file, so it cannot @import). scripts/check-tokens.mjs
+   fails when the two drift apart — the previous hand-maintained copy had already
+   lost two type steps and a radius alias before anyone noticed. */
 :root{
   color-scheme: light;
 
-  /*— surfaces: paper / card / well / glass ——————————————————
-    Studio Clean Slate: Pure, crisp, modern fintech neutrals with high legibility.
-    Eliminates muddy cream/yellow tints for an ultra-clean, airy feel. */
-  --canvas:       #F8FAFC;
+  /* — surfaces: four steps, no pure-white canvas —————————————————
+     canvas → surface → well. The canvas is deliberately one step deeper than
+     the plate: a card edge must be legible from the surface step alone, so a
+     shadow is a decision rather than the only thing holding the layout up. */
+  --canvas:       #F1F4F9;
   --surface:      #FFFFFF;
-  --well:         #F1F5F9;
-  --glass:        rgba(255, 255, 255, .82);
+  --well:         #F7F9FC;
+  --glass:        rgba(255, 255, 255, .86);
 
-  /*— ink ramp: 18.2 · 9.3 · 5.2 : 1 on the card, strict WCAG AA+ readability —*/
-  --ink-1:        #0F172A;
-  --ink-2:        #475569;
-  --ink-3:        #64748B;
+  /* — ink: 15.8 / 8.6 / 4.9 : 1 on the plate ————————————————————
+     ink-4 is the icon-and-rule tier. It is never used for text. */
+  --ink-1:        #121822;
+  --ink-2:        #3E4759;
+  --ink-3:        #66707F;
+  --ink-4:        #8B95A5;
 
-  /*— financial semantics + authoritative accent —*/
-  --accent:       #2563EB;
-  --accent-deep:  #1D4ED8;
-  --accent-soft:  #EFF6FF;
-  --accent-plate: #2563EB;
+  /* — signal: one accent, reserved for interaction ——————————————— */
+  --accent:       #2B57D6;
+  --accent-deep:  #2246B8;
+  --accent-soft:  #EDF1FE;
+  --accent-plate: #2B57D6;
   --accent-plate-ink: #FFFFFF;
-  --pos:          #059669;
-  --neg:          #E11D48;
-  --negative-bright: var(--neg);
-  --warn:         #D97706;
-  --pos-soft:     #ECFDF5;
-  --neg-soft:     #FFF1F2;
 
-  /*— precision hairline ———————————————————————————————————*/
-  --hair:         #E2E8F0;
+  /* — signed finance: never decorative, never a magnitude ————————— */
+  --pos:          #0B6547;
+  --neg:          #B03028;
+  --warn:         #8A6212;
+  --pos-soft:     #E7F3ED;
+  --neg-soft:     #FBEDEC;
 
-  /*— type: 12 · 14 · 17 · 18 · 22 · 28 · 36  (every step a whole pixel) —*/
+  /* — lines: one hairline, one emphasis ————————————————————— */
+  --hair:         #E3E9F2;
+  --hair-strong:  #D2DAE6;
+
+  /* — type: six desktop tiers + one mobile hero ———————————————
+     12 / 14 / 16 / 20 / 26 / 40, mobile hero 32.
+     Ratio ≈ 1.25 between body tiers, 1.54 into the display tier.
+     The display tier ramps instead of stepping: 32px at the 680px
+     breakpoint, 40px from 1000px up, so a 700px window is not served
+     a 40px number inside a 320px card. */
   --fs-micro:     12px;
   --fs-body:      14px;
-  --fs-row:       17px;
-  --fs-fig:       18px;
-  --fs-title:     22px;
-  --fs-hero-sm:   28px;   /* the mobile hero; no longer a desktop content tier */
-  --fs-hero:      36px;
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --fs-row:       16px;
+  --fs-fig:       20px;
+  --fs-title:     26px;
+  --fs-hero-sm:   32px;
+  --fs-hero:      clamp(32px, 2.4vw + 16px, 40px);
+
+  --lh-micro:     16px;
+  --lh-body:      20px;
+  --lh-row:       22px;
+  --lh-fig:       26px;
+  --lh-title:     32px;
+  --lh-hero-sm:   36px;
+  --lh-hero:      clamp(36px, 2.4vw + 20px, 44px);
+
+  --tr-tight:     -.022em;   /* display + title */
+  --tr-snug:      -.011em;   /* row + figure */
+  --tr-normal:    0;
+  --tr-wide:      .02em;     /* micro labels only */
+
+  --fw-regular:   400;
+  --fw-medium:    500;
+  --fw-semibold:  600;
+  --fw-display:   560;
+
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 
-  /*— spacing scale ————————————————————————————————————————*/
-  --s-1: 4px;  --s-2: 6px;  --s-3: 10px; --s-4: 14px;
-  --s-5: 18px; --s-6: 24px; --s-7: 32px;
+  /* — spacing: 4px base ————————————————————————————————— */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 40px;
 
-  /*— bento rhythm: 6 steps, macro 28 / 40 ———————————————————*/
-  --g-1: 6px; --g-2: 10px; --g-3: 16px; --g-4: 22px; --g-5: 28px; --g-6: 40px;
+  /* — vertical rhythm: block gaps inside a column ————————————— */
+  --g-1: 6px;  --g-2: 10px; --g-3: 16px; --g-4: 20px;
+  --g-5: 28px; --g-6: 40px; --g-7: 48px;
 
-  /*— radii: shell 20 -> core 12 -> well 6, every step 6 ——————*/
-  --r-1: 6px; --r-2: 12px; --r-3: 20px; --r-pill: 999px;
+  /* — radius: shape follows size, not fashion —————————————————
+     r-1 chip · r-2 control · r-3 card · r-4 plate · pill only for
+     single-line badges, avatars, dots and segmented thumbs. */
+  --r-1: 6px; --r-2: 10px; --r-3: 14px; --r-4: 18px; --r-pill: 999px;
 
-  /*— two elevations: plate / float with refined micro-bevel —*/
-  --sh-plate: 0 1px 2px rgba(15,23,42,.04), 0 8px 16px -8px rgba(15,23,42,.08), inset 0 1px 0 rgba(255,255,255,1);
-  --sh-float: 0 4px 6px -1px rgba(15,23,42,.06), 0 20px 25px -5px rgba(15,23,42,.10);
+  /* — elevation: three levels, all tinted to the canvas hue ———————— */
+  --sh-plate:   0 1px 2px rgba(18, 24, 34, .05), 0 1px 3px rgba(18, 24, 34, .04);
+  --sh-float:   0 2px 6px rgba(18, 24, 34, .06), 0 10px 28px -10px rgba(18, 24, 34, .18);
+  --sh-overlay: 0 4px 12px rgba(18, 24, 34, .08), 0 24px 64px -16px rgba(18, 24, 34, .28);
 
-  /*— motion: one curve, three beats ———————————————————————*/
-  --ease: cubic-bezier(.32,.72,0,1);
-  --d-1: 140ms; --d-2: 260ms; --d-3: 420ms;
-  --focus: var(--accent);
+  /* — motion: one curve, three beats ————————————————————— */
+  --ease: cubic-bezier(.32, .72, 0, 1);
+  --d-1: 140ms; --d-2: 240ms; --d-3: 400ms;
+
+  /* — component contracts —————————————————————————————————
+     Components read these instead of inventing local values. */
+  --control-h-sm: 28px;
+  --control-h:    34px;
+  --control-h-lg: 40px;
+  --row-h:        48px;
+  --card-pad:     var(--s-5);
+  --focus:        var(--accent);
+  --focus-ring:   0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+/* == Dark theme ========================================================== */
+[data-theme="dark"]{
+  color-scheme: dark;
+
+  --canvas:       #0B0F15;
+  --surface:      #121821;
+  --well:         #1A212C;
+  --glass:        rgba(18, 24, 33, .82);
+
+  --ink-1:        #F3F6FA;
+  --ink-2:        #B9C2D0;
+  --ink-3:        #8590A2;
+  --ink-4:        #616C7D;
+
+  --accent:       #7C9DF7;
+  --accent-deep:  #A3BCFF;
+  --accent-soft:  #1B2A4D;
+  --accent-plate: #3A63E0;
+  --accent-plate-ink: #FFFFFF;
+
+  --pos:          #35C08B;
+  --neg:          #F1797F;
+  --warn:         #E0B357;
+  --pos-soft:     #12291F;
+  --neg-soft:     #2C1719;
+
+  --hair:         #232B38;
+  --hair-strong:  #303A4A;
+
+  --sh-plate:   0 1px 2px rgba(0, 0, 0, .40), inset 0 1px 0 rgba(255, 255, 255, .03);
+  --sh-float:   0 2px 8px rgba(0, 0, 0, .45), 0 12px 32px -12px rgba(0, 0, 0, .60);
+  --sh-overlay: 0 4px 16px rgba(0, 0, 0, .50), 0 28px 72px -20px rgba(0, 0, 0, .70);
 }
 
 /* == 02 RESET =========================================================== */
@@ -120,7 +167,7 @@ html{
   font-size: var(--fs-body);
   line-height: 1.5;
 }
-body{ background: var(--canvas); }
+body{ background: var(--canvas); font-variant-numeric: tabular-nums; }
 img, svg, video{ display: block; max-width: 100%; }
 button, input, select, textarea{ font: inherit; color: inherit; letter-spacing: inherit; }
 input, select, textarea{ padding: 0; border: 0; background: none; }
@@ -139,136 +186,202 @@ fieldset{ border: 0; }
 ::selection{ background: var(--accent-soft); color: var(--ink-1); }
 
 /* == 03 TYPE SYSTEM ===================================================== */
+/* Six tiers. Every tier owns its size, line-height and tracking together, so a
+   heading cannot inherit the leading of body text. Weight is the third axis:
+   560 display / 600 section / 500 label / 400 prose. */
 .t212-native-app-root{
   min-height: 100dvh;
   background: var(--canvas);
   color: var(--ink-1);
   font-family: var(--font-sans);
   font-size: var(--fs-body);
-  line-height: 1.5;
+  line-height: 1.45;
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-.account-hero-val{ font-size: var(--fs-hero); font-weight: 600; letter-spacing: -.034em; line-height: 1.03; }
-.inst-price-main{ font-size: var(--fs-title); font-weight: 600; letter-spacing: -.026em; line-height: 1.06; }
-.inst-title{ font-size: var(--fs-fig); font-weight: 600; letter-spacing: -.012em; }
-.section-heading strong{ font-size: var(--fs-title); font-weight: 600; letter-spacing: -.012em; }
-.pot-val, .cockpit-section-title, .section-heading h2, .invest-metric-row strong{
-  font-size: var(--fs-fig); font-weight: 600; letter-spacing: -.01em;
-}
-.pos-stream-num-col strong, .sub-metric-block strong, .metric-card strong, .tile-percent,
-.investments-header h3, .section-title, .bar-row b, .exposure-summary strong{ font-size: var(--fs-row); font-weight: 600; }
-.holdings-table td strong, .holdings-table td small{ font-size: var(--fs-body); }
 
-/* one micro-label voice: 12px, wide tracking, muted ink */
+/* tier 6 — display. One per page. */
+.account-hero-val{
+  font-size: var(--fs-hero); line-height: var(--lh-hero);
+  font-weight: var(--fw-display); letter-spacing: var(--tr-tight);
+}
+/* tier 5 — title: page and section anchors */
+.inst-price-main, .instrument-heading h1, .brand{
+  font-size: var(--fs-title); line-height: var(--lh-title);
+  font-weight: var(--fw-semibold); letter-spacing: var(--tr-tight);
+}
+.section-heading strong, .pot-val{
+  font-size: var(--fs-title); line-height: var(--lh-title);
+  font-weight: var(--fw-display); letter-spacing: var(--tr-tight);
+}
+/* tier 4 — figure: panel headings and the secondary money figure */
+.cockpit-section-title, .section-heading h2,
+.section-title, .inst-title, .sub-panel h3, .pane-section-header h3{
+  font-size: var(--fs-fig); line-height: var(--lh-fig);
+  font-weight: var(--fw-semibold); letter-spacing: var(--tr-snug);
+}
+/* tier 3 — row: values that carry the answer */
+.sub-metric-block strong, .metric-card strong, .tile-percent,
+.bar-row b, .exposure-summary strong, .holdings-table td strong, .inv-metric-row b{
+  font-size: var(--fs-row); line-height: var(--lh-row);
+  font-weight: var(--fw-semibold); letter-spacing: var(--tr-snug);
+}
+/* tier 2 — body: prose, names, controls */
+.holdings-table td strong{ font-size: var(--fs-body); }
+/* tier 1 — micro: labels, units, table headers, meta. Sentence case, not caps. */
 .account-label, .pot-label, .section-caption, .tile-ticker, .tile-weight,
 .tile-daypl, .chart-count, .t212-legal-disclaimer, .legal, .inst-ticker-tag,
 .read-only-status, .chart-legend, .exposure-summary small, .bar-label small, .holdings-table th,
 .holdings-table td small, .sub-metric-block > span, .metric-card > span,
-.metric-card > small, .inv-metric-row > span, .pot-sub{
-  font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: .045em;
+.metric-card > small, .inv-metric-row > span, .pot-sub, .sub-metric-pct,
+.section-heading p, .pane-section-sub, .portfolio-context-strip small{
+  font-size: var(--fs-micro); line-height: var(--lh-micro);
+  color: var(--ink-3); letter-spacing: var(--tr-wide);
 }
-.account-label, .inst-ticker-tag{ text-transform: uppercase; }
+.account-label{ text-transform: none; }
 .tone-positive{ color: var(--pos); }
 .tone-negative{ color: var(--neg); }
 .tone-muted{ color: var(--ink-3); }
 .js-balance, .holdings-table td strong, .holdings-table td small{ font-variant-numeric: tabular-nums; }
+/* Numbers are the product. Tabular figures everywhere a digit can appear, and
+   no letter-spacing on them: tracked digits are unreadable in a column. */
+.sub-metric-block strong, .metric-card strong, .bar-row b,
+.exposure-summary span, .inv-metric-row b, .account-hero-val, .pot-val,
+.inst-price-main, .inst-price-sub, .holdings-table td, .tile-percent, .tile-weight,
+.portfolio-context-strip b{ letter-spacing: 0; }
 
 /* == 04 ELEVATION ======================================================= */
-/* plate = the only white shadowed surface · well = recessed, shadowless
-   bare = sits on the canvas, held by rhythm + hairlines                      */
+/* Three levels, and each one is a decision:
+     0  bare      on the canvas, separated by rhythm and one hairline
+     1  plate     a card. surface + 1px line + sh-plate. Never a shadow alone.
+     2  float     the navigation capsule and anything that detaches from flow
+     3  overlay   modals and popovers (sh-overlay + scrim)
+   A card is not "a white box with a shadow": the hairline is what makes the edge
+   readable on a light canvas, the shadow only lifts it. The old double-bezel
+   (an inset ::before frame with its own radius) is gone — it read as a picture
+   frame around a card and cost a full nested element per plate. */
 
-/* == 05 ISLAND TOPBAR =================================================== */
+/* == 05 NAVIGATION ====================================================== */
+/* Two capsules, not one strip: navigation is one object, search + tools another.
+   Nothing here is a pill. A 34px control with a 999px radius is a lozenge, and
+   lozenges are the fastest way to make a dense data product look like a toy. */
 .t212-native-topbar{
-  position: fixed;
-  top: 14px;
+  position: sticky;
+  top: max(12px, env(safe-area-inset-top));
   inset-inline: 0;
   z-index: 60;
   width: max-content;
   max-width: calc(100% - 32px);
-  margin-inline: auto;
+  margin: 14px auto 0;
   display: flex;
   align-items: center;
-  gap: var(--g-2);
-  padding: 8px 12px;
-  border: 1px solid var(--hair);
-  border-radius: var(--r-pill);
-  background: var(--glass);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: var(--sh-float);
+  gap: var(--s-2);
+  padding: 0;
+  border: 0;
+  background: transparent;
   animation: lumen-drop var(--d-3) var(--ease) both;
 }
-.topbar-left-zone, .topbar-right-zone, .topbar-center-nav{ display: flex; align-items: center; column-gap: var(--g-1); }
-.t212-invest-brand-pill{
-  display: flex; align-items: center; column-gap: var(--g-1);
-  padding: 8px 12px;
+.topbar-navigation-group,
+.topbar-right-zone{
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 4px;
   border: 1px solid var(--hair);
-  border-radius: var(--r-pill);
-  background: var(--surface);
-  transition: all var(--d-1) var(--ease);
+  border-radius: var(--r-3);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: var(--sh-float);
 }
-.t212-invest-brand-pill:hover{ border-color: var(--accent-soft); background: var(--accent-soft); }
+.topbar-left-zone, .topbar-center-nav{ display: flex; align-items: center; column-gap: 2px; }
+.t212-invest-brand-pill{
+  display: flex; align-items: center; column-gap: var(--s-2);
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--r-2);
+  background: transparent;
+  transition: background-color var(--d-1) var(--ease), border-color var(--d-1) var(--ease);
+}
+.t212-invest-brand-pill:hover{ border-color: var(--hair); background: var(--well); }
 .invest-triangle-glyph{ font-size: var(--fs-micro); line-height: 1; color: var(--accent); }
-.invest-title-text{ font-size: var(--fs-micro); font-weight: 700; letter-spacing: .14em; color: var(--ink-1); }
-.invest-env-badge{
-  font-size: var(--fs-micro); font-weight: 600; letter-spacing: .08em;
-  padding: 0 var(--s-3); line-height: 20px;
-  border-radius: var(--r-pill); background: var(--well); color: var(--ink-2);
+.invest-title-text{
+  font-size: var(--fs-micro); font-weight: 700; letter-spacing: .1em; color: var(--ink-1);
 }
-.invest-chevron-icon{ color: var(--ink-3); }
-.topbar-center-nav{ column-gap: 4px; }
+.invest-env-badge{
+  font-size: var(--fs-micro); font-weight: 500; letter-spacing: var(--tr-wide);
+  padding: 0 var(--s-2); line-height: 18px;
+  border-radius: var(--r-1); background: var(--well); color: var(--ink-2);
+  box-shadow: inset 0 0 0 1px var(--hair);
+}
+.invest-chevron-icon{ color: var(--ink-4); }
+.topbar-center-nav{ column-gap: 2px; }
 .topbar-nav-tab{
-  display: flex; align-items: center; column-gap: var(--g-1);
-  padding: 8px 12px;
-  border-radius: var(--r-pill);
+  display: flex; align-items: center; column-gap: var(--s-2);
+  padding: 7px 11px;
+  border-radius: var(--r-2);
   color: var(--ink-2);
-  transition: all var(--d-2) var(--ease);
+  font-size: var(--fs-body);
+  transition: background-color var(--d-1) var(--ease), color var(--d-1) var(--ease);
 }
 .topbar-nav-tab:hover{ background: var(--well); color: var(--ink-1); }
-.topbar-nav-tab:active{ transform: scale(.97); }
-.topbar-nav-tab.active{ background: var(--accent-plate); color: var(--accent-plate-ink); }
+.topbar-nav-tab:active{ transform: scale(.98); }
+/* Selected is a tint, not a fill. A solid blue plate in the chrome out-shouts
+   the account total, which is the one thing the page exists to show. */
+.topbar-nav-tab.active{
+  background: var(--accent-soft); color: var(--accent-deep); font-weight: var(--fw-semibold);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent);
+}
 .topbar-nav-tab.active svg{ opacity: 1; }
 .topbar-search-slot{
-  display: flex; align-items: center; column-gap: var(--g-1);
-  padding: 8px 12px;
-  border: 1px solid var(--hair);
-  border-radius: var(--r-pill);
+  display: flex; align-items: center; column-gap: var(--s-2);
+  padding: 0 10px;
+  height: var(--control-h);
+  border-radius: var(--r-2);
   background: var(--well);
-  transition: all var(--d-1) var(--ease);
+  box-shadow: inset 0 0 0 1px var(--hair);
+  transition: box-shadow var(--d-1) var(--ease), background-color var(--d-1) var(--ease);
 }
-.topbar-search-slot:focus-within{ border-color: var(--accent); background: var(--surface); }
-.search-glyph-icon{ color: var(--ink-3); flex: none; }
-.topbar-search-field{ width: 146px; border: 0; background: transparent; font-size: var(--fs-body); }
+.topbar-search-slot:focus-within{
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--accent), var(--focus-ring);
+}
+.search-glyph-icon{ color: var(--ink-4); flex: none; }
+.topbar-search-field{ width: 140px; border: 0; background: transparent; font-size: var(--fs-body); }
 .topbar-search-field::placeholder{ color: var(--ink-3); }
 .topbar-search-field:focus{ outline: none; }
 .topbar-tool-btn{
-  width: 34px; height: 34px;
+  width: var(--control-h); height: var(--control-h);
   display: grid; place-items: center;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-2);
   color: var(--ink-2);
-  transition: all var(--d-1) var(--ease);
+  transition: background-color var(--d-1) var(--ease), color var(--d-1) var(--ease);
 }
 .topbar-tool-btn:hover{ background: var(--well); color: var(--ink-1); }
-.topbar-tool-btn:active{ transform: scale(.94); }
+.topbar-tool-btn:active{ transform: scale(.96); }
+.clear-search-btn{
+  display: grid; place-items: center; width: 20px; height: 20px;
+  border-radius: var(--r-1); color: var(--ink-3); background: var(--hair);
+  font-size: var(--fs-micro); line-height: 1;
+}
 
-/* == 06 SHELL & BENTO GRID ============================================== */
+/* == 06 SHELL & GRID =================================================== */
+/* A 12-column mental model, implemented as two columns: a fixed account rail and
+   a fluid canvas. 336px is the narrowest width at which a money value and its
+   percent fit on one line at the row tier without tracking. */
 .t212-cockpit-layout{
   max-width: 1560px;
   margin-inline: auto;
-  padding: 0 36px 32px;
   display: grid;
   grid-template-columns: 336px minmax(0, 1fr);
   gap: var(--g-5);
   align-items: start;
 }
-/* `align-self` because the shell sets `align-items: start`: the rail used to end
-   wherever its content ended, which was fine only while it was the tallest
-   column. It is not any more, and an unpinned legal notice floats in the middle
-   of the page. Stretched, the rail matches the canvas and `margin-top: auto` on
-   the footer anchors the notice to the bottom edge. */
-.cockpit-left-pane{ display: flex; flex-direction: column; gap: var(--g-4); min-width: 0; align-self: stretch; }
+.cockpit-left-pane{
+  display: flex; flex-direction: column; gap: var(--g-4);
+  min-width: 0; align-self: stretch;
+}
 .cockpit-main-pane{ display: flex; flex-direction: column; gap: var(--g-5); min-width: 0; }
 .cockpit-instrument-container{
   display: grid;
@@ -281,78 +394,78 @@ fieldset{ border: 0; }
 .cockpit-chart-wrap{ grid-column: 1 / -1; grid-row: 2; }
 .your-investment-cockpit{ grid-column: 1 / -1; grid-row: 3; }
 .cockpit-analytics-strip{ display: flex; flex-direction: column; gap: var(--g-5); min-width: 0; }
+
+/* Section header: a title and, optionally, one control on the right. A subtitle
+   is not a place for instructions — if a control needs explaining, the control
+   is wrong. */
 .pane-section-header, .section-heading{
-  display: flex; align-items: flex-start; justify-content: space-between; column-gap: var(--g-4);
+  display: flex; align-items: center; justify-content: space-between; column-gap: var(--g-4);
 }
-/* A heading must never be the flex item that shrinks. In "主要持仓" + a long
-   subtitle the subtitle claims max-content first and the h2 was squeezed to
-   73px at 390px, so it broke 3+1. Same class of bug as the instrument head:
-   the text that names the section is not the text that should give way. */
 .section-heading > *, .pane-section-header > *{ min-width: 0; }
 .section-heading h2{ flex: 0 0 auto; }
-.section-heading h2, .section-title, .investments-header h3{ letter-spacing: -.01em; }
-.section-heading p{ font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: .045em; margin-top: var(--s-1); }
-.section-caption{ display: block; margin-top: var(--s-1); }
+.section-heading p{ margin-top: var(--s-1); }
+.section-caption{ display: block; margin-top: 2px; }
 
-/* == 07 ACCOUNT HERO · double bezel ===================================== */
+/* == 07 ACCOUNT PLATE =================================================== */
 .cockpit-account-card{
   position: relative;
-  padding: var(--s-5);
+  padding: var(--card-pad);
   border: 1px solid var(--hair);
-  border-radius: var(--r-3);
-  background: var(--canvas);
+  border-radius: var(--r-4);
+  background: var(--surface);
+  box-shadow: var(--sh-plate);
   display: grid; row-gap: var(--g-2);
   animation: lumen-rise var(--d-3) var(--ease) 40ms both;
 }
-.cockpit-account-card::before{          /* concentric inner core */
-  content: "";
-  position: absolute; inset: 6px; z-index: 0;
-  border-radius: var(--r-2);
-  background: var(--surface);
-  box-shadow: var(--sh-plate);
-}
-.cockpit-account-card > *{ position: relative; z-index: 1; }
 .account-card-header{ display: flex; align-items: center; justify-content: space-between; column-gap: var(--g-2); }
 .icon-btn-ghost{
-  width: 30px; height: 30px; display: grid; place-items: center;
-  border-radius: var(--r-pill); color: var(--ink-3);
-  transition: all var(--d-1) var(--ease);
+  width: 28px; height: 28px; display: grid; place-items: center;
+  border-radius: var(--r-2); color: var(--ink-4);
+  transition: background-color var(--d-1) var(--ease), color var(--d-1) var(--ease);
 }
 .icon-btn-ghost:hover{ background: var(--well); color: var(--ink-1); }
-.account-hero-val{ margin-top: var(--s-1); padding-bottom: var(--s-5); }
+.account-hero-val{ margin-top: var(--s-2); padding-bottom: var(--s-5); }
 .account-sub-metrics-grid{
-  display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--g-3);
+  display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  column-gap: var(--g-4);
   border-top: 1px solid var(--hair);
 }
-.sub-metric-block{ padding-top: var(--s-5); }
+.sub-metric-block{ padding-top: var(--s-3); min-width: 0; }
 .sub-metric-block > span{ display: block; }
-.sub-metric-block strong{ display: block; margin-top: var(--s-1); }
+.sub-metric-block strong{ display: block; margin-top: 2px; }
+/* The delta belongs to the value, not to the label row. Two columns that each
+   read label → value → delta share one baseline grid. */
 
-/* == 08 CASH SUMMARY + CONTEXT ========================================== */
+/* == 08 CASH PLATE + CONTEXT ============================================ */
+/* The cash plate is a recess, not a second card: same radius family, no shadow,
+   a hairline instead. One card language per column — elevated for the answer,
+   recessed for the supporting figure. */
 .cockpit-cash-summary{
   display: grid; row-gap: var(--g-3);
-  padding: var(--s-5);
-  border-radius: var(--r-2);
+  padding: var(--card-pad);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-3);
   background: var(--well);
   animation: lumen-rise var(--d-3) var(--ease) 80ms both;
 }
-.cockpit-main-pot-card{ display: flex; align-items: center; justify-content: space-between; column-gap: var(--g-3); }
+.cockpit-main-pot-card{ display: flex; align-items: flex-start; justify-content: space-between; column-gap: var(--g-3); }
 .pot-info{ display: flex; flex-direction: column; min-width: 0; }
-.pot-val{ display: block; margin-top: var(--s-1); }
+.pot-val{ display:block; margin-top: 2px; }
 .pot-sub{ display: block; margin-top: 2px; }
 .t212-deposit-pill-btn{
-  flex: none; padding: 8px 12px;
-  border-radius: var(--r-pill);
-  background: var(--accent-soft); color: var(--accent-deep);
-  font-weight: 600;
-  transition: all var(--d-2) var(--ease);
+  flex: none; padding: 0 var(--s-3); height: var(--control-h-sm);
+  display: inline-flex; align-items: center;
+  border-radius: var(--r-2);
+  background: var(--surface); color: var(--accent-deep);
+  box-shadow: inset 0 0 0 1px var(--hair);
+  font-size: var(--fs-micro); font-weight: var(--fw-semibold);
+  transition: background-color var(--d-1) var(--ease), box-shadow var(--d-1) var(--ease);
 }
-.t212-deposit-pill-btn:hover{ background: var(--accent); color: var(--accent-plate-ink); }
-.t212-deposit-pill-btn:active{ transform: scale(.97); }
-/* one rule above the snapshot, then four metric pairs on open air (was 4 rules) */
+.t212-deposit-pill-btn:hover{ background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-soft); }
+.t212-deposit-pill-btn:active{ transform: scale(.98); }
 .portfolio-stat-grid{
   display: grid; grid-template-columns: 1fr 1fr;
-  column-gap: var(--g-3); row-gap: var(--g-3);
+  column-gap: var(--g-4); row-gap: var(--g-3);
   padding-top: var(--g-3);
   border-top: 1px solid var(--hair);
 }
@@ -362,331 +475,327 @@ fieldset{ border: 0; }
 }
 .metric-card > span{ grid-column: 1; grid-row: 1; }
 .metric-card > small{ grid-column: 2; grid-row: 1; text-align: right; }
-.metric-card > strong{ grid-column: 1 / -1; grid-row: 2; margin-top: var(--s-1); }
+.metric-card > strong{ grid-column: 1 / -1; grid-row: 2; margin-top: 2px; }
+/* Four facts in a bordered 2x2 grid, so the strip reads as one object instead of
+   four floating numbers separated by a rule that only some of them share. */
 .portfolio-context-strip{
-  position: relative;
-  display: grid; grid-template-columns: 1fr 1fr;
-  column-gap: var(--g-3); row-gap: var(--g-2);
+  display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
+  border: 1px solid var(--hair); border-radius: var(--r-3);
+  background: var(--surface); overflow: hidden;
   animation: lumen-rise var(--d-3) var(--ease) 100ms both;
 }
-.portfolio-context-strip::before{
-  content: ""; position: absolute; inset-inline: 0; top: calc(var(--s-5) * -1);
-  height: 1px; background: var(--hair);
+.portfolio-context-strip > span{
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  padding: var(--s-2) var(--s-4) var(--s-3);
 }
-.portfolio-context-strip span{
-  display: flex; align-items: baseline; column-gap: var(--s-1);
-  font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: .045em;
-}
-.portfolio-context-strip b{ font-size: var(--fs-body); color: var(--ink-1); }
+.portfolio-context-strip > span:nth-child(even){ border-left: 1px solid var(--hair); }
+.portfolio-context-strip > span:nth-child(n+3){ border-top: 1px solid var(--hair); }
+.portfolio-context-strip b{ font-size: var(--fs-row); font-weight: var(--fw-semibold); color: var(--ink-1); }
+.portfolio-context-strip > .context-reserved{ grid-column: 1 / -1; }
 
-/* == 09 INVESTMENTS STREAM ============================================== */
-.cockpit-investments-section{
-  padding: 12px;
-  border: 1px solid var(--hair);
-  border-radius: var(--r-2);
-  background: var(--surface);
-  box-shadow: var(--sh-plate);
-  animation: lumen-rise var(--d-3) var(--ease) 140ms both;
-}
-.investments-header{
-  display: flex; align-items: center; justify-content: space-between; column-gap: var(--g-2);
-  padding: 6px 10px; cursor: pointer; border-radius: var(--r-1);
-}
-.invest-head-title{ display: flex; align-items: baseline; column-gap: var(--g-2); min-width: 0; }
-.invest-sum-val{ color: var(--ink-3); letter-spacing: .02em; }
-.collapse-arrow{
-  flex: none; width: 26px; height: 26px; display: grid; place-items: center;
-  border-radius: var(--r-pill); color: var(--ink-3);
-  transition: all var(--d-2) var(--ease);
-}
-.collapse-arrow.collapsed{ transform: rotate(180deg); }
-.investments-header:hover .collapse-arrow{ background: var(--well); color: var(--ink-1); }
-.investments-list-stream{ margin-top: var(--s-2); }
-.pos-stream-item{
-  position: relative; width: 100%;
-  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center; column-gap: var(--g-2);
-  padding: 14px 12px;                    /* 14–18px row rhythm */
-  border-bottom: 1px solid var(--hair);
-  border-radius: var(--r-1);
-  transition: all var(--d-2) var(--ease);
-}
-.pos-stream-item:last-child{ border-bottom: 0; }
-.pos-stream-item:hover{ background: var(--well); }
-.pos-stream-item:active{ transform: scale(.99); }
-.pos-stream-item.selected{ background: var(--accent-soft); }
-.pos-stream-item.selected .pos-stream-ident small{ color: var(--ink-2); }
-.pos-stream-item.selected::before{
-  content: ""; position: absolute; inset-block: 12px; inset-inline-start: -6px; width: 3px;
-  border-radius: var(--r-pill); background: var(--accent);
-}
-.pos-stream-ident{ display: flex; flex-direction: column; min-width: 0; }
-.pos-stream-ident strong{
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
-  overflow: hidden; overflow-wrap: anywhere;
-}
-.pos-stream-ident small{ font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: .045em; margin-top: 2px; }
-.pos-stream-num-col{ display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
-.pos-stream-num-col strong, .pos-stream-num-col span{ white-space: nowrap; }
-.pos-stream-num-col span{ font-size: var(--fs-micro); letter-spacing: .02em; margin-top: 2px; }
-
-/* ticker mark: fetched logo and initials fallback are both first-class */
-.ticker-ring-logo{ position: relative; flex: none; width: 36px; height: 36px; display: grid; place-items: center; }
+/* == 09 TICKER MARK =================================================== */
+/* One mark geometry for every place an instrument is named: the ledger row, a
+   pending order, the instrument head. The ring was an accent-coloured progress
+   arc that encoded nothing and made five rows look like five active selections;
+   it is now a 1px track, and the initials sit in a 6px chip. */
+.ticker-ring-logo{ position: relative; flex: none; width: 32px; height: 32px; display: grid; place-items: center; }
 .ticker-ring-logo .ring-svg{ position: absolute; inset: 0; width: 100%; height: 100%; }
-.ring-track{ fill: none; stroke: var(--hair); stroke-width: 1.4; }
-.ring-progress{
-  fill: none; stroke: var(--accent); stroke-width: 1.4; stroke-linecap: round;
-  transform: rotate(-90deg); transform-box: fill-box; transform-origin: center;
-}
+.ring-track{ fill: none; stroke: var(--hair-strong); stroke-width: 1; }
+.ring-progress{ display: none; }
 .ticker-avatar{
-  position: relative; width: 76%; height: 76%;
+  position: relative; width: 100%; height: 100%;
   display: grid; place-items: center; overflow: hidden;
-  border-radius: var(--r-pill);
-  background: var(--surface); color: var(--ink-2);
-  font-size: var(--fs-micro); font-weight: 600; letter-spacing: .06em;
+  border-radius: var(--r-1);
+  background: var(--well); color: var(--ink-2);
+  font-size: var(--fs-micro); font-weight: var(--fw-semibold); letter-spacing: .04em;
 }
 .ticker-avatar img{ width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
 
 /* == 10 ALLOCATION MOSAIC =============================================== */
-.cockpit-treemap-section{ display: grid; row-gap: var(--g-3); animation: lumen-rise var(--d-3) var(--ease) 160ms both; }
-/* Title and control share the first row, the explanation gets the whole second
-   row. In a flex row the subtitle was left 158px beside a 156px control, so it
-   broke after 代 in 代表. `display: contents` promotes the wrapper's two
-   children into the grid, which costs no height: the first row was already as
-   tall as the control. */
+.cockpit-treemap-section{
+  display: grid; grid-template-rows: auto minmax(0, 1fr);
+  row-gap: var(--g-3); flex: 1 1 auto; min-height: 0;
+  animation: lumen-rise var(--d-3) var(--ease) 160ms both;
+}
 .cockpit-treemap-section .pane-section-header{
   display: grid; grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center; column-gap: var(--g-4); row-gap: var(--s-1);
+  align-items: center; column-gap: var(--g-3); row-gap: var(--s-1);
 }
 .cockpit-treemap-section .pane-section-header > div:first-child{ display: contents; }
 .cockpit-treemap-section .pane-section-header h3{ grid-column: 1; grid-row: 1; }
-.cockpit-treemap-section .pane-section-header .pane-section-sub{ grid-column: 1 / -1; grid-row: 2; margin-top: 0; }
+.cockpit-treemap-section .pane-section-header .pane-section-sub,
+.cockpit-treemap-section .pane-section-header .section-caption{ grid-column: 1 / -1; grid-row: 2; margin-top: 0; }
 .cockpit-treemap-section .pane-section-header .treemap-mode-toggles{ grid-column: 2; grid-row: 1; }
-/* `flex: none` is load-bearing. As a shrinkable flex item the control lost the
-   width race to the section's own subtitle and settled at 55px per pill, which
-   is less than the 70px "今日变化" needs - so both labels broke onto two lines
-   at 1440. The subtitle is text and may wrap; the control may not. */
+/* Segmented control: a recessed track with a raised thumb. This is the one place
+   a pill is correct — the thumb slides. */
 .treemap-mode-toggles{
-  display: inline-flex; flex: none; column-gap: 4px; padding: var(--s-2);
-  border-radius: var(--r-pill); background: var(--well);
+  display: inline-flex; flex: none; column-gap: 2px; padding: 3px;
+  border-radius: var(--r-2); background: var(--well);
+  box-shadow: inset 0 0 0 1px var(--hair);
 }
 .treemap-mode-pill{
-  padding: 0 var(--s-3); min-height: 30px; white-space: nowrap;
-  border-radius: var(--r-pill);
-  color: var(--ink-2); font-size: var(--fs-micro); letter-spacing: .045em;
-  transition: all var(--d-2) var(--ease);
+  padding: 0 10px; min-height: 26px; white-space: nowrap;
+  border-radius: var(--r-1);
+  color: var(--ink-3); font-size: var(--fs-micro); letter-spacing: var(--tr-wide);
+  transition: color var(--d-1) var(--ease), background-color var(--d-1) var(--ease);
 }
 .treemap-mode-pill:hover{ color: var(--ink-1); }
-.treemap-mode-pill.is-active{ background: var(--surface); color: var(--ink-1); box-shadow: var(--sh-plate); }
-.dynamic-treemap-container{ position: relative; height: 300px; }
+.treemap-mode-pill.is-active{
+  background: var(--surface); color: var(--ink-1); font-weight: var(--fw-semibold);
+  box-shadow: var(--sh-plate), inset 0 0 0 1px var(--hair);
+}
+.dynamic-treemap-container{ position: relative; height: 100%; min-height: 300px; max-height: 420px; }
 .treemap-rect-slot{ position: absolute; container-type: size; }
-/* a tile takes the air it can afford: the base inset is the floor the smallest
-   tile can carry, and 111px+ graduates to the full plate inset. */
+/* Tiles: the fill is a 8% tint of the signal, the border a 20% one, and the
+   number carries the colour. A 100% pastel fill made five tiles read as five
+   alerts. */
 .treemap-tile{
-  position: absolute; inset: 4px;
+  --tile-color: var(--ink-3);
+  position: absolute; inset: 3px;
   display: flex; flex-direction: column; align-items: flex-start;
-  padding: var(--s-3) var(--s-4);
-  border-radius: var(--r-1);
-  background: var(--well);
-  transition: all var(--d-2) var(--ease);
+  padding: var(--s-3);
+  border-radius: var(--r-2);
+  border: 1px solid color-mix(in srgb, var(--tile-color) 20%, var(--hair));
+  background: color-mix(in srgb, var(--tile-color) 7%, var(--surface));
+  transition: border-color var(--d-1) var(--ease), transform var(--d-1) var(--ease);
 }
-@container (min-height: 111px){
-  .treemap-tile{ padding: var(--s-5); }
-}
-/* The smallest tile is 65px tall and carries the same three rows as the rest,
-   so it tightens its leading and inset instead of losing a row. The old test
-   compared a percentage against a pixel threshold and dropped the weight and
-   the amount from exactly the tile that was losing money.
-   The query measures the slot (container-type: size on .treemap-rect-slot), so
-   the bound is the slot's height, not the tile's - the tile is 8px shorter. */
-@container (max-height: 80px){
-  .treemap-tile{ padding: 4px 10px; }
-  .treemap-tile .tile-ticker,
-  .treemap-tile .tile-weight,
-  .treemap-tile .tile-daypl{ line-height: 1.25; }
-  /* 1.15, not 1: at line-height 1 the --fs-row percentage's ink box is ~20px and
-     the weight's sits 2px inside it. The glyphs did not collide, but the boxes
-     did, and this tile has ~5px of slack to spend. */
-  .treemap-tile .tile-percent{ line-height: 1.15; }
-  .treemap-tile .tile-subrow{ margin-top: 2px; }
-}
-.treemap-tile.gain{ background: var(--pos-soft); }
-.treemap-tile.loss{ background: var(--neg-soft); }
-.treemap-tile.neutral{ background: var(--well); }
-.treemap-tile:hover{ box-shadow: var(--sh-float); transform: translateY(-1px); }
-.treemap-tile:active{ transform: scale(.985); }
-.treemap-tile.selected{ outline: 2px solid var(--accent); outline-offset: -2px; }
+.treemap-tile.gain{ --tile-color: var(--pos); }
+.treemap-tile.loss{ --tile-color: var(--neg); }
+.treemap-tile.neutral{ --tile-color: var(--ink-3); }
+.treemap-tile:hover{ border-color: color-mix(in srgb, var(--tile-color) 45%, var(--hair)); transform: translateY(-1px); }
+.treemap-tile:active{ transform: scale(.99); }
+/* selection is interaction, so it is the accent — never the tile's own signal */
+.treemap-tile.selected{ border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.treemap-tile:focus-visible{ outline: 2px solid var(--focus); outline-offset: 2px; }
 .tile-top-row{ display: flex; align-items: center; justify-content: space-between; column-gap: var(--s-2); width: 100%; }
-.tile-ticker{ color: var(--ink-2); letter-spacing: .1em; }
-.tile-active-pip{ width: 6px; height: 6px; border-radius: var(--r-pill); background: var(--accent); }
-.tile-percent{ margin-top: auto; line-height: 1.1; }
+.tile-ticker{ color: var(--ink-2); letter-spacing: .04em; font-weight: var(--fw-semibold); }
+.tile-active-pip{ width: 5px; height: 5px; border-radius: var(--r-pill); background: var(--accent); }
+/* The percent is the tile's answer, so it sits in the optical centre of whatever
+   area the layout gave it — not pinned to the bottom edge, which left the upper
+   two-thirds of a tall tile empty. */
+.tile-percent{ margin-block: auto; line-height: 1.1; color: var(--ink-1); }
+@container (min-height: 150px){
+  .treemap-tile .tile-percent{ font-size: var(--fs-title); }
+}
 /* colour-blind cue: every tile carries a direction glyph, not colour alone */
-.treemap-tile.gain .tile-percent::before{ content: "▲"; font-size: var(--fs-micro); margin-right: 3px; }
-.treemap-tile.loss .tile-percent::before{ content: "▼"; font-size: var(--fs-micro); margin-right: 3px; }
+.treemap-tile.gain .tile-percent{ color: var(--pos); }
+.treemap-tile.loss .tile-percent{ color: var(--neg); }
+.treemap-tile.gain .tile-percent::before{ content: "▲"; font-size: 9px; margin-right: 3px; }
+.treemap-tile.loss .tile-percent::before{ content: "▼"; font-size: 9px; margin-right: 3px; }
 .tile-subrow{
   display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
-  column-gap: var(--g-2); width: 100%; margin-top: var(--s-2);
+  column-gap: var(--s-2); width: 100%; margin-top: 4px;
 }
+/* Tinted ground lifts the floor: ink-3 clears 4.9:1 on the plate but only 4.49:1
+   on a 7% signal tint, so tile meta takes ink-2. */
 .tile-weight{ color: var(--ink-2); }
+.tile-value{ color: var(--ink-2); }
+.tile-quantity{ color: var(--ink-2); flex-basis: 100%; }
+@container (max-height: 104px){
+  .treemap-tile{ padding: var(--s-2) 10px; }
+  .tile-subrow{ margin-top: 2px; gap: 0 6px; }
+  .tile-quantity{ flex-basis: auto; }
+}
 .cockpit-see-all-btn{
   position: relative;
   display: flex; align-items: center; justify-content: center;
-  width: 100%; min-height: 44px;
-  padding: 8px 12px;
-  border-radius: var(--r-pill);
-  background: var(--well); color: var(--ink-1); font-weight: 600;
-  transition: all var(--d-2) var(--ease);
+  width: 100%; min-height: 38px;
+  padding: 8px var(--s-3);
+  border-radius: var(--r-2);
+  background: var(--surface); color: var(--ink-1); font-weight: var(--fw-semibold);
+  box-shadow: inset 0 0 0 1px var(--hair);
+  transition: background-color var(--d-1) var(--ease), color var(--d-1) var(--ease);
 }
-.cockpit-see-all-btn:hover{ background: var(--accent-soft); color: var(--accent-deep); }
-.cockpit-see-all-btn:active{ transform: scale(.98); }
-/* button-in-button: the chevron lives in its own circle, flush right */
+.cockpit-see-all-btn:hover{ background: var(--well); }
+.cockpit-see-all-btn:active{ transform: scale(.99); }
 .btn-action-chevron{
-  position: absolute; inset-inline-end: 8px; inset-block-start: 50%; margin-top: -15px;
-  width: 30px; height: 30px; display: grid; place-items: center;
-  border-radius: var(--r-pill); background: var(--surface); color: var(--ink-1);
-  font-size: var(--fs-row); line-height: 1;
-  transition: all var(--d-2) var(--ease);
+  position: absolute; inset-inline-end: 6px; inset-block-start: 50%; margin-top: -13px;
+  width: 26px; height: 26px; display: grid; place-items: center;
+  border-radius: var(--r-1); background: var(--well); color: var(--ink-1);
+  font-size: var(--fs-body); line-height: 1;
+  transition: transform var(--d-1) var(--ease);
 }
-.cockpit-see-all-btn:hover .btn-action-chevron{ transform: translate(2px, -2px) scale(1.06); }
+.cockpit-see-all-btn:hover .btn-action-chevron{ transform: translateX(2px); }
 
 /* == 11 PANE FOOTER ===================================================== */
-.cockpit-pane-footer{ display: grid; row-gap: var(--g-2); margin-top: auto; animation: lumen-rise var(--d-3) var(--ease) 180ms both; }
-.footer-action-pills-row{ display: flex; flex-wrap: wrap; gap: var(--g-1); }
-.t212-pill-action{
-  display: inline-flex; align-items: center; column-gap: var(--g-1);
-  padding: 8px 12px;
-  border: 1px solid var(--hair); border-radius: var(--r-pill);
-  background: var(--surface); color: var(--ink-2);
-  transition: all var(--d-1) var(--ease);
+.cockpit-pane-footer{
+  display: grid; row-gap: var(--s-2); margin-top: auto;
+  padding-top: var(--s-4); border-top: 1px solid var(--hair);
+  animation: lumen-rise var(--d-3) var(--ease) 180ms both;
 }
-.t212-pill-action:hover{ border-color: var(--accent-soft); background: var(--accent-soft); color: var(--accent-deep); }
-.t212-pill-action:active{ transform: scale(.97); }
-.t212-legal-disclaimer{ line-height: 1.5; }
+.footer-action-pills-row{ display: flex; flex-wrap: wrap; gap: var(--s-1); }
+.t212-pill-action{
+  display: inline-flex; align-items: center; column-gap: var(--s-1);
+  padding: 0 10px; height: var(--control-h-sm);
+  border-radius: var(--r-2);
+  background: transparent; color: var(--ink-2);
+  box-shadow: inset 0 0 0 1px var(--hair);
+  font-size: var(--fs-micro);
+  transition: background-color var(--d-1) var(--ease), color var(--d-1) var(--ease);
+}
+.t212-pill-action:hover{ background: var(--well); color: var(--ink-1); }
+.t212-pill-action:active{ transform: scale(.98); }
+.t212-legal-disclaimer{ line-height: 1.55; }
 
 /* == 12 INSTRUMENT HEAD ================================================= */
+/* Identity on the left, price on the right, one baseline each. The head used to
+   stack three right-aligned rows (price, delta, tag) above the range control, so
+   it had three alignment axes and no row. */
 .cockpit-inst-head{
-  /* min-content, not 0: at 981-1181px the rail leaves this head ~591-780px, the
-     'auto' price column takes its 266px max-content first, and a 0 floor let the
-     profile column collapse to 0 width so its text spilled over the price block. */
   display: grid; grid-template-columns: minmax(min-content, 1fr) auto;
-  align-items: center; column-gap: var(--g-4); row-gap: var(--g-1);
+  align-items: center; column-gap: var(--g-4); row-gap: 0;
 }
-.inst-profile{ grid-column: 1; grid-row: 1 / span 2; display: flex; align-items: center; column-gap: var(--g-3); }
-/* :not(.ticker-ring-logo) — the ring logo is also a direct div child; without the
-   guard the justify-items:start below de-centered the avatar inside its 48px ring
-   box (avatar hugged the left edge, ring looked detached top-right). */
+.inst-profile{ grid-column: 1; grid-row: 1; display: flex; align-items: center; column-gap: var(--s-3); }
 .inst-profile > div:not(.ticker-ring-logo){ display: grid; justify-items: start; min-width: min-content; }
-.inst-profile .ticker-ring-logo{ width: 48px; height: 48px; }
-.inst-title{ margin-top: var(--s-1); }
-.inst-price-box{ grid-column: 2; grid-row: 1; text-align: right; }
-.inst-price-sub{ display: block; margin-top: var(--s-1); letter-spacing: .01em; }
-.inst-actions{ grid-column: 2; grid-row: 2; justify-self: end; }
-.inst-tag-row{ display: flex; align-items: center; column-gap: var(--g-1); }
-.read-only-status{
-  display: inline-flex; align-items: center; column-gap: var(--s-2);
-  padding: 0 var(--s-3); line-height: 24px;
-  border-radius: var(--r-pill); background: var(--well); color: var(--ink-2);
+.inst-profile .ticker-ring-logo{ width: 44px; height: 44px; }
+.inst-title{ margin-top: 1px; }
+/* Price, delta and the currency note share one block. The first two sit on the
+   baseline; the note takes a full row of its own, so it never competes for the
+   same line as the number it explains. */
+.inst-price-box{
+  grid-column: 2; grid-row: 1; display: flex; flex-wrap: wrap;
+  align-items: baseline; column-gap: var(--s-3); row-gap: var(--s-1);
+  justify-content: flex-end;
 }
-.read-only-status::before{ content: ""; width: 5px; height: 5px; border-radius: var(--r-pill); background: var(--ink-2); }
+.inst-price-sub{ letter-spacing: 0; white-space: nowrap; }
+.inst-price-note{
+  flex-basis: 100%; text-align: right;
+  font-size: var(--fs-micro); line-height: var(--lh-micro);
+  letter-spacing: var(--tr-normal); color: var(--ink-3);
+}
+.inst-tag-row{ display: flex; align-items: center; flex-wrap: wrap; column-gap: var(--s-2); row-gap: var(--s-1); }
+/* Account state, not instrument data: it sits with the identity, not under the
+   price, where a third line made the number block read as one long sentence. */
+.read-only-status{
+  display: inline-flex; align-items: center; column-gap: var(--s-1);
+  padding: 0 var(--s-2); line-height: 20px;
+  border-radius: var(--r-1); background: var(--well); color: var(--ink-3);
+  box-shadow: inset 0 0 0 1px var(--hair);
+}
 
 /* == 13 RANGE SWITCHER ================================================== */
+/* The selected segment must read as *selected*, not as *disabled*. White-on-grey
+   is what a disabled control looks like; the thumb gets a hairline and the label
+   gets ink-1 + semibold, so selection survives greyscale. */
 .range-switcher{
   position: relative;
   display: inline-flex; column-gap: 2px;
-  padding: var(--s-2);
-  border-radius: var(--r-pill);
+  padding: 3px;
+  border-radius: var(--r-2);
   background: var(--well);
+  box-shadow: inset 0 0 0 1px var(--hair);
 }
 .range-switcher button{
   position: relative;
   z-index: 1;
-  flex: 1 1 0; min-width: 54px; min-height: 34px;
+  flex: 1 1 0; min-width: 52px; min-height: 28px;
   display: grid; place-items: center;
-  border-radius: var(--r-pill);
-  color: var(--ink-2);
-  transition: color var(--d-2) var(--ease);
+  border-radius: var(--r-1);
+  color: var(--ink-3);
+  font-size: var(--fs-micro);
+  transition: color var(--d-1) var(--ease);
 }
 .range-switcher button:hover{ color: var(--ink-1); }
-.range-switcher button.active{ color: var(--ink-1); font-weight: 600; }
+.range-switcher button.active{ color: var(--ink-1); font-weight: var(--fw-semibold); }
 .range-thumb{
-  position: absolute; left: 0; top: var(--s-2); bottom: var(--s-2); width: 0;
-  border-radius: var(--r-pill); background: var(--surface);
-  box-shadow: var(--sh-plate);
+  position: absolute; left: 0; top: 3px; bottom: 3px; width: 0;
+  border-radius: var(--r-1); background: var(--surface);
+  box-shadow: var(--sh-plate), inset 0 0 0 1px var(--hair);
   pointer-events: none;
   transition: transform var(--d-2) var(--ease), width var(--d-2) var(--ease);
   z-index: 0;
 }
 
-/* == 14 CHART PLATE · double bezel ====================================== */
+/* == 14 CHART PLATE ===================================================== */
+/* One plate, not a frame around a plate. The 6px canvas bezel inside the card
+   border made the chart look mounted in a passe-partout. */
 .cockpit-chart-wrap{
-  padding: 6px;
+  padding: var(--s-4) var(--s-5) var(--s-3);
   border: 1px solid var(--hair);
-  border-radius: var(--r-3);
-  background: var(--canvas);
-}
-.price-chart-panel{
-  position: relative;
-  display: grid; row-gap: var(--g-2);
-  padding: var(--s-4);
-  border-radius: var(--r-2);              /* 20 - 6 = concentric */
+  border-radius: var(--r-4);
   background: var(--surface);
   box-shadow: var(--sh-plate);
 }
-.price-chart-panel > *{ position: relative; z-index: 1; }
-/* The cockpit chart is `compact` - it has no room for the detail page's full
-   heading, meta bar and price. It still gets one line: the legend, because the
-   buy/sell markers are the only marks on that chart a reader cannot infer, and
-   the interval plus fill count, because DESIGN.md's chart contract requires
-   them next to the chart. Wraps to two lines under ~420px, which is fine. */
+/* Compact chart header: title on its own row, then one meta row — legend left,
+   interval and fill count right. The meta line used to be a third stacked row of
+   prose ("drag the slider or pinch to zoom"), which is a manual, not a header. */
+.price-chart-panel{ display: grid; row-gap: var(--g-2); }
+.price-chart-panel:has(> .chart-count){
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--g-4);
+}
+.price-chart-panel:has(> .chart-count) > .section-heading{ grid-column: 1 / -1; }
+.price-chart-panel:has(> .chart-count) > .chart-legend{ grid-column: 1; }
+.price-chart-panel:has(> .chart-count) > .chart-count{
+  grid-column: 2; margin: 0; text-align: right; align-self: center;
+}
+.price-chart-panel:has(> .chart-count) > .price-chart{ grid-column: 1 / -1; }
 .chart-compact-meta{
   display: flex; align-items: baseline; justify-content: space-between;
   flex-wrap: wrap; column-gap: var(--g-4); row-gap: var(--s-1);
 }
 .chart-compact-meta .chart-count{ margin: 0; }
-.chart-legend{ display: flex; align-items: center; column-gap: var(--g-4); }
-.chart-legend span{ display: inline-flex; align-items: center; column-gap: var(--s-2); color: var(--ink-2); }
+.chart-legend{ display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-1) var(--g-3); }
+.chart-legend span{ display: inline-flex; align-items: center; column-gap: 6px; color: var(--ink-2); }
 .legend-dot{ display: none; }
-/* The swatches are the marks the series actually draws: a 2px close line, an
-   up-arrow for buys and a down-arrow for sells (TradingView arrowUp/arrowDown).
-   The legend previously drew a square for buys and an up-triangle for sells, so
-   neither shape matched the chart it was explaining - and the whole legend was
-   painted twice, once here and once by an inline <i> in the markup. */
+/* Swatches are the marks the series actually draws: a 2px line for the close,
+   a square for a buy fill, a triangle for a sell. The legend had been redrawn
+   twice as things the chart does not contain (a triangle for buys, then a dot
+   for both), which is worse than no legend. */
 .chart-legend span::before{
   content: ""; flex: 0 0 auto;
-  width: 10px; height: 9px; background: var(--ink-3);
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  width: 8px; height: 8px; border-radius: 1px; background: var(--pos);
 }
 .chart-legend span:nth-child(1)::before{
-  width: 14px; height: 3px; border-radius: var(--r-pill);
-  clip-path: none; background: var(--accent);
+  width: 14px; height: 2px; border-radius: var(--r-pill); background: var(--accent);
 }
 .chart-legend span:nth-child(2)::before{ background: var(--pos); }
-.chart-legend span:nth-child(3)::before{ background: var(--warn); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.chart-legend span:nth-child(3)::before{
+  background: var(--warn); clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+.chart-legend span.chart-cost-legend::before{
+  width: 14px; height: 0; border-radius: 0; border-top: 1px dashed var(--ink-4);
+  background: none; clip-path: none;
+}
+.chart-cost-legend{ font-variant-numeric: tabular-nums; white-space: nowrap; }
 .price-chart{ width: 100%; height: auto; aspect-ratio: 820 / 300; min-height: 220px; margin-top: var(--s-1); }
 .price-chart .timeline-grid line{ stroke: var(--hair); stroke-width: 1; }
-.price-chart > path{ stroke: var(--accent); stroke-width: 1.8; }
+.price-chart > path{ stroke: var(--accent); stroke-width: 1.6; }
 .price-chart > line{ stroke: var(--hair); }
-.price-chart > line[stroke-dasharray]{ stroke: var(--ink-3); stroke-dasharray: 4 5; }
-.price-chart rect{ fill: var(--pos); stroke: var(--surface); stroke-width: 1.5; }
-.price-chart polygon{ fill: var(--warn); stroke: var(--surface); stroke-width: 1.5; }
+.price-chart > line[stroke-dasharray]{ stroke: var(--ink-4); stroke-dasharray: 3 4; opacity: .7; }
+.price-chart rect{ fill: var(--pos); stroke: var(--surface); stroke-width: 2; }
+.price-chart polygon{ fill: var(--warn); stroke: var(--surface); stroke-width: 2; }
 .price-chart text{
   fill: var(--ink-3); color: var(--ink-3);
-  font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: .02em;
+  font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0;
 }
 
-/* == 15 POSITION METRICS BAND =========================================== */
+/* == 15 POSITION METRICS ================================================ */
 .your-investment-cockpit{ display: grid; row-gap: var(--g-3); }
-.inv-metrics-list{ display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); column-gap: var(--g-4); }
-.inv-metric-row{ position: relative; display: flex; flex-direction: column; padding-top: var(--s-4); }
-.inv-metric-row::before{ content: ""; position: absolute; inset-inline: 0; top: 0; height: 1px; background: var(--hair); }
-.inv-metric-row strong{ margin-top: var(--s-1); white-space: nowrap; }
+.inv-metrics-list{
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+  column-gap: 0;
+}
+/* Five cells, one rule above each, no vertical rules: the hairline is the column
+   separator's job only when the columns are equal-weight facts, and these are. */
+.inv-metric-row{
+  position: relative; display: flex; flex-direction: column;
+  padding: var(--s-3) var(--s-4) 0 0;
+}
+.inv-metric-row + .inv-metric-row{ padding-left: var(--s-4); }
+.inv-metric-row + .inv-metric-row::after{
+  content: ""; position: absolute; inset-block: var(--s-3) 0; inset-inline-start: 0;
+  width: 1px; background: var(--hair);
+}
+.inv-metric-row::before{
+  content: ""; position: absolute; inset-inline: 0; top: 0; height: 1px; background: var(--hair);
+}
+.inv-metric-row strong{ margin-top: 2px; white-space: nowrap; }
 
 /* == 16 PORTFOLIO ANALYTICS ============================================= */
-/* Two read-only panels on the overview canvas: where the unrealised P/L came
-   from, and which currencies the holdings actually carry. Bare bands with one
-   divider between them - the holdings plate below is the only boxed thing in
-   the strip, so these must not grow card chrome of their own. */
-.cockpit-sub-analytics-grid{ display: grid; grid-template-columns: 1.62fr 1fr; column-gap: var(--g-6); }
+/* Two bare bands, one divider. The ledger plate below is the only boxed thing in
+   this strip, so these must not grow card chrome of their own. */
+.cockpit-sub-analytics-grid{ display: grid; grid-template-columns: 1.55fr 1fr; column-gap: var(--g-6); }
 .sub-panel{ display: grid; row-gap: var(--g-3); align-content: start; }
 .sub-panel + .sub-panel{ position: relative; }
 .sub-panel + .sub-panel::before{
@@ -694,74 +803,81 @@ fieldset{ border: 0; }
   width: 1px; background: var(--hair);
 }
 .bar-list{ display: grid; }
+/* A fixed value column is what makes a ranked bar list scannable: when each row
+   is its own grid, the numbers land at six different x positions and the list
+   stops being a column of comparable figures. */
 .bar-row{
-  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) auto;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(96px, 1.35fr) 104px;
   align-items: center; column-gap: var(--g-3);
-  padding: 12px 0;
+  padding: 10px 0;
   border-bottom: 1px solid var(--hair);
 }
 .bar-row:last-child{ border-bottom: 0; }
 .bar-label{ display: flex; flex-direction: column; min-width: 0; }
 .bar-label strong{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* The track is the bar's scale, so it has to be visible. `--well` is the
-   semantically right token for a recess but it lands 1.06:1 on `--canvas` and
-   1.13:1 on `--surface` - declared, and invisible on both grounds, which leaves
-   the fills reading as floating strokes rather than as measures. `--hair` is the
-   system's one line colour and clears ~1.2:1 on either ground: still a whisper,
-   but a whisper you can see. */
-.bar-measure{ height: 6px; border-radius: var(--r-pill); background: var(--hair); overflow: hidden; }
-.bar-measure i{ display: block; height: 100%; border-radius: var(--r-pill); }
-/* Filled by sign only when the list IS signed. `CurrencyExposureChart`, the
-   history page's volume charts and the dividend charts all pass unsigned
-   magnitudes, and painting those green asserted a gain that was never in the
-   data - the one rule the token block states outright is that green and red are
-   reserved for signed finance. Magnitudes take the accent. */
+/* The track is the bar's scale, so it has to be visible. --hair is a whisper on
+   the surface; the measure track takes --hair-strong, which is still a rule but
+   a rule you can see. */
+/* Square ends: a measure bar is a chart mark, not a capsule. A 2px radius on an
+   8px bar is a fifth radius value that exists nowhere else in the system. */
+.bar-measure{
+  display: flex; height: 8px;
+  background: var(--hair-strong); overflow: hidden;
+}
+.bar-measure i{ display: block; height: 100%; }
+/* Sign is carried by direction as well as colour: a loss grows leftwards from
+   the zero point at the right edge of its track, so the chart survives both
+   colour-blindness and greyscale. */
+.bar-negative{ margin-inline-start: auto; }
 .bar-positive{ background: var(--pos); }
 .bar-negative{ background: var(--neg); }
 .bar-accent{ background: var(--accent); }
 .bar-row b{ text-align: right; white-space: nowrap; }
 .exposure-summary{ display: grid; }
 .exposure-summary > div{
-  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline;
-  column-gap: var(--g-2); padding: 12px 0;
+  display: grid; grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: baseline; column-gap: var(--s-2);
+  padding: 10px 0;
   border-bottom: 1px solid var(--hair);
 }
 .exposure-summary > div:last-child{ border-bottom: 0; }
-.exposure-summary strong{ letter-spacing: .06em; }
-.exposure-summary span{ text-align: right; }
-.exposure-summary small{ grid-column: 1 / -1; margin-top: 2px; }
+.exposure-summary strong{ letter-spacing: .04em; }
+.exposure-summary span{ text-align: right; white-space: nowrap; }
+.exposure-summary small{ grid-column: 2 / -1; margin-top: 2px; }
 
 /* == 17 HOLDINGS LEDGER ================================================= */
 .cockpit-holdings-preview{
   display: grid; row-gap: var(--g-3);
-  padding: var(--s-5);
-  border: 1px solid var(--hair); border-radius: var(--r-2);
+  padding: var(--card-pad);
+  border: 1px solid var(--hair); border-radius: var(--r-4);
   background: var(--surface);
   box-shadow: var(--sh-plate);
 }
 .table-scroll{ overflow-x: auto; scrollbar-width: thin; }
 .holdings-table{ width: 100%; }
 .holdings-table th{
-  text-align: left; font-weight: 600; letter-spacing: .06em;
-  padding: 10px 12px;
+  text-align: left; font-weight: var(--fw-medium); letter-spacing: var(--tr-wide);
+  padding: 0 var(--s-3) 8px;
   border-bottom: 1px solid var(--hair);
   white-space: nowrap;
+  color: var(--ink-3);
 }
 .holdings-table td{
-  padding: 14px 12px;
+  height: var(--row-h);
+  padding: var(--s-2) var(--s-3);
   border-bottom: 1px solid var(--hair);
   vertical-align: middle;
 }
-.holdings-table tbody tr{ transition: background-color var(--d-2) var(--ease); }
-.holdings-table tbody tr:hover{ background: var(--accent-soft); }
+.holdings-table tbody tr{ transition: background-color var(--d-1) var(--ease); }
+.holdings-table tbody tr:hover{ background: var(--well); }
 .holdings-table tbody tr:last-child td{ border-bottom: 0; }
 .holdings-table th:not(:first-child), .holdings-table td:not(:first-child){ text-align: right; }
 .holdings-table td > strong, .holdings-table td > small{ display: block; white-space: nowrap; }
-.asset-cell{ display: flex; align-items: center; column-gap: var(--g-2); }
+.asset-cell{ display: flex; align-items: center; column-gap: var(--s-3); }
 .asset-text{ display: flex; flex-direction: column; min-width: 0; }
 .holdings-table td.positive strong{ color: var(--pos); }
 .holdings-table td.negative strong{ color: var(--neg); }
-.holdings-table-compact td{ padding-block: 10px; }
+.holdings-table-compact td{ padding-block: var(--s-2); }
 
 /* == 18 SHORTCUTS ======================================================= */
 /* The floating shortcuts legend is gone. A 412x34 fixed bar sat over the holdings
@@ -775,8 +891,6 @@ fieldset{ border: 0; }
 .hide-balances .account-hero-val,
 .hide-balances .tile-percent,
 .hide-balances .inv-metric-row strong,
-.hide-balances .pos-stream-num-col strong,
-.hide-balances .pos-stream-num-col span,
 .hide-balances .holdings-table td strong,
 .hide-balances .holdings-table td small,
 .hide-balances .bar-row b,
@@ -796,7 +910,7 @@ fieldset{ border: 0; }
 .spin{ animation: lumen-spin 900ms linear infinite; }
 .status-dot{ display: inline-block; width: 6px; height: 6px; border-radius: var(--r-pill); background: var(--pos); }
 .eyebrow, .empty-inline, .history-reference, .order-row-info, .chart-meta{
-  font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: .045em;
+  font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: var(--tr-wide);
 }
 .count-tag{
   display: inline-flex; padding: 0 var(--s-3); line-height: 20px;
@@ -816,17 +930,22 @@ fieldset{ border: 0; }
    gutters and the cockpit chart was pinned to the holdings table's max-content.
    `width: 100%` restores the fill; `max-width` + auto margins still centre it on
    ultrawide. */
+/* One page container, one gutter. 40px at desktop, 24 at tablet, 16 at phone —
+   the gutter is a property of the page, not of every layout inside it. */
 .page, .content-page, .instrument-page, .history-page, .settings-page, .help-page, .setup-page, .workspace{
-  width: 100%; max-width: 1560px; margin-inline: auto; padding: 104px 36px 40px;
+  width: 100%; max-width: 1560px; margin-inline: auto; padding: 100px 40px 56px;
   display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--g-5); align-content: start;
 }
-.page-header, .instrument-heading, .history-header, .settings-header{
+.legal{
+  margin-top: var(--s-6); padding-top: var(--s-4);
+  border-top: 1px solid var(--hair); max-width: 100ch;
+}
+.instrument-heading{
   display: flex; align-items: flex-end; justify-content: space-between; column-gap: var(--g-4); flex-wrap: wrap;
 }
-.page-header h1, .instrument-heading h1, .history-header h1, .brand{
+.instrument-heading h1, .brand{
   font-size: var(--fs-title); font-weight: 600; letter-spacing: -.012em;
 }
-.page-header p{ color: var(--ink-3); margin-top: var(--s-1); }
 .pill-btn{
   display: inline-flex; align-items: center; column-gap: var(--g-1);
   padding: 8px 12px; border: 1px solid var(--hair); border-radius: var(--r-pill);
@@ -839,7 +958,7 @@ fieldset{ border: 0; }
 .pill-btn.primary:hover{ background: var(--accent-deep); border-color: var(--accent-deep); color: var(--accent-plate-ink); }
 .pill-btn.danger, .pill-btn.danger-outline{ border-color: var(--neg-soft); color: var(--neg); }
 .field{ display: grid; row-gap: var(--g-1); }
-.field span{ font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: .045em; }
+.field span{ font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: var(--tr-wide); }
 .field input, .field select{
   padding: 8px 12px; border: 1px solid var(--hair); border-radius: var(--r-1);
   background: var(--surface); color: var(--ink-1); font-size: var(--fs-body);
@@ -850,11 +969,11 @@ fieldset{ border: 0; }
 }
 .error-panel, .fatal-screen{ color: var(--ink-1); }
 .error-actions, .settings-actions{ display: flex; flex-wrap: wrap; gap: var(--g-2); }
-.dialog-backdrop, .shortcuts-modal-backdrop, .confirm-dialog{
+.dialog-backdrop, .shortcuts-modal-backdrop{
   position: fixed; inset: 0; z-index: 80; display: grid; place-items: center;
   background: rgba(21, 23, 26, .38);
 }
-.dialog-backdrop > *, .shortcuts-modal-card, .confirm-dialog > *{
+.dialog-backdrop > *, .shortcuts-modal-card{
   width: min(560px, calc(100% - 32px));
   padding: 24px; border-radius: var(--r-3);
   background: var(--surface); box-shadow: var(--sh-float);
@@ -874,59 +993,111 @@ fieldset{ border: 0; }
 .cockpit-order-row{ display: grid; row-gap: var(--s-1); padding: 14px 0; border-bottom: 1px solid var(--hair); }
 .shortcuts-modal-grid{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--g-4); row-gap: var(--g-2); }
 
+/* Pending orders: logo / side and instrument / optional limit price. */
+.cockpit-pending-section .pane-section-header{ flex-direction: row; align-items: center; }
+.cockpit-order-row{ grid-template-columns: 26px minmax(0,1fr) auto; gap: var(--s-3); padding-block: var(--s-3); }
+.cockpit-order-row .ticker-ring-logo{ width: 26px; height: 26px; }
+.cockpit-order-row .ticker-ring-logo svg{ display: none; }
+.cockpit-order-row .ticker-avatar{ border-radius: var(--r-1); font-size: var(--fs-micro); }
+.order-row-info{ min-width: 0; }
+.order-row-title{ display: flex; align-items: baseline; gap: var(--s-1); }
+.order-row-title strong{ min-width: 0; font-size: var(--fs-body); font-weight: var(--fw-semibold); overflow-wrap: anywhere; }
+.order-side{
+  flex: none; padding: 0 6px; border-radius: var(--r-1);
+  font-size: var(--fs-micro); font-weight: var(--fw-semibold); line-height: 18px;
+}
+.order-side.buy{ color: var(--pos); background: var(--pos-soft); }
+.order-side.sell{ color: var(--neg); background: var(--neg-soft); }
+.order-row-info > small{ display: block; margin-top: 2px; font-size: var(--fs-micro); line-height: 1.5; color: var(--ink-3); }
+.order-limit-price{ font-size: var(--fs-body); text-align: right; white-space: nowrap; }
+.timeline-buy{ filter: none; }
+.timeline-sell{ filter: none; }
+
 /* == 21 DARK THEME ====================================================== */
+/* Only roles are overridden, never a component. If a component needs a new
+   value in dark, it is missing a role — add the role, not the override. */
 [data-theme="dark"]{
   color-scheme: dark;
-  --canvas:       #090C10;
-  --surface:      #111620;
-  --well:         #171E2B;
-  --glass:        rgba(17, 22, 32, .80);
-  --ink-1:        #F8FAFC;
-  --ink-2:        #CBD5E1;
-  --ink-3:        #8290A4;
-  --accent:       #60A5FA;
-  --accent-deep:  #93C5FD;
-  --accent-soft:  rgba(59, 130, 246, 0.16);
-  --accent-plate: #3B82F6;
+
+  --canvas:       #0B0F15;
+  --surface:      #121821;
+  --well:         #1A212C;
+  --glass:        rgba(18, 24, 33, .82);
+
+  --ink-1:        #F3F6FA;
+  --ink-2:        #B9C2D0;
+  --ink-3:        #8590A2;
+  --ink-4:        #616C7D;
+
+  --accent:       #7C9DF7;
+  --accent-deep:  #A3BCFF;
+  --accent-soft:  #1B2A4D;
+  --accent-plate: #3A63E0;
   --accent-plate-ink: #FFFFFF;
-  --pos:          #10B981;
-  --neg:          #FB7185;
-  --warn:         #FBBF24;
-  --pos-soft:     rgba(16, 185, 129, 0.14);
-  --neg-soft:     rgba(251, 113, 133, 0.14);
-  --hair:         #232C3B;   /* refined precision hairline for obsidian night */
-  --sh-plate: 0 1px 0 rgba(0,0,0,.5), 0 8px 20px -6px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.07);
-  --sh-float: 0 4px 12px rgba(0,0,0,.6), 0 24px 38px -12px rgba(0,0,0,.8);
-  --focus: #60A5FA;
+
+  --pos:          #35C08B;
+  --neg:          #F1797F;
+  --warn:         #E0B357;
+  --pos-soft:     #12291F;
+  --neg-soft:     #2C1719;
+
+  --hair:         #232B38;
+  --hair-strong:  #303A4A;
+
+  --sh-plate:   0 1px 2px rgba(0, 0, 0, .40), inset 0 1px 0 rgba(255, 255, 255, .03);
+  --sh-float:   0 2px 8px rgba(0, 0, 0, .45), 0 12px 32px -12px rgba(0, 0, 0, .60);
+  --sh-overlay: 0 4px 16px rgba(0, 0, 0, .50), 0 28px 72px -20px rgba(0, 0, 0, .70);
 }
 [data-theme="dark"] .dialog-backdrop,
-[data-theme="dark"] .shortcuts-modal-backdrop{ background: rgba(9, 10, 12, .68); }
+[data-theme="dark"] .shortcuts-modal-backdrop{ background: rgba(6, 8, 12, .72); }
 
 /* == 22 RESPONSIVE ====================================================== */
+/* Three breakpoints, each with one job:
+     1180  the rail narrows and the analytics pair re-proportions
+      980  the rail stops being a column and the page becomes one stack
+      680  the navigation splits into two rows and tables scroll
+   The page gutter lives on the page container; no layout re-declares it. */
 @media (max-width: 1180px){
-  .t212-cockpit-layout{ grid-template-columns: 306px minmax(0, 1fr); padding: 0 28px 32px; }
-  .cockpit-sub-analytics-grid{ grid-template-columns: 1.4fr 1fr; }
-  /* Below 1180 the narrowed canvas leaves the asset cell ~111px, and a name plus
-     its ticker side by side need ~176px. They used to split the difference and
-     both wrapped mid-word; a plain ellipsis is not better, it truncates the one
-     string that identifies the row. Stacked, each line gets the whole column and
-     the column sizes to the longer of the two, so nothing is cut. */
+  .t212-cockpit-layout{ grid-template-columns: 304px minmax(0, 1fr); }
+  .cockpit-sub-analytics-grid{ grid-template-columns: 1.35fr 1fr; }
   .asset-link{ flex-direction: column; align-items: flex-start; row-gap: 2px; }
   .asset-link strong, .asset-link small{ max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* A three-column bar row needs its label column to hold the longest asset name
-     - "Vanguard S&P 500" is ~126px at --fs-body (131px before the type scale
-     tightened, so the margin is slightly better than when this was measured).
-     At 1024 the canvas is 634px, the
-     analytics grid splits it 1.4fr/1fr, and the label column lands at 98px, so it
-     ellipsised the one string that identifies the row. Same failure the asset cell
-     had, same fix: stack, which is the treatment the row already used below 680. */
-  .bar-row{ grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--g-1); }
+  /* A three-column bar row needs its label column to hold the longest asset name.
+     Below 1180 the label lands at ~98px, so the row stacks: label + value on one
+     line, the measure underneath. */
+  .bar-row{ grid-template-columns: minmax(0, 1fr) 104px; row-gap: var(--s-2); }
   .bar-row .bar-measure{ grid-column: 1 / -1; grid-row: 2; }
 }
+@media (min-width: 681px) and (max-width: 1120px){
+  .t212-native-topbar{ flex-wrap: wrap; justify-content: center; max-width: calc(100% - 40px); }
+  .topbar-search-field{ width: 96px; }
+  .topbar-nav-tab{ padding-inline: 9px; }
+}
+@media (min-width: 681px) and (max-width: 960px){
+  .topbar-nav-tab span{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .topbar-nav-tab{ padding-inline: 10px; }
+  .topbar-search-slot{ display: none; }
+}
 @media (max-width: 980px){
-  .t212-cockpit-layout{ grid-template-columns: minmax(0, 1fr); padding: 0 24px 32px; gap: var(--g-5); }
-  .cockpit-left-pane{ gap: var(--g-4); }
-  .cockpit-main-pane{ gap: var(--g-5); }
+  .page, .content-page, .instrument-page, .history-page, .settings-page, .help-page, .setup-page, .workspace{
+    padding: 92px 24px 48px;
+  }
+  /* One column, and the column order is the reading order. The rail used to stay
+     a single block above the canvas, so on a phone the instrument chart sat below
+     the account plate, the cash plate, four facts and a 420px mosaic — the page's
+     subject arrived after three screens of context. The rail is dissolved with
+     `display: contents` and its children are ordered around the canvas: account
+     total, cash, four facts, then the chart, then allocation. */
+  .t212-cockpit-layout{ display: flex; flex-direction: column; gap: var(--g-4); align-items: stretch; }
+  .cockpit-left-pane{ display: contents; }
+  .cockpit-account-card{ order: 1; }
+  .cockpit-cash-summary{ order: 2; }
+  .portfolio-context-strip{ order: 3; }
+  .cockpit-pending-section{ order: 4; }
+  .cockpit-main-pane{ order: 5; gap: var(--g-5); }
+  .cockpit-treemap-section{ order: 6; flex: 0 0 auto; }
+  .cockpit-pane-footer{ order: 7; }
+  .dynamic-treemap-container{ min-height: 260px; max-height: 320px; }
   .cockpit-instrument-container{ grid-template-columns: minmax(0, 1fr); align-items: start; }
   .range-switcher{ grid-column: 1; grid-row: 1; justify-self: start; }
   .cockpit-inst-head{ grid-column: 1; grid-row: 2; }
@@ -939,37 +1110,43 @@ fieldset{ border: 0; }
   }
 }
 @media (max-width: 680px){
-  .t212-native-app-root{ padding-bottom: 40px; }
-  .t212-native-topbar{
-    inset-inline: 10px; width: auto; max-width: none; margin-inline: 0;
-    flex-wrap: wrap; gap: var(--g-1);
-    padding: 6px 10px;
+  .page, .content-page, .instrument-page, .history-page, .settings-page, .help-page, .setup-page, .workspace{
+    padding: 84px 16px 40px;
   }
-  .topbar-left-zone{ flex: 1 1 auto; }
-  .topbar-right-zone{ flex: none; }
-  .topbar-center-nav{ order: 3; width: 100%; overflow-x: auto; scrollbar-width: none; }
-  .topbar-center-nav::-webkit-scrollbar{ display: none; }
-  .topbar-nav-tab{ flex: none; }
+  .t212-native-app-root{ padding-bottom: 32px; }
+  .t212-native-topbar{
+    width: calc(100% - 24px); max-width: none; margin: 10px auto 0;
+    flex-direction: column; align-items: stretch; gap: 6px;
+  }
+  .topbar-navigation-group{ display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 5px; }
+  .topbar-left-zone{ padding-right: 0; min-height: 34px; }
+  .topbar-center-nav{ display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; }
+  .topbar-center-nav:has(> :last-child:nth-child(2)){ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .topbar-nav-tab{ flex-direction: column; gap: 3px; padding: 7px 2px; min-height: 44px; justify-content: center; }
+  .topbar-nav-tab span{ font-size: var(--fs-micro); }
+  /* Tools ride in the brand row instead of owning a third row: as a full-width
+     capsule with no search field in it, the group read as an empty input. */
+  .topbar-right-zone{
+    position: absolute; top: 4px; right: 4px; padding: 0;
+    border: 0; background: transparent; box-shadow: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
+  .topbar-navigation-group{ position: relative; padding-right: 108px; }
+  .topbar-left-zone{ min-height: 36px; }
   .topbar-search-slot, .invest-chevron-icon{ display: none; }
-  .t212-cockpit-layout{ padding: 0 0 32px; }
-  .cockpit-account-card{ padding: 14px; }
-  .cockpit-cash-summary, .price-chart-panel, .cockpit-holdings-preview{ padding: 14px; }
+  .cockpit-account-card{ padding: var(--s-4); }
+  .cockpit-cash-summary, .cockpit-holdings-preview, .cockpit-chart-wrap{ padding: var(--s-4); }
   .inv-metrics-list{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .inv-metric-row{ padding-right: var(--s-3); }
+  .inv-metric-row + .inv-metric-row{ padding-left: var(--s-3); }
   .holdings-table{ min-width: 520px; }
-  .account-hero-val{ font-size: var(--fs-hero-sm); }
-  /* Every section heading stacks on phones, not just the chart's. */
-  .section-heading{ flex-direction: column; row-gap: var(--g-1); }
-  .pane-section-header{ flex-direction: column; row-gap: var(--g-2); }
+  .account-hero-val{ font-size: var(--fs-hero-sm); line-height: var(--lh-hero-sm); }
+  .section-heading{ flex-direction: column; align-items: flex-start; row-gap: var(--s-1); }
+  .pane-section-header{ flex-direction: column; align-items: flex-start; row-gap: var(--s-2); }
   .sub-metric-block strong, .holdings-table td strong{ font-size: var(--fs-body); }
-  .inst-profile .ticker-ring-logo{ width: 40px; height: 40px; }
-  /* The asset cell stacks name over ticker on phones. Side by side, the two
-     lines split 111px between them and both broke mid-word ("NVIDIA / Corp.",
-     "NVDA · / USD"). Stacked, the name gets the full column and the table's
-     first track stops being sized to the sum of the two strings. */
-  .holdings-table th:first-child, .holdings-table td:first-child{ min-width: 190px; }
-  /* Buy the horizontal scroll back: 12px of side padding per numeric cell was
-     spending 96px of a 328px viewport on air. */
-  .holdings-table th, .holdings-table td{ padding-inline: 8px; }
+  .inst-profile .ticker-ring-logo{ width: 38px; height: 38px; }
+  .holdings-table th:first-child, .holdings-table td:first-child{ min-width: 176px; }
+  .holdings-table th, .holdings-table td{ padding-inline: var(--s-2); }
 }
 
 /* == 23 MOTION ========================================================== */
@@ -1008,7 +1185,7 @@ fieldset{ border: 0; }
    Masking your own money is a deliberate act, so it resolves over one beat
    instead of snapping. */
 .hide-balances .js-balance, .hide-balances .account-hero-val,
-.hide-balances .tile-percent, .hide-balances .pos-stream-num-col strong,
+.hide-balances .tile-percent,
 .hide-balances .holdings-table td strong, .hide-balances .bar-row b,
 .hide-balances .sub-metric-block strong, .hide-balances .exposure-summary span{
   transition: opacity var(--d-2) var(--ease), filter var(--d-2) var(--ease);
@@ -1017,10 +1194,9 @@ fieldset{ border: 0; }
 /* 22.3 Hover feedback on the two things that select content. Job: feedback.
    Transform only, one pixel of travel - it acknowledges the pointer without
    moving anything else on the page. */
-.pos-stream-item .ticker-avatar, .treemap-tile{
+.treemap-tile{
   transition: transform var(--d-2) var(--ease), border-color var(--d-2) var(--ease);
 }
-.pos-stream-item:hover .ticker-avatar{ transform: scale(1.06); }
 .treemap-tile:hover{ transform: translateY(-1px); }
 
 /* Why no scroll-driven animation.
@@ -1038,17 +1214,17 @@ fieldset{ border: 0; }
   .spin{ animation-duration: 1.6s; }
   .chart-loading-box, .page-loading::before, .page-loading::after{ animation: none; }
   .range-thumb{ transition: none; }
-  .pos-stream-item .ticker-avatar, .treemap-tile{ transition: none; }
+  .treemap-tile{ transition: none; }
 }
 
 /* ---- responsive hardening: wide replaced + tabular content must not inflate grid tracks ---- */
 .cockpit-main-pane, .cockpit-chart-wrap, .price-chart-panel, .price-chart-wrap,
-.cockpit-holdings-preview, .cockpit-investments-section, .cockpit-treemap-section,
+.cockpit-holdings-preview, .cockpit-treemap-section,
 .portfolio-context-strip, .cockpit-cash-summary { min-width: 0; }
 .price-chart, .tv-lightweight-charts, .chart-loading-box { max-width: 100%; min-width: 0; }
 .table-scroll { max-width: 100%; min-width: 0; }
-.asset-text, .pos-stream-ident, .bar-label { min-width: 0; }
-.asset-text strong, .pos-stream-ident strong, .bar-label strong { overflow: hidden; text-overflow: ellipsis; }
+.asset-text, .bar-label { min-width: 0; }
+.asset-text strong, .bar-label strong { overflow: hidden; text-overflow: ellipsis; }
 
 /* ========================================================================
    21 · RESPONSIVE HARDENING
@@ -1058,7 +1234,7 @@ fieldset{ border: 0; }
 
 /* ---- 21.2 kill the remaining browser-default form chrome ---- */
 fieldset{ display:flex; flex-direction:column; gap:var(--g-2); min-width:0; padding:0; margin:0; border:0; }
-legend{ padding:0; font-size:var(--fs-micro); font-weight:620; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+legend{ padding:0; font-size:var(--fs-micro); font-weight:600; letter-spacing:var(--tr-wide); text-transform:none; color:var(--ink-3); }
 select{ appearance:none; -webkit-appearance:none; background-image:none; }
 select, input, textarea, button{ font-family:inherit; }
 input[type="radio"], input[type="checkbox"]{ accent-color:var(--accent); }
@@ -1087,7 +1263,7 @@ input[type="radio"], input[type="checkbox"]{ accent-color:var(--accent); }
 /* ---- 21.5 the app root never lets content push the host panel sideways ----
    overflow-x:clip (not hidden) so the sticky topbar keeps working. */
 .t212-native-app-root{ overflow-x: clip; }
-.content-page > p, .settings-header p, .history-header p, .page-header p{ overflow-wrap:anywhere; }
+.content-page > p{ overflow-wrap:anywhere; }
 
 
 /* ---- 21.6 the outer wrapper is a plain stack ----
@@ -1097,7 +1273,7 @@ input[type="radio"], input[type="checkbox"]{ accent-color:var(--accent); }
    and the table gets an explicit scroll contract instead. */
 .workspace{
   display: block; max-width: 1560px; margin-inline: auto;
-  padding: 104px 36px 40px;
+  padding: clamp(16px, 1.6vw, 24px) clamp(16px, 2.8vw, 40px) 48px;
 }
 /* The shell already pays the page gutter. A page container nested inside it was
    paying it a second time, which left the settings page 246px of usable width on
@@ -1121,17 +1297,16 @@ input[type="radio"], input[type="checkbox"]{ accent-color:var(--accent); }
    needed 192px, so the paragraph pushed 4px past its column. Stacking is the
    correct mobile layout for a label plus a control anyway. */
 @media (max-width:680px){
-  /* The topbar wraps to a nav row here: it is 96px tall and ends at y=110, so the
-     page has to clear 110 with air. Sits after the base .workspace rule above,
-     which would otherwise win on source order at equal specificity. */
-  .workspace{ padding: 132px 16px 32px; }
+  /* Navigation remains in flow; the workspace only needs a content gutter. */
+  .workspace{ padding: 16px 16px 32px; }
   /* .cockpit-inst-head stayed a 2-column grid on phones: its `auto` second column
      took the price block's 266px max-content first, so the `minmax(0,1fr)` first
      column absorbed the shortfall and squeezed the instrument profile to 70px
      against its 111px min-content. Stacked, each row gets the full width. */
   .cockpit-inst-head{ grid-template-columns: minmax(0, 1fr); align-items: start; row-gap: var(--g-2); }
-  .inst-profile, .inst-price-box, .inst-actions{ grid-column: 1; grid-row: auto; justify-self: start; }
-  .inst-price-box{ text-align: left; }
+  .inst-profile, .inst-price-box{ grid-column: 1; grid-row: auto; justify-self: start; }
+  .inst-price-box{ justify-content: flex-start; text-align: left; }
+  .inst-price-note{ text-align: left; }
   /* Scoped through .settings-page so this beats the base settings-row rule that
      appears later in the file at equal specificity - that rule re-declares
      align-items: center, which is what kept the text column at its content width
@@ -1217,7 +1392,7 @@ img, svg, video, canvas{ max-width:100%; }
    ======================================================================== */
 
 /* ---- 20.1 app shell + content pages ---- */
-.app-shell{ display:flex; flex-direction:column; flex:1; min-height:100dvh; }
+.app-shell{ display:flex; flex-direction:column; flex:1; min-width:0; }
 .content-page{
   display:flex; flex-direction:column; gap:var(--g-4);
   padding-top:var(--g-5);
@@ -1236,7 +1411,7 @@ img, svg, video, canvas{ max-width:100%; }
 .back-button:hover{ color:var(--ink-1); border-color:var(--ink-3); }
 .eyebrow{
   display:inline-flex; align-items:center; gap:var(--s-2);
-  font-size:var(--fs-micro); font-weight:650; letter-spacing:.1em; text-transform:uppercase;
+  font-size:var(--fs-micro); font-weight:650; letter-spacing:var(--tr-wide); text-transform:none;
   color:var(--ink-3);
 }
 
@@ -1256,7 +1431,7 @@ img, svg, video, canvas{ max-width:100%; }
 .connection-card .eyebrow{ color:var(--accent); }
 .field{ display:flex; flex-direction:column; gap:var(--s-2); }
 .field > span, .field > label{
-  font-size:var(--fs-micro); font-weight:620; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3);
+  font-size:var(--fs-micro); font-weight:600; letter-spacing:var(--tr-wide); text-transform:none; color:var(--ink-3);
 }
 .field input, .secret-wrap input{
   width:100%; height:44px; padding:0 var(--g-3);
@@ -1298,7 +1473,7 @@ img, svg, video, canvas{ max-width:100%; }
   width:100%; max-width:540px; padding:var(--g-6);
   background:var(--well); border-radius:var(--r-2);
 }
-.setup-guide h2{ font-size:var(--fs-row); font-weight:620; }
+.setup-guide h2{ font-size:var(--fs-row); font-weight:600; }
 .setup-guide ol{ display:flex; flex-direction:column; gap:var(--s-2); padding-left:var(--g-3); color:var(--ink-2); }
 .setup-guide p{ color:var(--ink-3); }
 
@@ -1320,7 +1495,7 @@ img, svg, video, canvas{ max-width:100%; }
   height:38px; padding:0 var(--g-3);
   border:1px solid var(--hair); border-radius:var(--r-pill);
   background:var(--surface); color:var(--ink-2);
-  font-size:var(--fs-micro); font-weight:620;
+  font-size:var(--fs-micro); font-weight:600;
   transition:color var(--d-2) var(--ease), border-color var(--d-2) var(--ease), background-color var(--d-2) var(--ease);
 }
 .error-actions button:hover, .confirm-dialog button:hover, .settings-actions button:hover{ color:var(--ink-1); border-color:var(--ink-3); }
@@ -1344,12 +1519,12 @@ img, svg, video, canvas{ max-width:100%; }
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:var(--g-2);
   padding:var(--g-7) var(--g-5); text-align:center; color:var(--ink-3);
 }
-.empty-state strong{ font-size:var(--fs-row); font-weight:620; color:var(--ink-1); }
+.empty-state strong{ font-size:var(--fs-row); font-weight:600; color:var(--ink-1); }
 .empty-state span, .empty-inline span{ max-width:52ch; }
 
 /* ---- 20.4 dialogs, toast, shortcuts modal ---- */
 .dialog-backdrop, .shortcuts-modal-backdrop{
-  position:fixed; inset:0; z-index:40;
+  position:fixed; inset:0; z-index:80;
   display:flex; align-items:center; justify-content:center; padding:var(--g-5);
   background:rgba(21, 23, 26, .42);
   backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
@@ -1372,19 +1547,9 @@ img, svg, video, canvas{ max-width:100%; }
 .close-modal-btn:hover{ color:var(--ink-1); background:var(--well); }
 .shortcuts-modal-header{ display:flex; align-items:center; justify-content:space-between; gap:var(--g-3); }
 .shortcuts-modal-header h2{ font-size:var(--fs-row); font-weight:630; }
-.shortcuts-modal-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:var(--g-1) var(--g-4); }
-.shortcuts-modal-grid > div, .shortcuts-modal-grid > span{ display:flex; align-items:center; justify-content:space-between; gap:var(--g-3); font-size:var(--fs-micro); color:var(--ink-2); }
+.shortcuts-modal-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr)); gap:var(--g-1) var(--g-4); }
+.shortcuts-modal-grid > .shortcut-group{ display:flex; flex-direction:column; align-items:stretch; gap:var(--g-3); font-size:var(--fs-micro); color:var(--ink-2); }
 .help-page kbd, .shortcuts-modal-grid kbd{ font-family:var(--font-mono); font-size:var(--fs-micro); padding:2px var(--g-1); border-radius:var(--r-1); background:var(--well); color:var(--ink-1); }
-.toast{
-  position:fixed; left:50%; bottom:var(--g-5); transform:translateX(-50%); z-index:60;
-  display:flex; align-items:center; gap:var(--s-2);
-  padding:var(--g-2) var(--g-4); border-radius:var(--r-pill);
-  background:var(--ink-1); color:var(--surface);
-  font-size:var(--fs-micro); font-weight:600;
-  box-shadow:var(--sh-float);
-  animation:lumen-rise var(--d-3) var(--ease) both;
-}
-.toast.failed{ background:var(--neg); }
 
 /* ---- 20.5 history ---- */
 .history-page{ display:flex; flex-direction:column; gap:var(--g-4); }
@@ -1395,7 +1560,7 @@ img, svg, video, canvas{ max-width:100%; }
 }
 .history-tabs button{
   height:32px; padding:0 var(--g-3); border-radius:var(--r-pill);
-  font-size:var(--fs-micro); font-weight:620; color:var(--ink-3);
+  font-size:var(--fs-micro); font-weight:600; color:var(--ink-3);
   transition:color var(--d-2) var(--ease), background-color var(--d-2) var(--ease);
 }
 .history-tabs button:hover{ color:var(--ink-1); }
@@ -1425,7 +1590,7 @@ img, svg, video, canvas{ max-width:100%; }
   height:38px; padding:0 var(--g-3);
   border:1px solid var(--hair); border-radius:var(--r-pill);
   background:var(--surface); color:var(--ink-2);
-  font-size:var(--fs-micro); font-weight:620;
+  font-size:var(--fs-micro); font-weight:600;
   transition:color var(--d-2) var(--ease), border-color var(--d-2) var(--ease);
 }
 .load-more:hover:not(:disabled){ color:var(--ink-1); border-color:var(--ink-3); }
@@ -1434,14 +1599,14 @@ img, svg, video, canvas{ max-width:100%; }
   display:inline-flex; align-items:center;
   padding:2px var(--g-2); border-radius:var(--r-pill);
   background:var(--well); color:var(--ink-2);
-  font-size:var(--fs-micro); font-weight:620;
+  font-size:var(--fs-micro); font-weight:600;
 }
 .status-dot{ width:8px; height:8px; flex:0 0 8px; border-radius:var(--r-pill); background:var(--pos); }
 
 /* timeline (SVG fills must be real colours, not CSS vars on <svg> text) */
 .timeline-header{ display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:var(--g-3); }
 .timeline-header label{ display:flex; flex-direction:column; gap:var(--s-1); }
-.timeline-header label > span{ font-size:var(--fs-micro); font-weight:620; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+.timeline-header label > span{ font-size:var(--fs-micro); font-weight:600; letter-spacing:var(--tr-wide); text-transform:none; color:var(--ink-3); }
 .timeline-header select{
   height:38px; padding:0 var(--g-3);
   background:var(--well); border:1px solid var(--hair); border-radius:var(--r-1);
@@ -1458,7 +1623,7 @@ img, svg, video, canvas{ max-width:100%; }
 .timeline-stem{ stroke:var(--hair); stroke-width:1.4; }
 .timeline-point circle{ stroke:var(--surface); stroke-width:2; }
 .timeline-buy{ fill:var(--pos); stroke:var(--surface); stroke-width:2; }
-.timeline-sell{ fill:var(--warn); stroke:var(--surface); stroke-width:2; }
+.timeline-sell{ fill:var(--neg); stroke:var(--surface); stroke-width:2; }
 .timeline-events{ display:flex; flex-direction:column; gap:var(--g-1); margin-top:var(--g-3); }
 .single-trade{
   display:flex; flex-direction:column; gap:var(--s-1); margin-top:var(--g-3);
@@ -1477,11 +1642,11 @@ img, svg, video, canvas{ max-width:100%; }
 }
 .settings-row > div, .language-setting > div:not(.language-options){ display:flex; flex-direction:column; gap:var(--s-1); }
 .settings-row span, .language-setting p{ font-size:var(--fs-micro); color:var(--ink-3); }
-.settings-row strong, .language-setting h2{ font-size:var(--fs-body); font-weight:620; color:var(--ink-1); }
+.settings-row strong, .language-setting h2{ font-size:var(--fs-body); font-weight:600; color:var(--ink-1); }
 .language-options{ display:inline-flex; align-items:center; gap:var(--s-1); padding:var(--s-1); background:var(--well); border-radius:var(--r-pill); }
 .language-options button{
   height:30px; padding:0 var(--g-3); border-radius:var(--r-pill);
-  font-size:var(--fs-micro); font-weight:620; color:var(--ink-3);
+  font-size:var(--fs-micro); font-weight:600; color:var(--ink-3);
   transition:color var(--d-2) var(--ease), background-color var(--d-2) var(--ease);
 }
 .language-options button:hover{ color:var(--ink-1); }
@@ -1493,7 +1658,7 @@ img, svg, video, canvas{ max-width:100%; }
   padding:var(--g-4) var(--g-5);
   background:var(--surface); border:1px solid var(--hair); border-radius:var(--r-2);
 }
-.help-list h2, .help-list h3{ font-size:var(--fs-body); font-weight:620; }
+.help-list h2, .help-list h3{ font-size:var(--fs-body); font-weight:600; }
 .help-list p, .help-page > ul li{ color:var(--ink-3); }
 .help-page > ul{ display:flex; flex-direction:column; gap:var(--g-1); padding-left:var(--g-3); }
 .market-source{ font-size:var(--fs-micro); color:var(--ink-3); max-width:100ch; }
@@ -1506,13 +1671,13 @@ img, svg, video, canvas{ max-width:100%; }
   padding:var(--g-3) 0; border-bottom:1px solid var(--hair);
 }
 .invest-row:last-child{ border-bottom:0; }
-.invest-row > span{ font-size:var(--fs-micro); font-weight:620; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
-.invest-row > strong{ font-size:var(--fs-fig); font-weight:620; letter-spacing:-.02em; }
+.invest-row > span{ font-size:var(--fs-micro); font-weight:600; letter-spacing:var(--tr-wide); text-transform:none; color:var(--ink-3); }
+.invest-row > strong{ font-size:var(--fs-fig); font-weight:600; letter-spacing:-.02em; }
 .invest-row > strong small{ font-size:var(--fs-micro); color:var(--ink-3); font-weight:500; }
 .instrument-price-action{ display:flex; flex-direction:column; align-items:flex-end; gap:var(--s-1); }
-.instrument-price-action > span{ font-size:var(--fs-micro); font-weight:620; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
-.instrument-price-action > strong{ font-size:var(--fs-hero); font-weight:640; letter-spacing:-.03em; line-height:1.08; }
-.instrument-price-action > small{ font-size:var(--fs-micro); font-weight:620; }
+.instrument-price-action > span{ font-size:var(--fs-micro); font-weight:600; letter-spacing:var(--tr-wide); text-transform:none; color:var(--ink-3); }
+.instrument-price-action > strong{ font-size:var(--fs-hero); font-weight:560; letter-spacing:-.03em; line-height:1.08; }
+.instrument-price-action > small{ font-size:var(--fs-micro); font-weight:600; }
 
 /* ---- 20.8 allocation + treemap extras ---- */
 .dynamic-tile{ cursor:pointer; }
@@ -1524,7 +1689,6 @@ img, svg, video, canvas{ max-width:100%; }
   transition:color var(--d-2) var(--ease);
 }
 .asset-link:hover strong{ color:var(--accent); }
-.compact .holdings-table td, .holdings-table-compact td{ padding-top:var(--s-2); padding-bottom:var(--s-2); }
 .ticker-avatar.fallback{ background:var(--well); color:var(--ink-2); }
 .pane-section-sub{ display:block; margin-top:var(--s-1); font-size:var(--fs-micro); color:var(--ink-3); }
 /* The percentage is a second line on both sub-metrics, always. Left inline it
@@ -1535,7 +1699,7 @@ img, svg, video, canvas{ max-width:100%; }
 .is-selected .asset-text strong, .asset-link.is-selected strong{ color:var(--accent); }
 .chart-reset{
   align-self:flex-start; padding:var(--s-1) 0;
-  font-size:var(--fs-micro); font-weight:620; color:var(--ink-3); background:none; border:0;
+  font-size:var(--fs-micro); font-weight:600; color:var(--ink-3); background:none; border:0;
   transition:color var(--d-2) var(--ease);
 }
 .chart-reset:hover{ color:var(--ink-1); }
@@ -1548,7 +1712,7 @@ img, svg, video, canvas{ max-width:100%; }
 }
 .chart-tooltip-time{ color:var(--ink-3); font-family:var(--font-mono); }
 .chart-tooltip-row{ display:flex; align-items:center; gap:var(--s-2); font-variant-numeric:tabular-nums; }
-.chart-tooltip-row b{ font-family:var(--font-mono); font-weight:640; }
+.chart-tooltip-row b{ font-family:var(--font-sans); font-weight:600; }
 .legend-line{ display:inline-block; width:14px; height:3px; flex:0 0 14px; }
 /* Tooltip swatches: same two arrows the series draws, so a reader can match the
    tooltip row to the marker under the pointer. Was a square rotated 45deg. */
@@ -1559,21 +1723,80 @@ img, svg, video, canvas{ max-width:100%; }
 .legend-marker.sell{ clip-path: polygon(0 0, 100% 0, 50% 100%); }
 .buy-marker{ display:inline-block; width:8px; height:8px; background:var(--pos); }
 .sell-marker{ display:inline-block; width:8px; height:8px; background:var(--warn); transform:rotate(45deg); }
-.clear-search-btn{ display:grid; place-items:center; width:24px; height:24px; border-radius:var(--r-pill); color:var(--ink-3); }
-.clear-search-btn:hover{ color:var(--ink-1); background:var(--well); }
 
-/* ---- 20.10 pending orders ---- */
+/* ---- 20.10 pending orders (row geometry lives in section 20) ---- */
 .cockpit-pending-section{ display:flex; flex-direction:column; gap:var(--g-2); }
 .cockpit-orders-list{ display:flex; flex-direction:column; }
-.cockpit-order-row{
-  display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:var(--g-3);
-  padding:var(--g-3) 0; border-bottom:1px solid var(--hair);
-}
 .cockpit-order-row:last-child{ border-bottom:0; }
 .cockpit-order-row small{ color:var(--ink-3); }
 
 /* ---- 20.11 hidden-balance state stays deliberate ---- */
 .hide-balances .js-balance, .hide-balances .js-balance strong{ color:var(--ink-3); letter-spacing:.08em; }
+
+/* Responsive finishing: content stays in flow as navigation gains rows. */
+.t212-native-app-root{ display:flex; flex-direction:column; }
+.topbar-left-zone, .topbar-right-zone, .topbar-nav-tab, .topbar-tool-btn{ flex-shrink:0; }
+.topbar-search-field{ min-width:0; }
+.cockpit-inst-head, .inst-profile, .inst-profile > div:not(.ticker-ring-logo){ min-width:0; }
+.inst-title{ overflow-wrap:anywhere; }
+.inst-tag-row{ flex-wrap:wrap; row-gap:var(--g-1); }
+.range-switcher{ max-width:100%; overflow-x:auto; scrollbar-width:thin; }
+.range-switcher button{ white-space:nowrap; }
+.confirm-dialog, .shortcuts-modal-card{
+  max-height:calc(100dvh - 56px); overflow-y:auto; overscroll-behavior:contain;
+  padding:clamp(20px, 4vw, 40px);
+}
+.shortcuts-modal-card{ max-width:640px; }
+.shortcut-group h4{ margin-bottom:var(--g-1); color:var(--ink-1); }
+.shortcut-row{ gap:var(--g-3); align-items:baseline; }
+.shortcut-row > span{ flex-shrink:0; }
+.shortcut-row label{ text-align:right; }
+.close-modal-btn{ flex-shrink:0; }
+.confirm-dialog > div:last-child{ display:flex; flex-wrap:wrap; gap:var(--g-2); }
+.connection-card{ align-items:stretch; padding:clamp(22px, 4vw, 40px); }
+.setup-guide{ padding:clamp(22px, 4vw, 40px); }
+.app-shell > .setup-page{ padding:var(--g-5) max(16px, env(safe-area-inset-left)) 40px; }
+.history-metrics{ grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr)); }
+
+@media (max-width:1280px){
+  .cockpit-instrument-container{ grid-template-columns:minmax(0,1fr); }
+  .cockpit-inst-head{ grid-column:1; grid-row:1; }
+  .range-switcher{ grid-column:1; grid-row:2; justify-self:start; }
+  .cockpit-chart-wrap{ grid-row:3; }
+  .your-investment-cockpit{ grid-row:4; }
+}
+@media (min-width:681px) and (max-width:1100px){
+  .t212-native-topbar{ flex-wrap:wrap; width:calc(100% - 48px); border-radius:var(--r-3); }
+  .topbar-left-zone{ margin-right:auto; }
+  .topbar-center-nav{ order:3; flex:1 0 100%; justify-content:center; }
+  .topbar-nav-tab{ justify-content:center; flex:1; }
+}
+@media (max-width:680px){
+  .t212-native-topbar{
+    inset-inline:auto; width:calc(100% - 24px); max-width:none;
+    margin:12px auto 0; padding:8px; border-radius:var(--r-3);
+  }
+  .topbar-left-zone{ min-width:0; }
+  .t212-invest-brand-pill{ padding:8px; column-gap:4px; }
+  .invest-env-badge{ padding-inline:6px; }
+  .topbar-tool-btn{ width:40px; height:40px; }
+  .topbar-center-nav{ gap:2px; padding:3px; }
+  .topbar-nav-tab{ flex:1 1 0; min-width:0; flex-direction:column; gap:4px; justify-content:center; padding:8px 2px; min-height:44px; }
+  .topbar-nav-tab svg{ flex-shrink:0; }
+  .topbar-nav-tab span{ font-size:var(--fs-micro); }
+  .cockpit-inst-head{ grid-template-columns:minmax(0,1fr); }
+  .range-switcher{ width:100%; }
+  .range-switcher button{ min-width:max-content; min-height:40px; padding-inline:8px; white-space:nowrap; }
+  .inv-metrics-list{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--g-3); }
+  .inv-metric-row strong{ overflow-wrap:anywhere; }
+  .dialog-backdrop, .shortcuts-modal-backdrop{ padding:16px; }
+  .confirm-dialog, .shortcuts-modal-card{ max-height:calc(100dvh - 32px); }
+  .shortcuts-modal-grid{ grid-template-columns:minmax(0,1fr); gap:var(--g-4); }
+  .history-tabs{ width:100%; border-radius:var(--r-2); }
+  .history-tabs button{ flex:1 0 auto; min-height:40px; }
+  .language-options button, .settings-actions button{ min-height:44px; height:auto; padding-block:8px; }
+  .field input, .field select{ font-size:16px; }
+}
 
 </style>
 </head>
@@ -1686,65 +1909,13 @@ img, svg, video, canvas{ max-width:100%; }
       </div>
 
 
-      <!-- 4. Investments stream -->
-      <section class="cockpit-investments-section">
-        <div class="investments-header" id="invHeader">
-          <div class="invest-head-title">
-            <h3>投资组合</h3>
-            <span class="invest-sum-val js-balance">€22,267.21</span>
-          </div>
-          <span class="collapse-arrow" id="invArrow">⌃</span>
-        </div>
-        <div class="investments-list-stream" id="invList">
-          <button type="button" class="pos-stream-item selected">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:10"/></svg>
-              <span class="ticker-avatar">AP</span>
-            </span>
-            <div class="pos-stream-ident"><strong>Apple Inc.</strong><small>27.4000 AAPL</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€5,428.10</strong><span class="tone-positive">+€840.60 (+18.3%)</span></div>
-          </button>
-          <button type="button" class="pos-stream-item">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:21"/></svg>
-              <span class="ticker-avatar">NV</span>
-            </span>
-            <div class="pos-stream-ident"><strong>NVIDIA Corp.</strong><small>16.8750 NVDA</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€5,860.25</strong><span class="tone-positive">+€1,311.75 (+28.8%)</span></div>
-          </button>
-          <button type="button" class="pos-stream-item">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:28"/></svg>
-              <span class="ticker-avatar">MS</span>
-            </span>
-            <div class="pos-stream-ident"><strong>Microsoft Corp.</strong><small>13.2500 MSFT</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€4,965.12</strong><span class="tone-positive">+€365.30 (+7.9%)</span></div>
-          </button>
-          <button type="button" class="pos-stream-item">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:33"/></svg>
-              <span class="ticker-avatar">TS</span>
-            </span>
-            <div class="pos-stream-ident"><strong>Tesla Inc.</strong><small>9.5000 TSLA</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€2,681.24</strong><span class="tone-negative">−€161.02 (−5.7%)</span></div>
-          </button>
-          <button type="button" class="pos-stream-item">
-            <span class="ticker-ring-logo">
-              <svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:39"/></svg>
-              <span class="ticker-avatar">VO</span>
-            </span>
-            <div class="pos-stream-ident"><strong>Vanguard S&P 500</strong><small>6.1200 VOO</small></div>
-            <div class="pos-stream-num-col"><strong class="js-balance">€3,332.50</strong><span class="tone-positive">+€287.01 (+9.4%)</span></div>
-          </button>
-        </div>
-      </section>
 
       <!-- 5. Asset allocation mosaic · Today's Movement -->
       <section class="cockpit-treemap-section">
         <div class="pane-section-header">
           <div>
-            <h3 class="section-title">投资组合</h3>
-            <span class="section-caption">按权重动态分布 · 点击穿透</span>
+            <h3 class="section-title">资产配置</h3>
+            <span class="section-caption">面积 = 持仓市值 · 颜色 = 今日涨跌</span>
           </div>
           <div class="treemap-mode-toggles" role="group" aria-label="拼盘维度切换">
             <button type="button" class="treemap-mode-pill is-active">今日变化</button>
@@ -1823,16 +1994,14 @@ img, svg, video, canvas{ max-width:100%; }
               <span class="ticker-avatar">AP</span>
             </span>
             <div>
-              <div class="inst-tag-row"><span class="inst-ticker-tag">AAPL · USD</span></div>
+              <div class="inst-tag-row"><span class="inst-ticker-tag">AAPL · USD</span><span class="read-only-status">只读账户</span></div>
               <h2 class="inst-title">Apple Inc.</h2>
             </div>
           </div>
           <div class="inst-price-box">
             <strong class="inst-price-main">$198.17</strong>
             <span class="inst-price-sub tone-positive">+€440.17 (+4.30%)</span>
-          </div>
-          <div class="inst-actions">
-            <span class="read-only-status">只读账户</span>
+            <small class="inst-price-note">报价 USD · 收益折合 EUR</small>
           </div>
         </div>
 
@@ -1855,36 +2024,37 @@ img, svg, video, canvas{ max-width:100%; }
                 <h2>历史价格与买卖点</h2>
                 <p>AAPL · 每日收盘价 · 2025-08 至 2026-08 · 纵轴聚焦价格区间</p>
               </div>
-              <strong class="tone-positive">$198.17 <small>+4.30%</small></strong>
+              <!-- 图表头部不再重复上方的现价：同一个数字 60px 内出现两次、且两个 +4.30% 含义不同（累计收益 vs 区间涨跌），是读数陷阱。这里只保留区间涨跌并标出区间。 -->
+              <strong class="tone-positive">+4.30% <small>1年</small></strong>
             </div>
             <div class="chart-legend">
               <span><i class="legend-dot close"></i> 收盘价</span>
               <span><i class="legend-dot buy"></i> 买入</span>
               <span><i class="legend-dot sell"></i> 卖出</span>
+              <span class="chart-cost-legend">均价 $167.44</span>
             </div>
-            <p class="chart-count">区间内 3 个 Trading 212 成交点 · 可拖动底部滑块或双指缩放</p>
+            <p class="chart-count">每日收盘价 · 区间内 3 个成交点</p>
             <svg class="price-chart" viewBox="0 0 820 250" preserveAspectRatio="none" role="img" aria-label="AAPL 1年历史价格曲线，包含 3 个买卖成交点">
               <g class="timeline-grid">
-                <line x1="72" y1="50" x2="790" y2="50"/>
-                <line x1="72" y1="100" x2="790" y2="100"/>
-                <line x1="72" y1="150" x2="790" y2="150"/>
-                <line x1="72" y1="200" x2="790" y2="200"/>
+                <line x1="8" y1="50" x2="764" y2="50"/>
+                <line x1="8" y1="100" x2="764" y2="100"/>
+                <line x1="8" y1="150" x2="764" y2="150"/>
+                <line x1="8" y1="200" x2="764" y2="200"/>
               </g>
-              <path d="M72 212 L128 200 L184 208 L240 186 L296 196 L352 168 L408 178 L464 150 L520 158 L576 128 L632 136 L688 106 L744 116 L790 100" fill="none" stroke="#1677ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-              <line x1="72" y1="12" x2="790" y2="12" stroke="rgba(112,129,150,0.35)" stroke-dasharray="5 5"/>
-              <line x1="72" y1="10" x2="72" y2="240" stroke="rgba(112,129,150,0.14)"/>
-              <rect x="290" y="190" width="12" height="12" fill="#18a957" stroke="#ffffff" stroke-width="2"/>
-              <rect x="570" y="122" width="12" height="12" fill="#18a957" stroke="#ffffff" stroke-width="2"/>
-              <polygon points="408,170 416,184 400,184" fill="#d88a15" stroke="#ffffff" stroke-width="2"/>
-              <text x="808" y="54" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$205</text>
-              <text x="808" y="104" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$190</text>
-              <text x="808" y="154" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$175</text>
-              <text x="808" y="204" fill="#718197" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">$160</text>
-              <text x="72" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace">2025-08</text>
-              <text x="250" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="middle">2025-11</text>
-              <text x="430" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="middle">2026-02</text>
-              <text x="610" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="middle">2026-05</text>
-              <text x="790" y="235" fill="#63624f" font-size="10" font-family="SF Mono, Menlo, monospace" text-anchor="end">2026-08</text>
+              <line class="chart-cost-line" x1="8" y1="175" x2="764" y2="175" stroke-dasharray="4 4"/>
+              <path d="M8 212 L62 200 L116 208 L170 186 L224 196 L278 168 L332 178 L386 150 L440 158 L494 128 L548 136 L602 106 L656 116 L710 100 L764 94" fill="none" stroke="#1677ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <rect x="164" y="180" width="12" height="12"/>
+              <rect x="488" y="122" width="12" height="12"/>
+              <polygon points="332,170 340,184 324,184"/>
+              <text x="810" y="54" text-anchor="end">$205</text>
+              <text x="810" y="104" text-anchor="end">$190</text>
+              <text x="810" y="154" text-anchor="end">$175</text>
+              <text x="810" y="204" text-anchor="end">$160</text>
+              <text x="8" y="238">2025-08</text>
+              <text x="197" y="238" text-anchor="middle">2025-11</text>
+              <text x="386" y="238" text-anchor="middle">2026-02</text>
+              <text x="575" y="238" text-anchor="middle">2026-05</text>
+              <text x="764" y="238" text-anchor="end">2026-08</text>
             </svg>
           </section>
         </div>
@@ -1895,7 +2065,7 @@ img, svg, video, canvas{ max-width:100%; }
           <div class="inv-metrics-list">
             <div class="inv-metric-row"><span>当前市值</span><strong class="js-balance">€5,428.10</strong></div>
             <div class="inv-metric-row"><span>未实现收益</span><strong class="tone-positive">+€840.60 (+18.3%)</strong></div>
-            <div class="inv-metric-row"><span>持股数量</span><strong>27.4000</strong></div>
+            <div class="inv-metric-row"><span>持股数量</span><strong>27.4</strong></div>
             <div class="inv-metric-row"><span>平均买入价</span><strong>$167.44</strong></div>
             <div class="inv-metric-row"><span>持仓成本</span><strong class="js-balance">€4,587.50</strong></div>
           </div>
@@ -1932,11 +2102,11 @@ img, svg, video, canvas{ max-width:100%; }
             <table class="holdings-table">
               <thead><tr><th>资产</th><th>数量</th><th>均价 / 现价</th><th>市值 / 权重</th><th>未实现收益</th></tr></thead>
               <tbody>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:10"/></svg><span class="ticker-avatar">AP</span></span><div class="asset-text"><strong>Apple Inc.</strong><small>AAPL · USD</small></div></div></td><td>27.4000</td><td><strong>$167.44</strong><small>$198.17</small></td><td><strong>€5,428.10</strong><small>24.4%</small></td><td class="positive"><strong>+€840.60</strong><small>+18.3%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:21"/></svg><span class="ticker-avatar">NV</span></span><div class="asset-text"><strong>NVIDIA Corp.</strong><small>NVDA · USD</small></div></div></td><td>16.8750</td><td><strong>$213.40</strong><small>$234.52</small></td><td><strong>€5,860.25</strong><small>26.3%</small></td><td class="positive"><strong>+€1,311.75</strong><small>+28.8%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:28"/></svg><span class="ticker-avatar">MS</span></span><div class="asset-text"><strong>Microsoft Corp.</strong><small>MSFT · USD</small></div></div></td><td>13.2500</td><td><strong>$312.60</strong><small>$337.40</small></td><td><strong>€4,965.12</strong><small>22.3%</small></td><td class="positive"><strong>+€365.30</strong><small>+7.9%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:33"/></svg><span class="ticker-avatar">TS</span></span><div class="asset-text"><strong>Tesla Inc.</strong><small>TSLA · GBP</small></div></div></td><td>9.5000</td><td><strong>$281.40</strong><small>$265.40</small></td><td><strong>€2,681.24</strong><small>12.0%</small></td><td class="negative"><strong>−€161.02</strong><small>−5.7%</small></td></tr>
-                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:39"/></svg><span class="ticker-avatar">VO</span></span><div class="asset-text"><strong>Vanguard S&amp;P 500</strong><small>VOO · EUR</small></div></div></td><td>6.1200</td><td><strong>$521.80</strong><small>$544.70</small></td><td><strong>€3,332.50</strong><small>15.0%</small></td><td class="positive"><strong>+€287.01</strong><small>+9.4%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:10"/></svg><span class="ticker-avatar">AP</span></span><div class="asset-text"><strong>Apple Inc.</strong><small>AAPL · USD</small></div></div></td><td>27.4</td><td><strong>$167.44</strong><small>$198.17</small></td><td><strong>€5,428.10</strong><small>24.4%</small></td><td class="positive"><strong>+€840.60</strong><small>+18.3%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:21"/></svg><span class="ticker-avatar">NV</span></span><div class="asset-text"><strong>NVIDIA Corp.</strong><small>NVDA · USD</small></div></div></td><td>16.875</td><td><strong>$213.40</strong><small>$234.52</small></td><td><strong>€5,860.25</strong><small>26.3%</small></td><td class="positive"><strong>+€1,311.75</strong><small>+28.8%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:28"/></svg><span class="ticker-avatar">MS</span></span><div class="asset-text"><strong>Microsoft Corp.</strong><small>MSFT · USD</small></div></div></td><td>13.25</td><td><strong>$312.60</strong><small>$337.40</small></td><td><strong>€4,965.12</strong><small>22.3%</small></td><td class="positive"><strong>+€365.30</strong><small>+7.9%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:33"/></svg><span class="ticker-avatar">TS</span></span><div class="asset-text"><strong>Tesla Inc.</strong><small>TSLA · GBP</small></div></div></td><td>9.5</td><td><strong>$281.40</strong><small>$265.40</small></td><td><strong>€2,681.24</strong><small>12.0%</small></td><td class="negative"><strong>−€161.02</strong><small>−5.7%</small></td></tr>
+                <tr><td><div class="asset-cell"><span class="ticker-ring-logo"><svg class="ring-svg" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="14" class="ring-track"/><circle cx="17" cy="17" r="14" class="ring-progress" style="stroke-dasharray:87.96;stroke-dashoffset:39"/></svg><span class="ticker-avatar">VO</span></span><div class="asset-text"><strong>Vanguard S&amp;P 500</strong><small>VOO · EUR</small></div></div></td><td>6.12</td><td><strong>$521.80</strong><small>$544.70</small></td><td><strong>€3,332.50</strong><small>15.0%</small></td><td class="positive"><strong>+€287.01</strong><small>+9.4%</small></td></tr>
               </tbody>
             </table>
           </div>

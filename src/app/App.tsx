@@ -25,6 +25,13 @@ const decimal = (value: number | undefined, maximumFractionDigits = 2) => new In
   maximumFractionDigits,
 }).format(value ?? 0)
 
+// Share counts are fractional here — 0.0001 of a share is a legal position — so
+// four decimals is the ceiling. But a whole position must not print "27.4000":
+// the trailing zeros are noise in every table and tile. Intl already drops them,
+// and naming the formatter makes that the contract at the call site instead of a
+// side effect nobody remembers when the digits change.
+const shareCount = (value: number | undefined) => decimal(value, 4)
+
 const percent = (value: number | undefined, digits = 1) => value === undefined ? '-' : `${value >= 0 ? '+' : ''}${decimal(value, digits)}%`
 const plainPercent = (value: number | undefined, digits = 1) => value === undefined ? '-' : `${decimal(value, digits)}%`
 const displayTickerAliases: Record<string, string> = {
@@ -378,7 +385,7 @@ function DynamicTreemapGrid({
               type="button"
               className={`treemap-tile dynamic-tile ${isPositive ? 'gain' : isNegative ? 'loss' : 'neutral'} ${isSelected ? 'selected' : ''}`}
               onClick={() => onSelect?.(rect.ticker)}
-              title={`${tickerLabel(rect.ticker)} · ${rect.name} · ${metricMode === 'daily' ? tx('今日变化', 'Today') : tx('累计收益', 'Total')} ${val !== undefined ? percent(val) : tx('数据同步中', 'Syncing...')} · ${tx('权重', 'Weight')} ${plainPercent(rect.weightPercent)}${!hideBalances && currency ? ` · ${money(rect.currentValue, currency)}` : ''}${!hideBalances && quantity !== undefined ? ` · ${decimal(quantity, 4)} ${tx('股', 'shares')}` : ''}`}
+              title={`${tickerLabel(rect.ticker)} · ${rect.name} · ${metricMode === 'daily' ? tx('今日变化', 'Today') : tx('累计收益', 'Total')} ${val !== undefined ? percent(val) : tx('数据同步中', 'Syncing...')} · ${tx('权重', 'Weight')} ${plainPercent(rect.weightPercent)}${!hideBalances && currency ? ` · ${money(rect.currentValue, currency)}` : ''}${!hideBalances && quantity !== undefined ? ` · ${shareCount(quantity)} ${tx('股', 'shares')}` : ''}`}
             >
               <div className="tile-top-row">
                 <strong className="tile-ticker">{tickerLabel(rect.ticker)}</strong>
@@ -390,7 +397,7 @@ function DynamicTreemapGrid({
               <div className="tile-subrow">
                 <span className="tile-weight">{plainPercent(rect.weightPercent)}</span>
                 {currency && <span className="tile-value">{hideBalances ? '••••' : money(rect.currentValue, currency)}</span>}
-                {quantity !== undefined && <span className="tile-quantity">{hideBalances ? '••••' : decimal(quantity, 4)} {tx('股', 'shares')}</span>}
+                {quantity !== undefined && <span className="tile-quantity">{hideBalances ? '••••' : shareCount(quantity)} {tx('股', 'shares')}</span>}
               </div>
             </button>
           </div>
@@ -474,7 +481,7 @@ function HoldingTable({ positions, currency, limit, compact = false, selectedTic
     const label = position.instrument?.name ?? position.instrument?.ticker ?? tx('未知资产', 'Unknown asset')
     const ticker = position.instrument?.ticker ?? ''
     const weight = invested ? value / invested * 100 : 0
-    return <tr key={ticker || index} className={ticker === selectedTicker ? 'is-selected' : ''}><td data-label={tx('资产', 'Asset')}><div className="asset-cell"><TickerRingLogo ticker={ticker} weightPercent={weight} />{onSelect && ticker ? <button className="asset-link" type="button" onClick={() => onSelect(position)}><strong>{label}</strong><small>{tickerLabel(ticker)} · {position.instrument?.currency ?? currency}</small></button> : <div className="asset-text"><strong>{label}</strong><small>{tickerLabel(ticker)} · {position.instrument?.currency ?? currency}</small></div>}</div><small>{(position.quantityInPies ?? 0) > 0 ? (hideBalances ? 'Pie ••••' : `Pie ${decimal(position.quantityInPies, 4)}`) : ''}</small></td><td data-label={tx('数量', 'Quantity')}>{hideBalances ? '••••' : decimal(position.quantity, 4)}<small>{tx('可交易', 'Tradable')} {hideBalances ? '••••' : decimal(position.quantityAvailableForTrading, 4)}</small></td><td data-label={tx('均价 / 现价', 'Average / current')}><strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '-' : money(position.averagePricePaid, position.instrument?.currency ?? currency))}</strong><small>{position.currentPrice === undefined ? '-' : money(position.currentPrice, position.instrument?.currency ?? currency)}</small></td>{!compact && <td data-label={tx('成本', 'Cost')}>{hideBalances ? '••••••' : money(cost, currency)}</td>}<td data-label={tx('市值 / 权重', 'Value / weight')}><strong>{hideBalances ? '••••••' : money(value, currency)}</strong><small>{plainPercent(weight)}</small></td><td data-label={tx('未实现收益', 'Unrealized return')} className={profit >= 0 ? 'tone-positive' : 'tone-negative'}><strong>{hideBalances ? '••••' : signedMoney(profit, currency)}</strong><small>{hideBalances ? '••••' : percent(cost ? profit / cost * 100 : undefined)}</small></td>{!compact && <td data-label={tx('外汇影响', 'FX impact')} className={(fx ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{hideBalances ? '••••' : (fx === undefined ? '-' : signedMoney(fx, currency))}</td>}</tr>
+    return <tr key={ticker || index} className={ticker === selectedTicker ? 'is-selected' : ''}><td data-label={tx('资产', 'Asset')}><div className="asset-cell"><TickerRingLogo ticker={ticker} weightPercent={weight} />{onSelect && ticker ? <button className="asset-link" type="button" onClick={() => onSelect(position)}><strong>{label}</strong><small>{tickerLabel(ticker)} · {position.instrument?.currency ?? currency}</small></button> : <div className="asset-text"><strong>{label}</strong><small>{tickerLabel(ticker)} · {position.instrument?.currency ?? currency}</small></div>}</div><small>{(position.quantityInPies ?? 0) > 0 ? (hideBalances ? 'Pie ••••' : `Pie ${shareCount(position.quantityInPies)}`) : ''}</small></td><td data-label={tx('数量', 'Quantity')}>{hideBalances ? '••••' : shareCount(position.quantity)}<small>{tx('可交易', 'Tradable')} {hideBalances ? '••••' : shareCount(position.quantityAvailableForTrading)}</small></td><td data-label={tx('均价 / 现价', 'Average / current')}><strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '-' : money(position.averagePricePaid, position.instrument?.currency ?? currency))}</strong><small>{position.currentPrice === undefined ? '-' : money(position.currentPrice, position.instrument?.currency ?? currency)}</small></td>{!compact && <td data-label={tx('成本', 'Cost')}>{hideBalances ? '••••••' : money(cost, currency)}</td>}<td data-label={tx('市值 / 权重', 'Value / weight')}><strong>{hideBalances ? '••••••' : money(value, currency)}</strong><small>{plainPercent(weight)}</small></td><td data-label={tx('未实现收益', 'Unrealized return')} className={profit >= 0 ? 'tone-positive' : 'tone-negative'}><strong>{hideBalances ? '••••' : signedMoney(profit, currency)}</strong><small>{hideBalances ? '••••' : percent(cost ? profit / cost * 100 : undefined)}</small></td>{!compact && <td data-label={tx('外汇影响', 'FX impact')} className={(fx ?? 0) >= 0 ? 'tone-positive' : 'tone-negative'}>{hideBalances ? '••••' : (fx === undefined ? '-' : signedMoney(fx, currency))}</td>}</tr>
   })}</tbody></table></div>
 }
 
@@ -503,9 +510,9 @@ function HistoryRows({ kind, items }: { kind: HistoryKind; items: HistoryItem[] 
   if (kind === 'orders') return <div className="table-scroll"><table><thead><tr><th>{tx('时间与资产', 'Time and asset')}</th><th>{tx('方向 / 状态', 'Side / status')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('成交价', 'Fill price')}</th><th>{tx('净额', 'Net value')}</th></tr></thead><tbody>{Children.toArray((items as HistoricalOrder[]).map((item, index) => {
     const date = item.fill?.filledAt ?? item.order.createdAt
     const currency = item.fill?.walletImpact?.currency ?? item.order.instrument?.currency ?? 'EUR'
-    return <tr key={`order:${item.order.id}:fill:${item.fill?.id ?? index}`}><td data-label={tx('时间与资产', 'Time and asset')}><strong>{item.order.instrument?.name ?? item.order.ticker}</strong><small>{date ? new Date(date).toLocaleString(localeCode()) : tx('时间未知', 'Unknown time')} · {item.order.ticker.replace(/_.*/, '')}</small></td><td data-label={tx('方向 / 状态', 'Side / status')}><span className={`history-side ${item.order.side.toLowerCase()}`}>{item.order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')}</span><small>{orderStatusLabel(item.order.status)}</small></td><td data-label={tx('数量', 'Quantity')}>{decimal(item.fill?.quantity ?? item.order.filledQuantity ?? item.order.quantity, 4)}</td><td data-label={tx('成交价', 'Fill price')}>{item.fill?.price === undefined ? '-' : money(item.fill.price, item.order.instrument?.currency ?? currency)}</td><td data-label={tx('净额', 'Net value')}>{item.fill?.walletImpact?.netValue === undefined ? '-' : money(item.fill.walletImpact.netValue, currency)}</td></tr>
+    return <tr key={`order:${item.order.id}:fill:${item.fill?.id ?? index}`}><td data-label={tx('时间与资产', 'Time and asset')}><strong>{item.order.instrument?.name ?? item.order.ticker}</strong><small>{date ? new Date(date).toLocaleString(localeCode()) : tx('时间未知', 'Unknown time')} · {item.order.ticker.replace(/_.*/, '')}</small></td><td data-label={tx('方向 / 状态', 'Side / status')}><span className={`history-side ${item.order.side.toLowerCase()}`}>{item.order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')}</span><small>{orderStatusLabel(item.order.status)}</small></td><td data-label={tx('数量', 'Quantity')}>{shareCount(item.fill?.quantity ?? item.order.filledQuantity ?? item.order.quantity)}</td><td data-label={tx('成交价', 'Fill price')}>{item.fill?.price === undefined ? '-' : money(item.fill.price, item.order.instrument?.currency ?? currency)}</td><td data-label={tx('净额', 'Net value')}>{item.fill?.walletImpact?.netValue === undefined ? '-' : money(item.fill.walletImpact.netValue, currency)}</td></tr>
   }))}</tbody></table></div>
-  if (kind === 'dividends') return <div className="table-scroll"><table><thead><tr><th>{tx('日期与资产', 'Date and asset')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('每股', 'Per share')}</th><th>{tx('到账金额', 'Amount')}</th></tr></thead><tbody>{Children.toArray((items as Dividend[]).map(item => <tr key={item.reference}><td data-label={tx('日期与资产', 'Date and asset')}><strong>{item.instrument?.name ?? item.ticker}</strong><small>{new Date(item.paidOn).toLocaleDateString(localeCode())} · {item.ticker.replace(/_.*/, '')}</small></td><td data-label={tx('数量', 'Quantity')}>{decimal(item.quantity, 4)}</td><td data-label={tx('每股', 'Per share')}>{item.grossAmountPerShare === undefined ? '-' : decimal(item.grossAmountPerShare, 4)}</td><td data-label={tx('到账金额', 'Amount')} className="positive">+{money(item.amount, item.currency)}</td></tr>))}</tbody></table></div>
+  if (kind === 'dividends') return <div className="table-scroll"><table><thead><tr><th>{tx('日期与资产', 'Date and asset')}</th><th>{tx('数量', 'Quantity')}</th><th>{tx('每股', 'Per share')}</th><th>{tx('到账金额', 'Amount')}</th></tr></thead><tbody>{Children.toArray((items as Dividend[]).map(item => <tr key={item.reference}><td data-label={tx('日期与资产', 'Date and asset')}><strong>{item.instrument?.name ?? item.ticker}</strong><small>{new Date(item.paidOn).toLocaleDateString(localeCode())} · {item.ticker.replace(/_.*/, '')}</small></td><td data-label={tx('数量', 'Quantity')}>{shareCount(item.quantity)}</td><td data-label={tx('每股', 'Per share')}>{item.grossAmountPerShare === undefined ? '-' : decimal(item.grossAmountPerShare, 4)}</td><td data-label={tx('到账金额', 'Amount')} className="positive">+{money(item.amount, item.currency)}</td></tr>))}</tbody></table></div>
   return <div className="table-scroll"><table><thead><tr><th>{tx('时间与类型', 'Time and type')}</th><th>{tx('编号', 'Reference')}</th><th>{tx('金额', 'Amount')}</th></tr></thead><tbody>{Children.toArray((items as CashTransaction[]).map(item => <tr key={item.reference}><td data-label={tx('时间与类型', 'Time and type')}><strong>{transactionLabel(item.type)}</strong><small>{new Date(item.dateTime).toLocaleString(localeCode())}</small></td><td data-label={tx('编号', 'Reference')}><span className="history-reference">{item.reference}</span></td><td data-label={tx('金额', 'Amount')} className={item.amount >= 0 ? 'positive' : 'negative'}>{item.amount >= 0 ? '+' : ''}{money(item.amount, item.currency)}</td></tr>))}</tbody></table></div>
 }
 
@@ -574,14 +581,14 @@ function TradeTimeline({ orders }: { orders: HistoricalOrder[] }) {
   return <section className="trade-timeline" aria-labelledby="trade-timeline-title">
     <div className="timeline-header"><div className="section-heading"><h2 id="trade-timeline-title">{tx('成交价格时间线', 'Fill price timeline')}</h2><p>{tx(`${selected?.name ?? tickerLabel(activeTicker)} · 当前已加载 ${points.length} 个成交点 · 纵轴聚焦成交价格区间，不从零开始`, `${selected?.name ?? tickerLabel(activeTicker)} · ${points.length} loaded fills · Scaled price axis`)}</p></div><label><span>{tx('股票', 'Instrument')}</span><select value={activeTicker} onChange={event => setTicker(event.target.value)}>{options.map(option => <option key={option.ticker} value={option.ticker}>{option.name} · {tickerLabel(option.ticker)} ({option.count})</option>)}</select></label></div>
     <div className="timeline-legend"><span><i className="buy-marker" />{tx('买入', 'Buy')}</span><span><i className="sell-marker" />{tx('卖出', 'Sell')}</span><em>{tx('仅显示真实成交点，不是市场 K 线', 'Actual fills only, not market candles')}</em></div>
-    {points.length === 1 ? <div className="single-trade"><strong>{formatPrice(points[0]!.price)}</strong><span>{points[0]!.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} {decimal(points[0]!.quantity, 4)} {tx('股', 'shares')}</span><small>{new Date(points[0]!.filledAt).toLocaleString(localeCode())}</small></div> : <div className="timeline-chart-scroll"><svg className="timeline-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={tx(`${selected?.name ?? activeTicker} 的成交价格时间线，共 ${points.length} 个真实成交点`, `${selected?.name ?? activeTicker} fill price timeline with ${points.length} actual fills`)}>
+    {points.length === 1 ? <div className="single-trade"><strong>{formatPrice(points[0]!.price)}</strong><span>{points[0]!.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} {shareCount(points[0]!.quantity)} {tx('股', 'shares')}</span><small>{new Date(points[0]!.filledAt).toLocaleString(localeCode())}</small></div> : <div className="timeline-chart-scroll"><svg className="timeline-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={tx(`${selected?.name ?? activeTicker} 的成交价格时间线，共 ${points.length} 个真实成交点`, `${selected?.name ?? activeTicker} fill price timeline with ${points.length} actual fills`)}>
       {yTicks.map((tick, index) => <g key={tick}><line x1={margin.left} x2={width - margin.right} y1={y(tick)} y2={y(tick)} className="timeline-grid" /><text x={margin.left - 10} y={y(tick) + 4} textAnchor="end" className="timeline-axis-label">{formatPrice(tick)}</text>{index === yTicks.length - 1 && <line x1={margin.left} x2={width - margin.right} y1={y(tick)} y2={y(tick)} className="timeline-axis" />}</g>)}
       <line x1={margin.left} x2={margin.left} y1={margin.top} y2={height - margin.bottom} className="timeline-axis" />
       <text x={margin.left} y={height - 15} textAnchor="start" className="timeline-axis-label">{new Date(minTime).toLocaleDateString(localeCode())}</text>
       <text x={width - margin.right} y={height - 15} textAnchor="end" className="timeline-axis-label">{new Date(maxTime).toLocaleDateString(localeCode())}</text>
-      {points.map(point => <g key={point.key} className="timeline-point"><line x1={x(point.time)} x2={x(point.time)} y1={y(point.price)} y2={height - margin.bottom} className="timeline-stem" /><circle cx={x(point.time)} cy={y(point.price)} r="3.5" className={point.side === 'BUY' ? 'timeline-buy' : 'timeline-sell'}><title>{`${point.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} · ${new Date(point.filledAt).toLocaleString(localeCode())} · ${formatPrice(point.price)} · ${decimal(point.quantity, 4)} ${tx('股', 'shares')}`}</title></circle></g>)}
+      {points.map(point => <g key={point.key} className="timeline-point"><line x1={x(point.time)} x2={x(point.time)} y1={y(point.price)} y2={height - margin.bottom} className="timeline-stem" /><circle cx={x(point.time)} cy={y(point.price)} r="3.5" className={point.side === 'BUY' ? 'timeline-buy' : 'timeline-sell'}><title>{`${point.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} · ${new Date(point.filledAt).toLocaleString(localeCode())} · ${formatPrice(point.price)} · ${shareCount(point.quantity)} ${tx('股', 'shares')}`}</title></circle></g>)}
     </svg></div>}
-    <div className="timeline-events" aria-label={tx('最近成交点', 'Recent fills')}>{latest.map(point => <div key={point.key}><i className={point.side === 'BUY' ? 'buy-marker' : 'sell-marker'} /><span><strong>{point.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} {decimal(point.quantity, 4)} {tx('股', 'shares')}</strong><small>{new Date(point.filledAt).toLocaleString(localeCode())}</small></span><b>{formatPrice(point.price)}</b></div>)}</div>
+    <div className="timeline-events" aria-label={tx('最近成交点', 'Recent fills')}>{latest.map(point => <div key={point.key}><i className={point.side === 'BUY' ? 'buy-marker' : 'sell-marker'} /><span><strong>{point.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} {shareCount(point.quantity)} {tx('股', 'shares')}</strong><small>{new Date(point.filledAt).toLocaleString(localeCode())}</small></span><b>{formatPrice(point.price)}</b></div>)}</div>
   </section>
 }
 
@@ -860,10 +867,10 @@ function PriceHistoryChart({ series, orders, name, averagePricePaid, instrumentC
       {hover !== null && <div className="chart-tooltip" style={{ left: hover.x, top: hover.y, transform: `${hover.flipX ? 'translateX(calc(-100% - 13px))' : 'translateX(13px)'} ${hover.flipY ? 'translateY(calc(-100% - 13px))' : 'translateY(13px)'}` }}>
         <span className="chart-tooltip-time">{hover.label}</span>
         {hover.close !== undefined && <span className="chart-tooltip-row"><i className="legend-line" style={{ background: accent }} />{tx('收盘价', 'Close')}<b>{money(hover.close, series.currency)}</b></span>}
-        {hover.trades.map(trade => <span key={trade.key} className="chart-tooltip-row"><i className={trade.side === 'BUY' ? 'legend-marker' : 'legend-marker sell'} style={{ background: trade.side === 'BUY' ? buyColor : sellColor }} />{trade.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} {decimal(trade.quantity, 4)}{tx(' 股', ' shares')}<b>{money(trade.price, series.currency)}</b><small className="chart-tooltip-time">{new Date(trade.filledAt).toLocaleTimeString(localeCode())}</small></span>)}
+        {hover.trades.map(trade => <span key={trade.key} className="chart-tooltip-row"><i className={trade.side === 'BUY' ? 'legend-marker' : 'legend-marker sell'} style={{ background: trade.side === 'BUY' ? buyColor : sellColor }} />{trade.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')} {shareCount(trade.quantity)}{tx(' 股', ' shares')}<b>{money(trade.price, series.currency)}</b><small className="chart-tooltip-time">{new Date(trade.filledAt).toLocaleTimeString(localeCode())}</small></span>)}
       </div>}
     </div>
-    <div className="sr-only" aria-label="成交点明细">{trades.map(trade => <span key={trade.key}>{trade.side === 'BUY' ? '买入' : '卖出'}，{new Date(trade.filledAt).toLocaleString('zh-CN')}，成交价 {money(trade.price, series.currency)}，{decimal(trade.quantity, 4)} 股</span>)}</div>
+    <div className="sr-only" aria-label="成交点明细">{trades.map(trade => <span key={trade.key}>{trade.side === 'BUY' ? '买入' : '卖出'}，{new Date(trade.filledAt).toLocaleString('zh-CN')}，成交价 {money(trade.price, series.currency)}，{shareCount(trade.quantity)} 股</span>)}</div>
   </section>
 }
 function Metric({ label, value, note, tone }: { label: string; value: string; note?: string; tone?: 'positive' | 'negative' }) {
@@ -915,6 +922,7 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hide
           <div>
             <div className="inst-tag-row">
               <span className="inst-ticker-tag">{tickerLabel(ticker)} · {position.instrument?.currency ?? 'USD'}</span>
+              <span className="read-only-status"><ShieldCheck size={14} strokeWidth={1.5} />{tx('只读账户', 'Read-only account')}</span>
             </div>
             <h2 className="inst-title">{name}</h2>
           </div>
@@ -929,9 +937,15 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hide
             )}
             {hideBalances ? '••••' : `${signedMoney(profit, accountCurrency)} (${percent(returnPct)} ${tx('累计', 'Total')})`}
           </span>
-        </div>
-        <div className="inst-actions">
-          <span className="read-only-status"><ShieldCheck size={14} strokeWidth={1.5} />{tx('只读账户', 'Read-only account')}</span>
+          {/* Two currencies share this block: the quote is in the listing
+              currency, the return is in the account currency. Unlabelled, the
+              pair reads as an arithmetic error ($198.17 returning +€440.17).
+              Only shown when they actually differ. */}
+          {currency !== accountCurrency && !hideBalances && (
+            <small className="inst-price-note">
+              {tx(`报价 ${currency} · 收益折合 ${accountCurrency}`, `Quoted in ${currency} · return in ${accountCurrency}`)}
+            </small>
+          )}
         </div>
       </div>
 
@@ -968,7 +982,7 @@ function CockpitInstrumentView({ position, accountCurrency, portfolioTotal, hide
           </div>
           <div className="inv-metric-row">
             <span>{tx('持股数量', 'Shares')}</span>
-            <strong>{hideBalances ? '••••' : decimal(position.quantity, 4)}</strong>
+            <strong>{hideBalances ? '••••' : shareCount(position.quantity)}</strong>
           </div>
           <div className="inv-metric-row">
             <span>{tx('平均买入价', 'Average price')}</span>
@@ -1024,7 +1038,7 @@ function InstrumentDetailPage({ position, accountCurrency, hideBalances = false,
           <span>{tickerLabel(ticker)} · {position.instrument?.isin ?? tx('ISIN 未提供', 'ISIN unavailable')}</span>
         </div>
         <h1>{name}</h1>
-        <p>{hideBalances ? '••••' : decimal(position.quantity, 4)} {tx('股', 'shares')} · {tx('标的币种', 'Instrument currency')} {currency}</p>
+        <p>{hideBalances ? '••••' : shareCount(position.quantity)} {tx('股', 'shares')} · {tx('标的币种', 'Instrument currency')} {currency}</p>
       </div>
       <div className="instrument-price-action">
         <span>{tx('当前价格', 'Current price')}</span>
@@ -1049,7 +1063,7 @@ function InstrumentDetailPage({ position, accountCurrency, hideBalances = false,
       <div className="investment-grid">
         <div className="invest-row"><span>{tx('当前市值', 'Value')}</span><strong className="js-balance">{hideBalances ? '••••••' : money(position.walletImpact?.currentValue, accountCurrency)}</strong></div>
         <div className="invest-row"><span>{tx('未实现收益', 'Return')}</span><strong className={profit >= 0 ? 'tone-positive' : 'tone-negative'}>{hideBalances ? '••••' : signedMoney(profit, accountCurrency)} <small>({hideBalances ? '••••' : percent(cost ? profit / cost * 100 : undefined)})</small></strong></div>
-        <div className="invest-row"><span>{tx('持股数量', 'Shares')}</span><strong>{hideBalances ? '••••' : decimal(position.quantity, 4)} <small>({tx('可交易', 'Tradable')} {hideBalances ? '••••' : decimal(position.quantityAvailableForTrading, 4)})</small></strong></div>
+        <div className="invest-row"><span>{tx('持股数量', 'Shares')}</span><strong>{hideBalances ? '••••' : shareCount(position.quantity)} <small>({tx('可交易', 'Tradable')} {hideBalances ? '••••' : shareCount(position.quantityAvailableForTrading)})</small></strong></div>
         <div className="invest-row"><span>{tx('平均买入价', 'Average price')}</span><strong>{hideBalances ? '••••' : (position.averagePricePaid === undefined ? '-' : money(position.averagePricePaid, currency))}</strong></div>
         <div className="invest-row"><span>{tx('持仓成本', 'Cost')}</span><strong className="js-balance">{hideBalances ? '••••••' : money(cost, accountCurrency)}</strong></div>
       </div>
@@ -1297,7 +1311,7 @@ function OverviewPage({
         </div>
 
         <div className="portfolio-context-strip" aria-label={tx('组合上下文', 'Portfolio context')}>
-          <span><b>{analytics.positionCount}</b><small>{tx('个持仓', 'Holdings')}</small></span>
+          <span><b>{analytics.positionCount}</b><small>{tx('持仓', 'Holdings')}</small></span>
           <span><b>{analytics.piePositionCount}</b><small>{tx('个 Pie 持仓', 'Pie holdings')}</small></span>
           <span><b>{plainPercent(analytics.availableCashWeightPercent)}</b><small>{tx('现金占比', 'Cash allocation')}</small></span>
           <span><b>{plainPercent(analytics.top3WeightPercent)}</b><small>{tx('前三大集中度', 'Top 3 concentration')}</small></span>
@@ -1317,7 +1331,7 @@ function OverviewPage({
                   <TickerRingLogo ticker={order.ticker} />
                   <div className="order-row-info">
                     <div className="order-row-title"><span className={`order-side ${order.side === 'BUY' ? 'buy' : 'sell'}`}>{order.side === 'BUY' ? tx('买入', 'Buy') : tx('卖出', 'Sell')}</span><strong>{order.instrument?.name ?? tickerLabel(order.ticker)}</strong></div>
-                    <small>{hideBalances ? '••••' : order.quantity === undefined ? '-' : decimal(order.quantity, 4)} {tx('股', 'shares')} · {order.type === 'LIMIT' ? tx('限价单', 'Limit') : order.type === 'STOP' ? tx('止损单', 'Stop') : order.type === 'STOP_LIMIT' ? tx('止损限价单', 'Stop limit') : order.type === 'MARKET' ? tx('市价单', 'Market') : order.type}{order.type === 'MARKET' || order.type === 'STOP' ? ` · ${tx('市价', 'Market')}` : ''}</small>
+                    <small>{hideBalances ? '••••' : order.quantity === undefined ? '-' : shareCount(order.quantity)} {tx('股', 'shares')} · {order.type === 'LIMIT' ? tx('限价单', 'Limit') : order.type === 'STOP' ? tx('止损单', 'Stop') : order.type === 'STOP_LIMIT' ? tx('止损限价单', 'Stop limit') : order.type === 'MARKET' ? tx('市价单', 'Market') : order.type}{order.type === 'MARKET' || order.type === 'STOP' ? ` · ${tx('市价', 'Market')}` : ''}</small>
                   </div>
                   {(order.type === 'LIMIT' || order.type === 'STOP_LIMIT') && order.limitPrice !== undefined && <strong className="order-limit-price">{hideBalances ? '••••' : money(order.limitPrice, order.currency ?? order.instrument?.currency ?? currency)}</strong>}
                 </div>
@@ -1331,7 +1345,7 @@ function OverviewPage({
           <div className="pane-section-header">
             <div>
               <h3>{tx('资产配置', 'Asset allocation')}</h3>
-              <p className="pane-section-sub">{tx('面积代表持仓市值，数值与颜色代表今日涨跌', 'Area reflects market value, value & tone reflect today’s movement')}</p>
+              <p className="pane-section-sub">{tx('面积 = 持仓市值 · 颜色 = 今日涨跌', 'Area = market value · tone = today’s move')}</p>
             </div>
             <div className="treemap-mode-toggles" role="group" aria-label={tx('拼盘维度切换', 'Treemap view mode')}>
               <button
