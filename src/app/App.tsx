@@ -721,19 +721,19 @@ function PriceHistoryChart({ series, orders, name, averagePricePaid, instrumentC
         ? `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`
         : color
     }
-    const accent = token('--accent', isDark ? '#60A5FA' : '#2563EB')
+    const accent = token('--accent', isDark ? '#9FB0CE' : '#2C3E63')
     return {
       accent,
-      buyColor: token('--pos', isDark ? '#10B981' : '#059669'),
-      sellColor: token('--neg', isDark ? '#FB7185' : '#E11D48'),
-      surface: token('--surface', isDark ? '#111620' : '#FFFFFF'),
+      buyColor: token('--pos', isDark ? '#5FB78F' : '#1B5E48'),
+      sellColor: token('--neg', isDark ? '#D98A80' : '#9E3B31'),
+      surface: token('--surface', isDark ? '#151619' : '#FFFFFF'),
       areaTop: withAlpha(accent, 0.22),
       areaBottom: withAlpha(accent, 0),
-      priceLabelBackground: token('--chart-price-label-bg', '#2563EB'),
-      costLineColor: token('--ink-3', isDark ? '#8290A4' : '#5D6B80'),
-      costLabelBackground: '#59677B',
-      axisColor: token('--ink-3', isDark ? '#8290A4' : '#64748B'),
-      gridColor: withAlpha(token('--hair', isDark ? '#232C3B' : '#E2E8F0'), 0.55),
+      priceLabelBackground: token('--chart-label-bg', isDark ? '#46587A' : '#2C3E63'),
+      costLineColor: token('--ink-3', isDark ? '#888D94' : '#63686F'),
+      costLabelBackground: token('--chart-cost-label-bg', isDark ? '#4B4F56' : '#6B7078'),
+      axisColor: token('--ink-3', isDark ? '#888D94' : '#63686F'),
+      gridColor: withAlpha(token('--hair', isDark ? '#26282C' : '#E3E4E6'), 0.55),
       crosshairColor: withAlpha(accent, 0.6),
       fontFamily: token('--font-mono', 'ui-monospace, "SF Mono", Menlo, monospace'),
     }

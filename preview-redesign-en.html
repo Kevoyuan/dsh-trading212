@@ -24,35 +24,39 @@
      canvas → surface → well. The canvas is deliberately one step deeper than
      the plate: a card edge must be legible from the surface step alone, so a
      shadow is a decision rather than the only thing holding the layout up. */
-  --canvas:       #F1F4F9;
+  --canvas:       #EAEBEC;
   --surface:      #FFFFFF;
-  --well:         #F7F9FC;
+  --well:         #F4F5F6;
   --glass:        rgba(255, 255, 255, .86);
 
   /* — ink: 15.8 / 8.6 / 4.9 : 1 on the plate ————————————————————
      ink-4 is the icon-and-rule tier. It is never used for text. */
-  --ink-1:        #121822;
-  --ink-2:        #3E4759;
-  --ink-3:        #66707F;
-  --ink-4:        #8B95A5;
+  --ink-1:        #17181A;
+  --ink-2:        #464A50;
+  --ink-3:        #63686F;
+  --ink-4:        #90959C;
 
   /* — signal: one accent, reserved for interaction ——————————————— */
-  --accent:       #2B57D6;
-  --accent-deep:  #2246B8;
-  --accent-soft:  #EDF1FE;
-  --accent-plate: #2B57D6;
+  --accent:       #2C3E63;
+  --accent-deep:  #20304F;
+  --accent-soft:  #E8EBF1;
+  --accent-plate: #181A1D;
   --accent-plate-ink: #FFFFFF;
 
   /* — signed finance: never decorative, never a magnitude ————————— */
-  --pos:          #0B6547;
-  --neg:          #B03028;
-  --warn:         #8A6212;
-  --pos-soft:     #E7F3ED;
-  --neg-soft:     #FBEDEC;
+  --pos:          #1B5E48;
+  --neg:          #9E3B31;
+  --warn:         #87611A;
+  --pos-soft:     #E7F0EB;
+  --neg-soft:     #F7EAE8;
 
   /* — lines: one hairline, one emphasis ————————————————————— */
-  --hair:         #E3E9F2;
-  --hair-strong:  #D2DAE6;
+  --hair:         #E3E4E6;
+  --hair-strong:  #D1D3D6;
+
+  /* — chart label chips: the only marks that carry white text ——————— */
+  --chart-label-bg:      #2C3E63;
+  --chart-cost-label-bg: #6B7078;
 
   /* — type: six desktop tiers + one mobile hero ———————————————
      12 / 14 / 16 / 20 / 26 / 40, mobile hero 32.
@@ -103,9 +107,9 @@
   --r-1: 6px; --r-2: 10px; --r-3: 14px; --r-4: 18px; --r-pill: 999px;
 
   /* — elevation: three levels, all tinted to the canvas hue ———————— */
-  --sh-plate:   0 1px 2px rgba(18, 24, 34, .05), 0 1px 3px rgba(18, 24, 34, .04);
-  --sh-float:   0 2px 6px rgba(18, 24, 34, .06), 0 10px 28px -10px rgba(18, 24, 34, .18);
-  --sh-overlay: 0 4px 12px rgba(18, 24, 34, .08), 0 24px 64px -16px rgba(18, 24, 34, .28);
+  --sh-plate:   0 1px 2px rgba(17, 18, 20, .05), 0 1px 3px rgba(17, 18, 20, .04);
+  --sh-float:   0 2px 6px rgba(17, 18, 20, .06), 0 10px 28px -10px rgba(17, 18, 20, .18);
+  --sh-overlay: 0 4px 12px rgba(17, 18, 20, .08), 0 24px 64px -16px rgba(17, 18, 20, .28);
 
   /* — motion: one curve, three beats ————————————————————— */
   --ease: cubic-bezier(.32, .72, 0, 1);
@@ -126,30 +130,33 @@
 [data-theme="dark"]{
   color-scheme: dark;
 
-  --canvas:       #0B0F15;
-  --surface:      #121821;
-  --well:         #1A212C;
-  --glass:        rgba(18, 24, 33, .82);
+  --canvas:       #0B0B0D;
+  --surface:      #151619;
+  --well:         #101114;
+  --glass:        rgba(21, 22, 25, .82);
 
-  --ink-1:        #F3F6FA;
-  --ink-2:        #B9C2D0;
-  --ink-3:        #8590A2;
-  --ink-4:        #616C7D;
+  --ink-1:        #F2F3F5;
+  --ink-2:        #B8BCC2;
+  --ink-3:        #888D94;
+  --ink-4:        #5F646B;
 
-  --accent:       #7C9DF7;
-  --accent-deep:  #A3BCFF;
-  --accent-soft:  #1B2A4D;
-  --accent-plate: #3A63E0;
-  --accent-plate-ink: #FFFFFF;
+  --accent:       #9FB0CE;
+  --accent-deep:  #C4D1E6;
+  --accent-soft:  #1F2530;
+  --accent-plate: #E7E9ED;
+  --accent-plate-ink: #131417;
 
-  --pos:          #35C08B;
-  --neg:          #F1797F;
-  --warn:         #E0B357;
-  --pos-soft:     #12291F;
-  --neg-soft:     #2C1719;
+  --pos:          #5FB78F;
+  --neg:          #D98A80;
+  --warn:         #D2A863;
+  --pos-soft:     #15241D;
+  --neg-soft:     #281B19;
 
-  --hair:         #232B38;
-  --hair-strong:  #303A4A;
+  --hair:         #26282C;
+  --hair-strong:  #36393E;
+
+  --chart-label-bg:      #46587A;
+  --chart-cost-label-bg: #4B4F56;
 
   --sh-plate:   0 1px 2px rgba(0, 0, 0, .40), inset 0 1px 0 rgba(255, 255, 255, .03);
   --sh-float:   0 2px 8px rgba(0, 0, 0, .45), 0 12px 32px -12px rgba(0, 0, 0, .60);
@@ -1014,40 +1021,9 @@ fieldset{ border: 0; }
 .timeline-sell{ filter: none; }
 
 /* == 21 DARK THEME ====================================================== */
-/* Only roles are overridden, never a component. If a component needs a new
-   value in dark, it is missing a role — add the role, not the override. */
-[data-theme="dark"]{
-  color-scheme: dark;
-
-  --canvas:       #0B0F15;
-  --surface:      #121821;
-  --well:         #1A212C;
-  --glass:        rgba(18, 24, 33, .82);
-
-  --ink-1:        #F3F6FA;
-  --ink-2:        #B9C2D0;
-  --ink-3:        #8590A2;
-  --ink-4:        #616C7D;
-
-  --accent:       #7C9DF7;
-  --accent-deep:  #A3BCFF;
-  --accent-soft:  #1B2A4D;
-  --accent-plate: #3A63E0;
-  --accent-plate-ink: #FFFFFF;
-
-  --pos:          #35C08B;
-  --neg:          #F1797F;
-  --warn:         #E0B357;
-  --pos-soft:     #12291F;
-  --neg-soft:     #2C1719;
-
-  --hair:         #232B38;
-  --hair-strong:  #303A4A;
-
-  --sh-plate:   0 1px 2px rgba(0, 0, 0, .40), inset 0 1px 0 rgba(255, 255, 255, .03);
-  --sh-float:   0 2px 8px rgba(0, 0, 0, .45), 0 12px 32px -12px rgba(0, 0, 0, .60);
-  --sh-overlay: 0 4px 16px rgba(0, 0, 0, .50), 0 28px 72px -20px rgba(0, 0, 0, .70);
-}
+/* Dark roles are declared once, in §01. This section used to repeat all of
+   them; a second copy is a second thing to forget, and the drift check can
+   only see the first. Only genuinely dark-specific rules live below. */
 [data-theme="dark"] .dialog-backdrop,
 [data-theme="dark"] .shortcuts-modal-backdrop{ background: rgba(6, 8, 12, .72); }
 

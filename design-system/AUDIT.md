@@ -243,6 +243,61 @@ creates at runtime. CSS is 61.18 kB (from 62.03 kB).
 
 ---
 
+## Third pass — the palette
+
+The first two passes fixed type, shape, spacing and contrast, and still kept the
+original hue plan: a blue-grey canvas, a royal-blue accent, a blue-black ink and
+a mint/salmon pair in dark. That combination is the default dashboard palette —
+a viewer reads it as a template before parsing a single number. Measured at 100%
+zoom, the page had **five hues at similar saturation** (canvas, accent, chart
+line, gain, loss) and no hierarchy between them.
+
+| Role | Before (light / dark) | After (light / dark) |
+| --- | --- | --- |
+| `--canvas` | `#F1F4F9` / `#0B0F15` | `#EAEBEC` / `#0B0B0D` |
+| `--surface` | `#FFFFFF` / `#121821` | `#FFFFFF` / `#151619` |
+| `--well` | `#F7F9FC` / `#1A212C` | `#F4F5F6` / `#101114` |
+| `--ink-1` | `#121822` / `#F3F6FA` | `#17181A` / `#F2F3F5` |
+| `--ink-3` | `#66707F` / `#8590A2` | `#63686F` / `#888D94` |
+| `--accent` | `#2B57D6` / `#7C9DF7` | `#2C3E63` / `#9FB0CE` |
+| `--accent-plate` | `#2B57D6` / `#3A63E0` | `#181A1D` / `#E7E9ED` |
+| `--pos` | `#0B6547` / `#35C08B` | `#1B5E48` / `#5FB78F` |
+| `--neg` | `#B03028` / `#F1797F` | `#9E3B31` / `#D98A80` |
+| `--hair` | `#E3E9F2` / `#232B38` | `#E3E4E6` / `#26282C` |
+
+Four decisions did the work:
+
+1. **The ground went neutral.** The canvas lost its blue cast (`#F1F4F9` →
+   `#EAEBEC`) and got one step deeper, so white plates read as objects rather
+   than as a page with slightly-off white space. Nothing else on the page changed
+   value, and the cards stopped looking pasted on.
+2. **The accent became ink.** `#2B57D6` is a link blue; at `#2C3E63` (chroma
+   ≈ 0.09) the accent reads as dark ink that happens to be blue. It can carry the
+   chart line and the selection border without competing with the hero figure.
+   The one filled control (primary button) is now `--accent-plate: #181A1D` —
+   ink, not accent, in light and bone `#E7E9ED` in dark.
+3. **The money hues were desaturated.** Pine `#1B5E48` and terracotta `#9E3B31`
+   replace the forest/brick pair; in dark, sage `#5FB78F` and dusty `#D98A80`
+   replace mint and salmon. They still separate in greyscale, and forty rows of
+   them no longer shout.
+4. **The dark depth order was inverted — a real bug.** `--well` was *lighter*
+   than `--surface` (`#1A212C` vs `#121821`), so every "recess" in dark was
+   drawn as a raised plate, including the segmented-control thumb, which sat
+   darker than its own track. `well` now sits between `canvas` and `surface` in
+   both themes: `#0B0B0D` < `#101114` < `#151619`.
+
+Two smaller cleanups fell out of it: the duplicated `[data-theme="dark"]` token
+block in `styles.css` §21 is gone (dark roles are declared once, in §01 — the
+drift check could only ever see the first copy), and the chart's price-label
+background is a real token now instead of an undefined `--chart-price-label-bg`
+falling back to `#2563EB`, which put a stray royal blue on the chart.
+
+Measured after the change: **0 text runs below WCAG AA** at 1440 and 390 in both
+themes (187 runs each), `ink-3` at 4.70:1 on the canvas and 5.61:1 on white,
+six type sizes and five radii unchanged.
+
+---
+
 ## What still needs markup work
 
 Recorded in `SPEC.md` §8 rather than fixed, because each needs a product decision

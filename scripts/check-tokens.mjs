@@ -52,7 +52,7 @@ for (const [selector, decls] of canonical) {
   for (const [name, value] of decls) {
     // Primitive ramps are documented in tokens.css for reference only; the
     // product consumes roles, never raw ramp values.
-    if (/^--(gray|blue|green|red|amber)-\d+$/.test(name)) continue;
+    if (/^--(gray|navy|green|red|amber)-\d+$/.test(name)) continue;
     if (!theirs.has(name)) problems.push(`${selector} ${name}: missing in styles.css`)
     else if (theirs.get(name) !== value) {
       problems.push(`${selector} ${name}: tokens.css="${value}" styles.css="${theirs.get(name)}"`)
@@ -65,7 +65,7 @@ for (const [selector, decls] of canonical) {
 for (const [selector, decls] of product) {
   const canon = canonical.get(selector) ?? new Map()
   for (const name of decls.keys()) {
-    if (/^--(gray|blue|green|red|amber)-\d+$/.test(name)) continue
+    if (/^--(gray|navy|green|red|amber)-\d+$/.test(name)) continue
     if (!canon.has(name)) problems.push(`${selector} ${name}: declared in styles.css but not in tokens.css`)
   }
 }

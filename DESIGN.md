@@ -24,8 +24,12 @@ pnpm verify:design     # both
 - **Six type tiers**: 12 / 14 / 16 / 20 / 26 / 40, mobile hero 32. Nothing below
   12px, anywhere, including chart axes and legal text. The display tier is the
   only fluid one — `clamp(32px, 2.4vw + 16px, 40px)`, endpoints on the scale.
-- **One accent** (`--accent`) for interaction, selection and magnitudes. Green
-  and red are reserved for signed money and are never decorative.
+- **One accent** (`--accent`, deep navy `#2C3E63`) for interaction, selection and
+  magnitudes. Green and red are reserved for signed money and are never
+  decorative. The single filled control is ink (`--accent-plate`), not accent.
+- **The ground is neutral.** `--canvas` carries no blue cast, and `--well`
+  always sits between canvas and surface in both themes, so a recess is a recess
+  wherever it appears.
 - **Five radii**: 6 chip · 10 control · 14 card · 18 plate · 999 pill (badges,
   dots, avatars, segmented thumbs only). A button is never a pill.
 - **Three elevations**: bare (rhythm + hairline) · plate (surface + 1px +
@@ -55,3 +59,11 @@ four decimals, the instrument head mixed `$` and `€` with no label, `--fs-hero
 was flat at 40px above 681, the account plate was content-width between 681 and
 980 (422px inside a 755px column), and 12 CSS classes still described components
 that no longer exist. `design-system/AUDIT.md` §10–15.
+
+A third pass replaced the palette. The old one was the default dashboard plan —
+blue-grey canvas, royal-blue accent, blue-black ink, mint and salmon in dark —
+and it read as a template no matter how disciplined the spacing was. The canvas
+is neutral and one step deeper, the accent is ink-navy, the money hues are
+desaturated pine and terracotta, and the dark theme's depth order was fixed
+(`--well` had been *lighter* than `--surface`, inverting every recess). Still
+0 contrast failures at 1440 and 390 in both themes.

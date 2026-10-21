@@ -58,23 +58,43 @@ says) → **signal** (what a thing means).
 
 | Role | Light | Dark | Use |
 | --- | --- | --- | --- |
-| `--canvas` | `#F1F4F9` | `#0B0F15` | page ground |
-| `--surface` | `#FFFFFF` | `#121821` | cards, plates, popovers |
-| `--well` | `#F7F9FC` | `#1A212C` | recessed controls, tracks, quiet plates |
-| `--ink-1` | `#121822` | `#F3F6FA` | values, headings |
-| `--ink-2` | `#3E4759` | `#B9C2D0` | body, labels on tinted ground |
-| `--ink-3` | `#66707F` | `#8590A2` | micro labels, units, meta |
-| `--ink-4` | `#8B95A5` | `#616C7D` | icons and rules only — **never text** |
-| `--accent` | `#2B57D6` | `#7C9DF7` | interaction, selection, magnitude bars |
-| `--pos` | `#0B6547` | `#35C08B` | signed gain |
-| `--neg` | `#B03028` | `#F1797F` | signed loss |
-| `--warn` | `#8A6212` | `#E0B357` | caveat, sell marker |
-| `--hair` | `#E3E9F2` | `#232B38` | the one hairline |
-| `--hair-strong` | `#D2DAE6` | `#303A4A` | measure tracks, control borders |
+| `--canvas` | `#EAEBEC` | `#0B0B0D` | page ground |
+| `--surface` | `#FFFFFF` | `#151619` | cards, plates, popovers |
+| `--well` | `#F4F5F6` | `#101114` | recessed controls, tracks, quiet plates |
+| `--ink-1` | `#17181A` | `#F2F3F5` | values, headings |
+| `--ink-2` | `#464A50` | `#B8BCC2` | body, labels on tinted ground |
+| `--ink-3` | `#63686F` | `#888D94` | micro labels, units, meta |
+| `--ink-4` | `#90959C` | `#5F646B` | icons and rules only — **never text** |
+| `--accent` | `#2C3E63` | `#9FB0CE` | interaction, selection, magnitude bars |
+| `--accent-plate` | `#181A1D` | `#E7E9ED` | the one filled control (primary button) |
+| `--pos` | `#1B5E48` | `#5FB78F` | signed gain |
+| `--neg` | `#9E3B31` | `#D98A80` | signed loss |
+| `--warn` | `#87611A` | `#D2A863` | caveat, sell marker |
+| `--hair` | `#E3E4E6` | `#26282C` | the one hairline |
+| `--hair-strong` | `#D1D3D6` | `#36393E` | measure tracks, control borders |
+
+Why these values, in four sentences:
+
+- **The ground is neutral, not blue.** A blue-grey canvas plus a blue accent plus
+  a blue-black ink is the default dashboard palette; it reads as a template
+  before a reader has parsed a single number. Neutral greys let the one navy
+  accent and the two money hues be the only colour on the page.
+- **The accent is ink that happens to be blue** (`#2C3E63`, chroma ≈ 0.09).
+  A royal blue is a link colour; at this depth the accent can mark selection and
+  carry a chart line without competing with the hero figure.
+- **Money colours are deep and desaturated** (pine `#1B5E48`, terracotta
+  `#9E3B31`). They still read as gain and loss in greyscale, and they stop
+  shouting at each other across a table of forty rows.
+- **`--well` always sits between `--canvas` and `--surface`** in both themes, so
+  the same role means the same depth everywhere: a recess inside a card is
+  darker than the card, and a track on a card is darker than the card. In dark
+  the old palette had `well` *lighter* than `surface`, which silently inverted
+  every recess — including the segmented-control thumb, which was drawn darker
+  than the track it sits on.
 
 Rules:
 
-- Contrast: `ink-1` ≥ 15:1, `ink-2` ≥ 8:1, `ink-3` ≥ 4.8:1 on every surface it
+- Contrast: `ink-1` ≥ 15:1, `ink-2` ≥ 8:1, `ink-3` ≥ 4.5:1 on every surface it
   can land on, in both themes. `ink-4` is exempt because it never carries text.
 - No pure `#000` or `#FFF` text. No colour outside this table in a component.
 - A **magnitude** bar (weights, exposure, volume) takes `--accent`. A **signed**
