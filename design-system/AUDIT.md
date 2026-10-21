@@ -292,6 +292,9 @@ drift check could only ever see the first copy), and the chart's price-label
 background is a real token now instead of an undefined `--chart-price-label-bg`
 falling back to `#2563EB`, which put a stray royal blue on the chart.
 
+Side by side, same crop, same data: `shots/palette-light.png` and
+`shots/palette-dark.png`.
+
 Measured after the change: **0 text runs below WCAG AA** at 1440 and 390 in both
 themes (187 runs each), `ink-3` at 4.70:1 on the canvas and 5.61:1 on white,
 six type sizes and five radii unchanged.
