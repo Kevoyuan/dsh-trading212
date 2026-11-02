@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.13.4 - 2026-11-02
+
+### Documentation
+
+- The README keeps a single hero screenshot, captured from the synthetic demo preview (`DEMO` account) instead of a live account. The earlier release commits that captured a live instance have been rewritten out of this repository's history.
+
+## 0.13.3 - 2026-11-02
+
+### Fixes
+
+- The instrument header no longer crushes the identity when long English price labels and the range switcher compete for the same row: the price block wraps under the identity and stays right-aligned, and the ticker and read-only chips never break mid-word.
+- Allocation blocks shed their ticker before it can ellipsize into a single letter, and brand tiles get a hairline ring so a white logo (Alphabet) stays visible on a light block.
+
+### Documentation
+
+- README screenshots refreshed from the running plugin: light and dark full pages, an allocation close-up and the mobile view.
+- `scripts/capture-screenshots.py` now accepts `--url`, so the same shots can be captured from a live instance instead of only the static preview.
+
 ## 0.13.2 - 2026-11-02
 
 First published release since 0.11.0; 0.12.0 – 0.13.1 existed only as local builds.
