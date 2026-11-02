@@ -596,6 +596,9 @@ fieldset{ border: 0; }
   border-radius: var(--r-pill);
   overflow: hidden;
   background: var(--surface);
+  /* brand tiles are full-bleed squares; without a ring a white logo
+     (Alphabet) disappears on a light allocation block */
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink-1) 12%, transparent);
   color: var(--ink-3);
   font-size: 10px; font-weight: var(--fw-semibold); letter-spacing: .02em;
 }
@@ -648,7 +651,10 @@ fieldset{ border: 0; }
   .treemap-tile{ padding: 3px; gap: 0; }
   .tile-logo{ width: 11px; height: 11px; }
 }
-@container (max-width: 40px){
+@container (max-width: 60px){
+  .tile-ticker{ display: none; }
+}
+@container (max-width: 44px){
   .tile-weight-main{ display: none; }
 }
 @container (max-width: 24px){
@@ -701,18 +707,20 @@ fieldset{ border: 0; }
    stack three right-aligned rows (price, delta, tag) above the range control, so
    it had three alignment axes and no row. */
 .cockpit-inst-head{
-  display: grid; grid-template-columns: minmax(min-content, 1fr) auto;
-  align-items: center; column-gap: var(--g-4); row-gap: 0;
+  /* English labels make the price block wide; let it wrap under the
+     identity instead of crushing the ticker to one word per line. */
+  display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: space-between; column-gap: var(--g-4); row-gap: var(--g-2);
 }
-.inst-profile{ grid-column: 1; grid-row: 1; display: flex; align-items: center; column-gap: var(--s-3); }
-.inst-profile > div:not(.ticker-ring-logo){ display: grid; justify-items: start; min-width: min-content; }
+.inst-profile{ grid-column: 1; grid-row: 1; display: flex; align-items: center; column-gap: var(--s-3); flex: 1 1 320px; min-width: 0; }
+.inst-profile > div:not(.ticker-ring-logo){ display: grid; justify-items: start; min-width: 0; }
 .inst-profile .ticker-ring-logo{ width: 44px; height: 44px; }
 .inst-title{ margin-top: 1px; }
 /* Price, delta and the currency note share one block. The first two sit on the
    baseline; the note takes a full row of its own, so it never competes for the
    same line as the number it explains. */
 .inst-price-box{
-  grid-column: 2; grid-row: 1; display: flex; flex-wrap: wrap;
+  grid-column: 2; grid-row: 1; flex: 0 1 auto; min-width: 0; display: flex; flex-wrap: wrap; margin-left: auto;
   align-items: baseline; column-gap: var(--s-3); row-gap: var(--s-1);
   justify-content: flex-end;
 }
@@ -723,6 +731,8 @@ fieldset{ border: 0; }
   letter-spacing: var(--tr-normal); color: var(--ink-3);
 }
 .inst-tag-row{ display: flex; align-items: center; flex-wrap: wrap; column-gap: var(--s-2); row-gap: var(--s-1); }
+.inst-ticker-tag{ white-space: nowrap; }
+.read-only-status{ white-space: nowrap; }
 /* Account state, not instrument data: it sits with the identity, not under the
    price, where a third line made the number block read as one long sentence. */
 .read-only-status{

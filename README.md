@@ -8,13 +8,14 @@ A read-only Trading 212 portfolio workspace for **dsh**. Configure your API cred
 
 > For personal research and information only. This plugin does not provide investment advice and cannot place, modify, or cancel orders.
 
-![dsh Trading 212 portfolio workspace dashboard with account snapshot, stock price chart with Trading 212 execution fills, asset allocation treemap, and top holdings](https://raw.githubusercontent.com/Kevoyuan/dsh-trading212/main/docs/images/dashboard-desktop-full-en.png)
+![dsh Trading 212 portfolio workspace dashboard: a dark account-value card, a TradingView price chart with execution fills, and asset-allocation blocks that carry a brand mark, ticker and weight](https://raw.githubusercontent.com/Kevoyuan/dsh-trading212/main/docs/images/dashboard-desktop-full-en.png)
 
 *Product interface shown with synthetic demo data. Includes a one-click privacy toggle (eye icon) that completely masks balances, stock values, share quantities, and returns.*
 
 ## Features
 
 - Guided Demo or Live API setup with persistent dsh credential storage
+- Trading 212-native design language: a cool neutral canvas, one cyan accent, weight-first allocation blocks, and first-class light and dark themes
 - Portfolio value, cash, returns, FX impact, concentration, and pending-order overview
 - Responsive desktop and mobile dashboard with overview, holdings, history, settings, and help views
 - One-click privacy masking (eye toggle) to hide all balances, holding values, share quantities, average purchase prices, and returns

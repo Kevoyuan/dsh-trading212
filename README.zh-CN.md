@@ -8,13 +8,14 @@
 
 > 仅供个人信息整理与研究参考，不构成投资建议。本插件不会下单、修改或取消订单。
 
-![dsh Trading 212 投资组合仪表盘，包含账户总览、收益走势、买卖成交点、资产配置与持仓列表](https://raw.githubusercontent.com/Kevoyuan/dsh-trading212/main/docs/images/dashboard-desktop-full-en.png)
+![dsh Trading 212 投资组合仪表盘：深色账户总值卡、带成交点的 TradingView 价格走势，以及按权重划分、带品牌标识的资产配置方块](https://raw.githubusercontent.com/Kevoyuan/dsh-trading212/main/docs/images/dashboard-desktop-full-en.png)
 
 *产品界面截图（采用纯虚拟演示数据）。支持右上角一键隐私遮罩（眼睛图标），可对账户总资产、个股持仓市值、持股数量、买入均价及盈亏全面打码。*
 
 ## 能做什么
 
 - 在 dsh 中完成 Demo / Live API 配置；刷新后仍会恢复连接状态
+- 贴近 Trading 212 的视觉语言：中性冷调底色、单一青色强调、以权重为主的资产配置方块，深浅主题都完整适配
 - 一眼查看账户总览、现金、收益、外汇影响、集中度和待处理订单
 - 适配桌面与移动端的 dashboard，包含概览、持仓、历史、设置和帮助
 - 一键隐私模式：点击顶部 👁️ 眼睛图标即可对账户总价值、可用现金、个股持仓市值、持股数量、买入均价、成本以及盈亏贡献全面打码遮罩（`••••`），保障录屏与投屏时的隐私
