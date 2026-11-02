@@ -1,0 +1,55 @@
+<!-- @dsCard group="Data viz" height=340 subtitle="Chart chrome: legend draws the marks the series contains — line, buy square, sell triangle, dashed average cost" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 20px; background: var(--canvas); color: var(--ink-1); font-family: var(--font-sans); font-size: var(--fs-body); line-height: var(--lh-body); font-variant-numeric: tabular-nums; }
+  .price-chart-panel { padding: 16px 20px 18px; border: 1px solid var(--hair); border-radius: var(--r-4); background: var(--surface); box-shadow: var(--sh-plate); }
+  .section-heading h3 { margin: 0; font-size: var(--fs-row); letter-spacing: var(--tr-snug); }
+  .section-heading .sub { font-size: var(--fs-micro); color: var(--ink-3); letter-spacing: var(--tr-wide); }
+  .price-head { text-align: right; }
+  .price-head b { display: block; font-size: var(--fs-fig); line-height: var(--lh-fig); font-weight: var(--fw-display); }
+  .price-head span { font-size: var(--fs-body); color: var(--pos); }
+  .chart-count { font-size: var(--fs-micro); color: var(--ink-3); }
+  .ln { fill: none; stroke: var(--accent); stroke-width: 1.6; }
+  .cost { stroke: var(--ink-4); stroke-width: 1; stroke-dasharray: 4 5; }
+  .buy { fill: var(--pos); }
+  .sell { fill: var(--warn); }
+</style>
+</head>
+<body>
+  <div class="price-chart-panel">
+    <div class="price-chart-panel">
+      <div class="section-heading">
+        <div>
+          <h3>Apple Inc.</h3>
+          <span class="sub">AAPL · USD · 1 year</span>
+        </div>
+        <div class="price-head">
+          <b>$198.17</b>
+          <span>+$8.17 (+4.30%)</span>
+        </div>
+      </div>
+      <div class="chart-compact-meta">
+        <div class="chart-legend">
+          <span>Close</span>
+          <span>Buy</span>
+          <span>Sell</span>
+          <span class="chart-cost-legend">Avg cost $152.30</span>
+        </div>
+        <p class="chart-count">Daily close · 3 Trading 212 fills in range</p>
+      </div>
+      <div class="price-chart" role="img" aria-label="Apple Inc. one-year price history with three execution fills and a dashed average-cost line">
+        <svg viewBox="0 0 820 300" width="100%" height="auto" style="display: block;" aria-hidden="true">
+          <line class="cost" x1="0" y1="196" x2="820" y2="196"></line>
+          <path class="ln" d="M0 208L48 214L96 190L144 176L192 186L240 168L288 172L336 146L384 138L432 150L480 120L528 108L576 118L624 92L672 74L720 58L768 66L820 40"></path>
+          <rect class="buy" x="418" y="141" width="9" height="9"></rect>
+          <rect class="buy" x="688" y="65" width="9" height="9"></rect>
+          <polygon class="sell" points="586,104 594,118 578,118"></polygon>
+        </svg>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

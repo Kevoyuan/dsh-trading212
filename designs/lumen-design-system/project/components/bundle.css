@@ -1,0 +1,549 @@
+/* Lumen — component layer, extracted from src/app/styles.css. Tokens come from tokens.css; do not redeclare token values here. */
+
+/* == :root — vars the compiled token file does not emit =================== */
+/* Motion (curve + three beats) and the focus/card density contracts live in
+   tokens.css but are not emitted by the token compile, so they are defined here. */
+:root{
+  --ease: cubic-bezier(.32, .72, 0, 1);        /* one curve   */
+  --d-1: 140ms; --d-2: 240ms; --d-3: 400ms;    /* three beats */
+  --focus: var(--accent);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent);
+  --card-pad: var(--s-5);                      /* resolved at use time */
+}
+
+/* == Base primitives the components assume (styles.css §02) ============== */
+*, *::before, *::after{ box-sizing: border-box; }
+img, svg, video{ display: block; max-width: 100%; }
+table{ border-collapse: collapse; border-spacing: 0; }
+h1, h2, h3, h4, h5, h6{ font-size: inherit; font-weight: 600; }
+b, strong{ font-weight: 600; }
+small{ font-size: var(--fs-micro); }
+button, input, select, textarea{ font: inherit; color: inherit; letter-spacing: inherit; }
+button{ padding: 0; border: 0; background: none; color: inherit; cursor: pointer; text-align: inherit; }
+/* The one focus ring. Every control below relies on it (§06 accessibility). */
+:is(a, button, input, select, textarea, [tabindex]):focus-visible{ outline: 2px solid var(--focus); outline-offset: 2px;
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity; }
+::selection{ background: var(--accent-soft); color: var(--ink-1); }
+
+/* == Shared type tiers (§03). Cross-family, kept verbatim ================ */
+/* tier 6 — display, one per page */
+.account-hero-val{ font-size: var(--fs-hero); line-height: var(--lh-hero); font-weight: var(--fw-display); letter-spacing: var(--tr-tight); }
+/* tier 5 — title: page and section anchors */
+.inst-price-main, .instrument-heading h1, .brand{ font-size: var(--fs-title); line-height: var(--lh-title); font-weight: var(--fw-semibold); letter-spacing: var(--tr-tight); }
+.section-heading strong, .pot-val{ font-size: var(--fs-title); line-height: var(--lh-title); font-weight: var(--fw-display); letter-spacing: var(--tr-tight); }
+/* tier 4 — figure: panel headings */
+.cockpit-section-title, .section-heading h2, .section-title, .inst-title, .sub-panel h3, .pane-section-header h3{ font-size: var(--fs-fig); line-height: var(--lh-fig);
+  font-weight: var(--fw-semibold); letter-spacing: var(--tr-snug); }
+/* tier 3 — row: values that carry the answer */
+.sub-metric-block strong, .metric-card strong, .tile-percent, .bar-row b, .exposure-summary strong,
+.holdings-table td strong, .inv-metric-row b{ font-size: var(--fs-row); line-height: var(--lh-row); font-weight: var(--fw-semibold); letter-spacing: var(--tr-snug); }
+/* tier 2 — body */
+.holdings-table td strong{ font-size: var(--fs-body); }
+/* tier 1 — micro: labels, units, table headers, meta. Sentence case, not caps. */
+.account-label, .pot-label, .section-caption, .tile-ticker, .tile-weight, .tile-daypl, .chart-count,
+.t212-legal-disclaimer, .legal, .inst-ticker-tag, .read-only-status, .chart-legend, .exposure-summary small,
+.bar-label small, .holdings-table th, .holdings-table td small, .sub-metric-block > span, .metric-card > span,
+.metric-card > small, .inv-metric-row > span, .pot-sub, .sub-metric-pct, .section-heading p, .pane-section-sub,
+.portfolio-context-strip small{ font-size: var(--fs-micro); line-height: var(--lh-micro); color: var(--ink-3); letter-spacing: var(--tr-wide); }
+.account-label{ text-transform: none; }
+.tone-positive{ color: var(--pos); }
+.tone-negative{ color: var(--neg); }
+.tone-muted{ color: var(--ink-3); }
+.positive{ color: var(--pos); }
+.negative{ color: var(--neg); }
+.danger{ color: var(--neg); }
+.js-balance, .holdings-table td strong, .holdings-table td small{ font-variant-numeric: tabular-nums; }
+/* Figures are the product: tabular numbers, zero tracking, everywhere. */
+.sub-metric-block strong, .metric-card strong, .bar-row b, .exposure-summary span, .inv-metric-row b,
+.account-hero-val, .pot-val, .inst-price-main, .inst-price-sub, .holdings-table td, .tile-percent,
+.tile-weight, .portfolio-context-strip b{ letter-spacing: 0; }
+
+/* == Section header, shared by every plate (§06) ========================= */
+.pane-section-header, .section-heading{ display: flex; align-items: center; justify-content: space-between; column-gap: var(--g-4); }
+.section-heading > *, .pane-section-header > *{ min-width: 0; }
+.section-heading h2{ flex: 0 0 auto; }
+.section-heading p{ margin-top: var(--s-1); }
+.section-caption{ display: block; margin-top: 2px; }
+.pane-section-sub{ display: block; margin-top: var(--s-1); font-size: var(--fs-micro); color: var(--ink-3); }
+
+/* == BUTTON (§20.2 .primary · §20.1 .pill-btn · §07/§08/§10/§11) ======== */
+/* The one filled control. --accent-plate, 44px, pill — one per view. */
+.primary{ align-self: flex-start; display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); height: 44px; padding: 0 var(--g-4);
+  border-radius: var(--r-pill); background: var(--accent-plate); color: var(--accent-plate-ink); font-size: var(--fs-body); font-weight: 640;
+  transition: background-color var(--d-2) var(--ease), transform var(--d-1) var(--ease), opacity var(--d-2) var(--ease); }
+.primary:hover{ background: var(--accent-deep); }
+.primary:active:not(:disabled){ transform: scale(.985); }
+.primary:disabled{ opacity: .6; cursor: not-allowed; }
+/* Outline pill: the default secondary control. */
+.pill-btn{ display: inline-flex; align-items: center; column-gap: var(--g-1); padding: 8px 12px; border: 1px solid var(--hair); border-radius: var(--r-pill);
+  background: var(--surface); color: var(--ink-2); transition: all var(--d-1) var(--ease); }
+.pill-btn:hover{ border-color: var(--accent-soft); background: var(--accent-soft); color: var(--accent-deep); }
+.pill-btn:active{ transform: scale(.97); }
+.pill-btn.primary{ background: var(--accent-plate); color: var(--accent-plate-ink); border-color: var(--accent-plate); }
+.pill-btn.primary:hover{ background: var(--accent-deep); border-color: var(--accent-deep); color: var(--accent-plate-ink); }
+.pill-btn.danger, .pill-btn.danger-outline{ border-color: var(--neg-soft); color: var(--neg); }
+/* Small secondary: deposit / account action. */
+.t212-deposit-pill-btn{ flex: none; display: inline-flex; align-items: center; height: var(--control-h-sm); padding: 0 var(--s-3); border-radius: var(--r-2);
+  background: var(--surface); color: var(--accent-deep); box-shadow: inset 0 0 0 1px var(--hair); font-size: var(--fs-micro); font-weight: var(--fw-semibold);
+  transition: background-color var(--d-1) var(--ease), box-shadow var(--d-1) var(--ease); }
+.t212-deposit-pill-btn:hover{ background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-soft); }
+.t212-deposit-pill-btn:active{ transform: scale(.98); }
+/* Full-width secondary with a trailing chevron chip. */
+.cockpit-see-all-btn{ position: relative; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 38px; padding: 8px var(--s-3);
+  border-radius: var(--r-2); background: var(--surface); color: var(--ink-1); font-weight: var(--fw-semibold); box-shadow: inset 0 0 0 1px var(--hair);
+  transition: background-color var(--d-1) var(--ease), color var(--d-1) var(--ease); }
+.cockpit-see-all-btn:hover{ background: var(--well); }
+.cockpit-see-all-btn:active{ transform: scale(.99); }
+.btn-action-chevron{ position: absolute; inset-inline-end: 6px; inset-block-start: 50%; margin-top: -13px; width: 26px; height: 26px; display: grid;
+  place-items: center; border-radius: var(--r-1); background: var(--well); color: var(--ink-1); font-size: var(--fs-body); line-height: 1;
+  transition: transform var(--d-1) var(--ease); }
+.cockpit-see-all-btn:hover .btn-action-chevron{ transform: translateX(2px); }
+/* Quiet outline pill (rail footer). */
+.t212-pill-action{ display: inline-flex; align-items: center; column-gap: var(--s-1); height: var(--control-h-sm); padding: 0 10px; border-radius: var(--r-2);
+  background: transparent; color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--hair); font-size: var(--fs-micro);
+  transition: background-color var(--d-1) var(--ease), color var(--d-1) var(--ease); }
+.t212-pill-action:hover{ background: var(--well); color: var(--ink-1); }
+.t212-pill-action:active{ transform: scale(.98); }
+/* Icon button (28px square). */
+.icon-btn-ghost{ width: 28px; height: 28px; display: grid; place-items: center; border-radius: var(--r-2); color: var(--ink-4);
+  transition: background-color var(--d-1) var(--ease), color var(--d-1) var(--ease); }
+.icon-btn-ghost:hover{ background: var(--well); color: var(--ink-1); }
+/* Outline secondary that can be disabled. */
+.load-more{ align-self: flex-start; display: inline-flex; align-items: center; gap: var(--s-2); height: 38px; padding: 0 var(--g-3); border: 1px solid var(--hair);
+  border-radius: var(--r-pill); background: var(--surface); color: var(--ink-2); font-size: var(--fs-micro); font-weight: 600;
+  transition: color var(--d-2) var(--ease), border-color var(--d-2) var(--ease); }
+.load-more:hover:not(:disabled){ color: var(--ink-1); border-color: var(--ink-3); }
+.load-more:disabled{ opacity: .6; cursor: not-allowed; }
+
+/* == SEGMENTED CONTROL (§13 range switcher · §10 treemap mode) =========== */
+/* Recessed track, raised thumb. The thumb is the one legitimate pill-inside-a-
+   track: it must match the track's end caps. Focus is the global :focus-visible
+   ring above, never a per-segment ring. */
+.range-switcher{ position: relative; display: inline-flex; column-gap: 2px; padding: 3px; border-radius: var(--r-2); background: var(--well);
+  box-shadow: inset 0 0 0 1px var(--hair); }
+.range-switcher button{ position: relative; z-index: 1; flex: 1 1 0; min-width: 52px; min-height: 28px; display: grid; place-items: center; border-radius: var(--r-1);
+  color: var(--ink-3); font-size: var(--fs-micro); transition: color var(--d-1) var(--ease); }
+.range-switcher button:hover{ color: var(--ink-1); }
+/* Selected must read as selected, not disabled: ink-1 + semibold. */
+.range-switcher button.active{ color: var(--ink-1); font-weight: var(--fw-semibold); }
+.range-thumb{ position: absolute; left: 0; top: 3px; bottom: 3px; width: 0; border-radius: var(--r-1); background: var(--surface);
+  box-shadow: var(--sh-plate), inset 0 0 0 1px var(--hair); pointer-events: none; z-index: 0; transition: transform var(--d-2) var(--ease), width var(--d-2) var(--ease); }
+/* Second variant: the mosaic's daily/total switcher (same geometry, text-sized). */
+.treemap-mode-toggles{ display: inline-flex; flex: none; column-gap: 2px; padding: 3px; border-radius: var(--r-2); background: var(--well);
+  box-shadow: inset 0 0 0 1px var(--hair); }
+.treemap-mode-pill{ padding: 0 10px; min-height: 26px; white-space: nowrap; border-radius: var(--r-1); color: var(--ink-3); font-size: var(--fs-micro);
+  letter-spacing: var(--tr-wide); transition: color var(--d-1) var(--ease), background-color var(--d-1) var(--ease); }
+.treemap-mode-pill:hover{ color: var(--ink-1); }
+.treemap-mode-pill.is-active{ background: var(--surface); color: var(--ink-1); font-weight: var(--fw-semibold);
+  box-shadow: var(--sh-plate), inset 0 0 0 1px var(--hair); }
+
+/* == BADGE / TAG (§05 DEMO badge · §12 · §19 · §20.5 · §20.10) =========== */
+.invest-env-badge{ padding: 0 var(--s-2); line-height: 18px; border-radius: var(--r-1); background: var(--well); color: var(--ink-2); font-size: var(--fs-micro);
+  font-weight: 500; letter-spacing: var(--tr-wide); box-shadow: inset 0 0 0 1px var(--hair); }
+/* Count tag. Later pass wins: no line-height, fw 600. */
+.count-tag{ display: inline-flex; align-items: center; padding: 2px var(--g-2); border-radius: var(--r-pill); background: var(--well); color: var(--ink-2);
+  font-size: var(--fs-micro); font-weight: 600; }
+/* Account state badge: sits with the identity, not under the price. */
+.read-only-status{ display: inline-flex; align-items: center; column-gap: var(--s-1); padding: 0 var(--s-2); line-height: 20px; border-radius: var(--r-1);
+  background: var(--well); color: var(--ink-3); box-shadow: inset 0 0 0 1px var(--hair); }
+/* Signed side tones — the only saturated badge fills allowed. */
+.order-side{ flex: none; padding: 0 6px; border-radius: var(--r-1); font-size: var(--fs-micro); font-weight: var(--fw-semibold); line-height: 18px; }
+.order-side.buy{ color: var(--pos); background: var(--pos-soft); }
+.order-side.sell{ color: var(--neg); background: var(--neg-soft); }
+.history-side{ display: inline-flex; align-items: center; gap: var(--s-1); padding: 2px var(--g-2); border-radius: var(--r-pill); font-size: var(--fs-micro); font-weight: 650; }
+.history-side.buy{ background: var(--pos-soft); color: var(--pos); }
+.history-side.sell{ background: var(--neg-soft); color: var(--neg); }
+/* Status dot. Later pass wins: 8px and non-shrinking. */
+.status-dot{ display: inline-block; width: 8px; height: 8px; flex: 0 0 8px; border-radius: var(--r-pill); background: var(--pos); }
+
+/* == CARD / PLATE — three elevation levels (§04 · §07 · §08 · §17) ====== */
+/* level 1 · plate — the answer: surface + hairline + sh-plate. */
+.cockpit-account-card{ position: relative; display: grid; row-gap: var(--g-2); padding: var(--card-pad); border: 1px solid var(--hair); border-radius: var(--r-4);
+  background: var(--surface); box-shadow: var(--sh-plate); animation: lumen-rise var(--d-3) var(--ease) 40ms both; }
+.account-card-header{ display: flex; align-items: center; justify-content: space-between; column-gap: var(--g-2); }
+.account-hero-val{ margin-top: var(--s-2); padding-bottom: var(--s-5); }
+/* level 1 · plate (ledger) */
+.cockpit-holdings-preview{ display: grid; row-gap: var(--g-3); padding: var(--card-pad); border: 1px solid var(--hair); border-radius: var(--r-4);
+  background: var(--surface); box-shadow: var(--sh-plate); }
+/* level 1 · plate (chart) — one plate, no inner bezel. */
+.cockpit-chart-wrap{ padding: var(--s-4) var(--s-5) var(--s-3); border: 1px solid var(--hair); border-radius: var(--r-4); background: var(--surface); box-shadow: var(--sh-plate); }
+/* level 1 · recess — the cash plate: well ground, hairline, no shadow. */
+.cockpit-cash-summary{ display: grid; row-gap: var(--g-3); padding: var(--card-pad); border: 1px solid var(--hair); border-radius: var(--r-3); background: var(--well);
+  animation: lumen-rise var(--d-3) var(--ease) 80ms both; }
+.cockpit-main-pot-card{ display: flex; align-items: flex-start; justify-content: space-between; column-gap: var(--g-3); }
+.pot-info{ display: flex; flex-direction: column; min-width: 0; }
+.pot-val{ display: block; margin-top: 2px; }
+.pot-sub{ display: block; margin-top: 2px; }
+/* level 0 · bare — two bands, one hairline divider, no card chrome. */
+.sub-panel{ display: grid; row-gap: var(--g-3); align-content: start; }
+.sub-panel + .sub-panel{ position: relative; }
+.sub-panel + .sub-panel::before{ content: ""; position: absolute; inset-block: 0; inset-inline-start: calc(var(--g-6) / -2); width: 1px; background: var(--hair); }
+/* level 0 · bare — rail footer. */
+.cockpit-pane-footer{ display: grid; row-gap: var(--s-2); margin-top: auto; padding-top: var(--s-4); border-top: 1px solid var(--hair);
+  animation: lumen-rise var(--d-3) var(--ease) 180ms both; }
+.footer-action-pills-row{ display: flex; flex-wrap: wrap; gap: var(--s-1); }
+.t212-legal-disclaimer{ line-height: 1.55; }
+
+/* == DATA TABLE (§17 · §03 · §20.9) ====================================== */
+/* The table scrolls inside .table-scroll; the page never scrolls sideways. */
+.table-scroll{ display: block; width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin; }
+.table-scroll > table{ width: max-content; min-width: 100%; max-width: none; }
+.holdings-table{ width: 100%; }
+.holdings-table th{ text-align: left; font-weight: var(--fw-medium); letter-spacing: var(--tr-wide); padding: 0 var(--s-3) 8px; border-bottom: 1px solid var(--hair);
+  white-space: nowrap; color: var(--ink-3); }
+.holdings-table td{ height: var(--row-h); padding: var(--s-2) var(--s-3); border-bottom: 1px solid var(--hair); vertical-align: middle; }
+.holdings-table tbody tr{ transition: background-color var(--d-1) var(--ease); }
+.holdings-table tbody tr:hover{ background: var(--well); }
+.holdings-table tbody tr:last-child td{ border-bottom: 0; }
+.holdings-table th:not(:first-child), .holdings-table td:not(:first-child){ text-align: right; }
+.holdings-table td > strong, .holdings-table td > small{ display: block; white-space: nowrap; }
+.holdings-table td.positive strong{ color: var(--pos); }
+.holdings-table td.negative strong{ color: var(--neg); }
+.holdings-table-compact td{ padding-block: var(--s-2); }
+.asset-cell{ display: flex; align-items: center; column-gap: var(--s-3); }
+.asset-text{ display: flex; flex-direction: column; min-width: 0; }
+/* Row link + selection. The source has no accent-soft row fill; selection is
+   carried by the asset name only (see notes). */
+.asset-link{ display: flex; align-items: center; gap: var(--g-2); width: 100%; text-align: left; border-radius: var(--r-1); transition: color var(--d-2) var(--ease); }
+.asset-link:hover strong{ color: var(--accent); }
+.is-selected .asset-text strong, .asset-link.is-selected strong{ color: var(--accent); }
+/* Ticker mark: one geometry everywhere an instrument is named (§09). */
+.ticker-ring-logo{ position: relative; flex: none; width: 32px; height: 32px; display: grid; place-items: center; }
+.ticker-ring-logo .ring-svg{ position: absolute; inset: 0; width: 100%; height: 100%; }
+.ring-track{ fill: none; stroke: var(--hair-strong); stroke-width: 1; }
+.ring-progress{ display: none; }
+.ticker-avatar{ position: relative; width: 100%; height: 100%; display: grid; place-items: center; overflow: hidden; border-radius: var(--r-1);
+  background: var(--well); color: var(--ink-2); font-size: var(--fs-micro); font-weight: var(--fw-semibold); letter-spacing: .04em; }
+.ticker-avatar img{ width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.ticker-avatar:not(.fallback){ background: transparent; }
+.ticker-avatar.fallback{ background: var(--well); color: var(--ink-2); }
+
+/* == RANKED BAR LIST (§16) =============================================== */
+.bar-list{ display: grid; }
+/* Fixed value column: six rows that each size their own value column stop being
+   a column of comparable numbers. */
+.bar-row{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(96px, 1.35fr) 104px; align-items: center; column-gap: var(--g-3); padding: 10px 0;
+  border-bottom: 1px solid var(--hair); }
+.bar-row:last-child{ border-bottom: 0; }
+.bar-label{ display: flex; flex-direction: column; min-width: 0; }
+.bar-label strong{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* The track is the bar's scale, so it takes --hair-strong. Square ends: a
+   measure bar is a chart mark, not a capsule. */
+.bar-measure{ display: flex; height: 8px; background: var(--hair-strong); overflow: hidden; }
+.bar-measure i{ display: block; height: 100%; }
+/* Sign is direction as well as colour: a loss grows leftwards from the zero
+   point at the right edge of its track. */
+.bar-positive{ background: var(--pos); }
+.bar-negative{ margin-inline-start: auto; background: var(--neg); }
+.bar-accent{ background: var(--accent); }
+.bar-row b{ text-align: right; white-space: nowrap; }
+/* Compact variant: four currencies, code / value / meta on one line. */
+.exposure-summary{ display: grid; }
+.exposure-summary > div{ display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: baseline; column-gap: var(--s-2); padding: 10px 0;
+  border-bottom: 1px solid var(--hair); }
+.exposure-summary > div:last-child{ border-bottom: 0; }
+.exposure-summary strong{ letter-spacing: .04em; }
+.exposure-summary span{ text-align: right; white-space: nowrap; }
+.exposure-summary small{ grid-column: 2 / -1; margin-top: 2px; }
+
+/* == PRICE CHART CHROME (§14 · §20.9) ==================================== */
+/* The series, axes, crosshair and price lines are painted by TradingView
+   Lightweight Charts inside .price-chart (autoSize). Only the furniture around
+   it lives here; the old SVG mark rules are gone (see notes). */
+.price-chart-panel{ display: grid; row-gap: var(--g-2); }
+.price-chart-panel:has(> .chart-count){ grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--g-4); }
+.price-chart-panel:has(> .chart-count) > .section-heading{ grid-column: 1 / -1; }
+.price-chart-panel:has(> .chart-count) > .chart-legend{ grid-column: 1; }
+.price-chart-panel:has(> .chart-count) > .chart-count{ grid-column: 2; margin: 0; text-align: right; align-self: center; }
+.price-chart-panel:has(> .chart-count) > .price-chart{ grid-column: 1 / -1; }
+/* Compact header: one meta row — legend left, interval + fill count right. */
+.chart-compact-meta{ display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; column-gap: var(--g-4); row-gap: var(--s-1); }
+.chart-compact-meta .chart-count{ margin: 0; }
+/* Legend swatches are the marks the series actually draws. */
+.chart-legend{ display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-1) var(--g-3); }
+.chart-legend span{ display: inline-flex; align-items: center; column-gap: 6px; color: var(--ink-2); }
+.legend-dot{ display: none; }
+.chart-legend span::before{ content: ""; flex: 0 0 auto; width: 8px; height: 8px; border-radius: 1px; background: var(--pos); }
+.chart-legend span:nth-child(1)::before{ width: 14px; height: 2px; border-radius: var(--r-pill); background: var(--accent); }
+.chart-legend span:nth-child(2)::before{ background: var(--pos); }
+.chart-legend span:nth-child(3)::before{ background: var(--warn); clip-path: polygon(50% 100%, 0 0, 100% 0); }
+.chart-legend span.chart-cost-legend::before{ width: 14px; height: 0; border-radius: 0; border-top: 1px dashed var(--ink-4); background: none; clip-path: none; }
+.chart-cost-legend{ font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* Container only — the library paints inside it. */
+.price-chart{ width: 100%; height: auto; aspect-ratio: 820 / 300; min-height: 220px; margin-top: var(--s-1); }
+.price-chart, .chart-loading-box{ max-width: 100%; min-width: 0; }
+.chart-reset{ align-self: flex-start; padding: var(--s-1) 0; font-size: var(--fs-micro); font-weight: 600; color: var(--ink-3); background: none; border: 0; transition: color var(--d-2) var(--ease); }
+.chart-reset:hover{ color: var(--ink-1); }
+/* Crosshair tooltip (positioned inline by the chart component). */
+.chart-tooltip{ position: absolute; z-index: 6; pointer-events: none; display: flex; flex-direction: column; gap: var(--s-1); padding: var(--g-2) var(--g-3);
+  background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-1); box-shadow: var(--sh-plate); font-size: var(--fs-micro); }
+.chart-tooltip-time{ color: var(--ink-3); font-family: var(--font-mono); }
+.chart-tooltip-row{ display: flex; align-items: center; gap: var(--s-2); font-variant-numeric: tabular-nums; }
+.chart-tooltip-row b{ font-family: var(--font-sans); font-weight: 600; }
+.legend-line{ display: inline-block; width: 14px; height: 3px; flex: 0 0 14px; }
+/* Tooltip swatches: the same two arrows the series draws. */
+.legend-marker{ display: inline-block; width: 9px; height: 9px; flex: 0 0 9px; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.legend-marker.sell{ clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.buy-marker{ display: inline-block; width: 8px; height: 8px; background: var(--pos); }
+.sell-marker{ display: inline-block; width: 8px; height: 8px; background: var(--warn); transform: rotate(45deg); }
+
+/* == ALLOCATION MOSAIC (§10 · §22.3) ===================================== */
+.cockpit-treemap-section{ display: grid; grid-template-rows: auto minmax(0, 1fr); row-gap: var(--g-3); flex: 1 1 auto; min-height: 0;
+  animation: lumen-rise var(--d-3) var(--ease) 160ms both; }
+.cockpit-treemap-section .pane-section-header{ display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--g-3); row-gap: var(--s-1); }
+.cockpit-treemap-section .pane-section-header > div:first-child{ display: contents; }
+.cockpit-treemap-section .pane-section-header h3{ grid-column: 1; grid-row: 1; }
+.cockpit-treemap-section .pane-section-header .pane-section-sub,
+.cockpit-treemap-section .pane-section-header .section-caption{ grid-column: 1 / -1; grid-row: 2; margin-top: 0; }
+.cockpit-treemap-section .pane-section-header .treemap-mode-toggles{ grid-column: 2; grid-row: 1; }
+.dynamic-treemap-container{ position: relative; height: 100%; min-height: 300px; max-height: 420px; }
+.treemap-rect-slot{ position: absolute; container-type: size; }
+.dynamic-tile{ cursor: pointer; }
+/* Tiles: an 8% signal tint, a 20% signal border, and the number carries the
+   colour. Transition + hover merged from §22.3 (later pass wins). */
+.treemap-tile{ --tile-color: var(--ink-3); position: absolute; inset: 3px; display: flex; flex-direction: column; align-items: flex-start; padding: var(--s-3);
+  border-radius: var(--r-2); border: 1px solid color-mix(in srgb, var(--tile-color) 20%, var(--hair));
+  background: color-mix(in srgb, var(--tile-color) 7%, var(--surface)); transition: transform var(--d-2) var(--ease), border-color var(--d-2) var(--ease); }
+.treemap-tile.gain{ --tile-color: var(--pos); }
+.treemap-tile.loss{ --tile-color: var(--neg); }
+.treemap-tile.neutral{ --tile-color: var(--ink-3); }
+.treemap-tile:hover{ border-color: color-mix(in srgb, var(--tile-color) 45%, var(--hair)); transform: translateY(-1px); }
+.treemap-tile:active{ transform: scale(.99); }
+/* Selection is interaction, so it is the accent — never the tile's own signal. */
+.treemap-tile.selected{ border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.treemap-tile:focus-visible{ outline: 2px solid var(--focus); outline-offset: 2px; }
+.tile-top-row{ display: flex; align-items: center; justify-content: space-between; column-gap: var(--s-2); width: 100%; }
+.tile-ticker{ color: var(--ink-2); letter-spacing: .04em; font-weight: var(--fw-semibold); }
+.tile-active-pip{ width: 5px; height: 5px; border-radius: var(--r-pill); background: var(--accent); }
+/* The percent is the tile's answer, so it sits in the optical centre. */
+.tile-percent{ margin-block: auto; line-height: 1.1; color: var(--ink-1); }
+@container (min-height: 150px){ .treemap-tile .tile-percent{ font-size: var(--fs-title); } }
+/* Colour-blind cue: every tile carries a direction glyph, not colour alone. */
+.treemap-tile.gain .tile-percent{ color: var(--pos); }
+.treemap-tile.loss .tile-percent{ color: var(--neg); }
+.treemap-tile.gain .tile-percent::before{ content: "▲"; font-size: 9px; margin-right: 3px; }
+.treemap-tile.loss .tile-percent::before{ content: "▼"; font-size: 9px; margin-right: 3px; }
+.tile-subrow{ display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; column-gap: var(--s-2); width: 100%; margin-top: 4px; }
+/* On a 7% signal tint ink-3 falls to 4.49:1, so tile meta takes ink-2. */
+.tile-weight, .tile-value{ color: var(--ink-2); }
+.tile-quantity{ color: var(--ink-2); flex-basis: 100%; }
+@container (max-height: 104px){
+  .treemap-tile{ padding: var(--s-2) 10px; }
+  .tile-subrow{ margin-top: 2px; gap: 0 6px; }
+  .tile-quantity{ flex-basis: auto; }
+}
+
+/* == METRIC BAND (§15 · §07 · §08) ======================================= */
+/* Equal-weight facts: one hairline above each cell, 1px rules between. */
+.inv-metrics-list{ display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); column-gap: 0; min-width: 0; }
+.inv-metric-row{ position: relative; display: flex; flex-direction: column; padding: var(--s-3) var(--s-4) 0 0; }
+.inv-metric-row + .inv-metric-row{ padding-left: var(--s-4); }
+.inv-metric-row + .inv-metric-row::after{ content: ""; position: absolute; inset-block: var(--s-3) 0; inset-inline-start: 0; width: 1px; background: var(--hair); }
+.inv-metric-row::before{ content: ""; position: absolute; inset-inline: 0; top: 0; height: 1px; background: var(--hair); }
+.inv-metric-row strong{ margin-top: 2px; white-space: nowrap; }
+/* Two label/value pairs under the hero figure. */
+.account-sub-metrics-grid{ display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); column-gap: var(--g-4); border-top: 1px solid var(--hair); }
+.sub-metric-block{ padding-top: var(--s-3); min-width: 0; }
+.sub-metric-block > span{ display: block; }
+.sub-metric-block strong{ display: block; margin-top: 2px; }
+.sub-metric-pct{ display: block; margin-top: 2px; font-size: var(--fs-micro); color: var(--ink-3); }
+/* Account snapshot figures: label + note on row 1, value on row 2. */
+.portfolio-stat-grid{ display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--g-4); row-gap: var(--g-3); padding-top: var(--g-3); border-top: 1px solid var(--hair); }
+.metric-card{ display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; column-gap: var(--g-2); }
+.metric-card > span{ grid-column: 1; grid-row: 1; }
+.metric-card > small{ grid-column: 2; grid-row: 1; text-align: right; }
+.metric-card > strong{ grid-column: 1 / -1; grid-row: 2; margin-top: 2px; }
+/* Four-fact strip: a bordered 2×2, so it reads as one object. */
+.portfolio-context-strip{ display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); border: 1px solid var(--hair); border-radius: var(--r-3);
+  background: var(--surface); overflow: hidden; animation: lumen-rise var(--d-3) var(--ease) 100ms both; }
+.portfolio-context-strip > span{ display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: var(--s-2) var(--s-4) var(--s-3); }
+.portfolio-context-strip > span:nth-child(even){ border-left: 1px solid var(--hair); }
+.portfolio-context-strip > span:nth-child(n+3){ border-top: 1px solid var(--hair); }
+.portfolio-context-strip b{ font-size: var(--fs-row); font-weight: var(--fw-semibold); color: var(--ink-1); }
+.portfolio-context-strip > .context-reserved{ grid-column: 1 / -1; }
+
+/* == NAVIGATION (§05 · §20.5 · §20.6 · §19 · §21) ======================== */
+/* Two capsules, not one strip: navigation is one object, tools another. Nothing
+   here is a pill. --glass is a token role (surface at ~.86 alpha); if the
+   compiled token file omits it, this capsule loses its fill. */
+.t212-native-topbar{ position: sticky; top: max(12px, env(safe-area-inset-top)); inset-inline: 0; z-index: 60; width: max-content; max-width: calc(100% - 32px);
+  margin: 14px auto 0; display: flex; align-items: center; gap: var(--s-2); padding: 0; border: 0; background: transparent;
+  animation: lumen-drop var(--d-3) var(--ease) both; }
+.topbar-navigation-group, .topbar-right-zone{ display: flex; align-items: center; gap: var(--s-1); padding: 4px; border: 1px solid var(--hair);
+  border-radius: var(--r-3); background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: var(--sh-float); }
+.topbar-left-zone, .topbar-center-nav{ display: flex; align-items: center; column-gap: 2px; }
+.topbar-left-zone, .topbar-right-zone, .topbar-nav-tab, .topbar-tool-btn{ flex-shrink: 0; }
+.t212-invest-brand-pill{ display: flex; align-items: center; column-gap: var(--s-2); padding: 6px 10px; border: 1px solid transparent; border-radius: var(--r-2);
+  background: transparent; transition: background-color var(--d-1) var(--ease), border-color var(--d-1) var(--ease); }
+.t212-invest-brand-pill:hover{ border-color: var(--hair); background: var(--well); }
+.invest-triangle-glyph{ font-size: var(--fs-micro); line-height: 1; color: var(--accent); }
+.invest-title-text{ font-size: var(--fs-micro); font-weight: 700; letter-spacing: .1em; color: var(--ink-1); }
+.invest-chevron-icon{ color: var(--ink-4); }
+/* Tab list. Selected is a tint, not a fill: a solid accent plate in the chrome
+   out-shouts the account total, which is the one thing the page exists to show. */
+.topbar-nav-tab{ display: flex; align-items: center; column-gap: var(--s-2); padding: 7px 11px; border-radius: var(--r-2); color: var(--ink-2);
+  font-size: var(--fs-body); transition: background-color var(--d-1) var(--ease), color var(--d-1) var(--ease); }
+.topbar-nav-tab:hover{ background: var(--well); color: var(--ink-1); }
+.topbar-nav-tab:active{ transform: scale(.98); }
+.topbar-nav-tab.active{ background: var(--accent-soft); color: var(--accent-deep); font-weight: var(--fw-semibold);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent); }
+.topbar-nav-tab.active svg{ opacity: 1; }
+/* Search slot. Focus is the accent inset plus the focus ring, in one box-shadow. */
+.topbar-search-slot{ display: flex; align-items: center; column-gap: var(--s-2); padding: 0 10px; height: var(--control-h); border-radius: var(--r-2);
+  background: var(--well); box-shadow: inset 0 0 0 1px var(--hair); transition: box-shadow var(--d-1) var(--ease), background-color var(--d-1) var(--ease); }
+.topbar-search-slot:focus-within{ background: var(--surface); box-shadow: inset 0 0 0 1px var(--accent), var(--focus-ring); }
+.search-glyph-icon{ color: var(--ink-4); flex: none; }
+.topbar-search-field{ width: 140px; min-width: 0; border: 0; background: transparent; font-size: var(--fs-body); }
+.topbar-search-field::placeholder{ color: var(--ink-3); }
+.topbar-search-field:focus{ outline: none; }
+/* Icon controls: privacy eye, theme, refresh. */
+.topbar-tool-btn{ width: var(--control-h); height: var(--control-h); display: grid; place-items: center; border-radius: var(--r-2); color: var(--ink-2);
+  transition: background-color var(--d-1) var(--ease), color var(--d-1) var(--ease); }
+.topbar-tool-btn:hover{ background: var(--well); color: var(--ink-1); }
+.topbar-tool-btn:active{ transform: scale(.96); }
+.clear-search-btn{ display: grid; place-items: center; width: 20px; height: 20px; border-radius: var(--r-1); color: var(--ink-3); background: var(--hair); font-size: var(--fs-micro); line-height: 1; }
+/* Secondary tab list (history): same tinted selected state, pill track. */
+.history-tabs{ display: inline-flex; align-items: center; gap: var(--s-1); align-self: flex-start; padding: var(--s-1); background: var(--well); border-radius: var(--r-pill); }
+.history-tabs button{ height: 32px; padding: 0 var(--g-3); border-radius: var(--r-pill); font-size: var(--fs-micro); font-weight: 600; color: var(--ink-3); transition: color var(--d-2) var(--ease), background-color var(--d-2) var(--ease); }
+.history-tabs button:hover{ color: var(--ink-1); }
+.history-tabs button.active{ background: var(--surface); color: var(--ink-1); box-shadow: var(--sh-plate); }
+/* Locale control — the same segmented idea, pill track. */
+.language-options{ display: inline-flex; align-items: center; gap: var(--s-1); padding: var(--s-1); background: var(--well); border-radius: var(--r-pill); }
+.language-options button{ height: 30px; padding: 0 var(--g-3); border-radius: var(--r-pill); font-size: var(--fs-micro); font-weight: 600; color: var(--ink-3); transition: color var(--d-2) var(--ease), background-color var(--d-2) var(--ease); }
+.language-options button:hover{ color: var(--ink-1); }
+.language-options button.active, .language-options button[aria-checked="true"]{ background: var(--surface); color: var(--ink-1); box-shadow: var(--sh-plate); }
+/* Privacy mask — a state, not a hole (§19 · §20.11 · §22.2). */
+.hide-balances .js-balance, .hide-balances .account-hero-val, .hide-balances .tile-percent,
+.hide-balances .inv-metric-row strong, .hide-balances .holdings-table td strong,
+.hide-balances .holdings-table td small, .hide-balances .bar-row b, .hide-balances .exposure-summary span,
+.hide-balances .inst-price-sub, .hide-balances .sub-metric-block strong{ filter: blur(7px); opacity: .82; user-select: none; pointer-events: none;
+  transition: opacity var(--d-2) var(--ease), filter var(--d-2) var(--ease); }
+.hide-balances .js-balance, .hide-balances .js-balance strong{ color: var(--ink-3); letter-spacing: .08em; }
+/* Entrance stagger. */
+.topbar-nav-tab{ animation: lumen-rise var(--d-2) var(--ease) both; }
+.topbar-center-nav .topbar-nav-tab:nth-child(1){ animation-delay: 40ms; }
+.topbar-center-nav .topbar-nav-tab:nth-child(2){ animation-delay: 60ms; }
+.topbar-center-nav .topbar-nav-tab:nth-child(3){ animation-delay: 80ms; }
+.topbar-center-nav .topbar-nav-tab:nth-child(4){ animation-delay: 100ms; }
+.topbar-center-nav .topbar-nav-tab:nth-child(5){ animation-delay: 120ms; }
+@media (prefers-reduced-transparency: reduce){
+  .t212-native-topbar{ background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+
+/* == EMPTY / LOADING / ERROR (§19 · §20.3 · §20.5 · §20.10) ============== */
+/* Empty: one sentence, one action, no illustration. */
+.empty-state, .empty-inline{ display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--g-2); padding: var(--g-7) var(--g-5);
+  text-align: center; color: var(--ink-3); }
+.empty-state strong{ font-size: var(--fs-row); font-weight: 600; color: var(--ink-1); }
+.empty-state span, .empty-inline span{ max-width: 52ch; }
+/* Loading: skeleton blocks with the incoming content's shape — never a spinner
+   over a layout that has already been measured. */
+.page-loading, .loading-screen, .fatal-screen{ display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--g-2); min-height: 320px;
+  padding: var(--g-7) var(--g-5); color: var(--ink-3); text-align: center; }
+.fatal-screen strong{ font-size: var(--fs-row); font-weight: 630; color: var(--ink-1); }
+.page-loading{ align-items: stretch; text-align: left; gap: var(--g-3); }
+.page-loading .spin{ display: none; }
+.page-loading::before, .page-loading::after{ content: ""; display: block; border-radius: var(--r-2); background: var(--well); animation: skeleton-pulse 1600ms var(--ease) infinite; }
+.page-loading::before{ height: 96px; }
+.page-loading::after{ height: 148px; animation-delay: 160ms; }
+.chart-loading, .history-loading{ display: flex; align-items: center; justify-content: center; gap: var(--s-2); padding: var(--g-6) var(--s-1); color: var(--ink-3); font-size: var(--fs-micro); }
+.chart-loading-box{ display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--g-2); min-height: 220px; color: var(--ink-3);
+  background: var(--well); border-radius: var(--r-2); animation: skeleton-pulse 1600ms var(--ease) infinite; }
+.chart-loading-box .spin{ display: none; }
+.spin{ animation: lumen-spin 900ms linear infinite; }
+/* Error: what happened, what it means, one retry. */
+.error-panel{ display: flex; flex-direction: column; gap: var(--g-2); padding: var(--g-5); border-radius: var(--r-2); background: var(--neg-soft);
+  border: 1px solid var(--neg); }
+.error-panel > strong{ font-size: var(--fs-row); font-weight: 630; color: var(--ink-1); }
+.error-panel > p{ color: var(--ink-2); }
+.error-panel.compact{ flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--g-3); padding: var(--g-3) var(--g-4); }
+.error-panel.compact > strong{ font-size: var(--fs-body); }
+.error-action{ color: var(--ink-2); }
+.error-action::first-letter{ font-weight: 650; }
+/* Quiet note plates: read-only credential, permissions, rate limit. */
+.read-only-note, .history-permission, .invalid-credentials, .rate-limited{ display: grid; row-gap: var(--g-2); padding: 18px; border-radius: var(--r-2);
+  background: var(--well); color: var(--ink-2); }
+.sr-only{ position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* == MOTION (§23 · §22.1) ================================================ */
+@keyframes lumen-rise{
+  from{ opacity: 0; transform: translate3d(0, 16px, 0); filter: blur(6px); }
+  to{ opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes lumen-drop{ from{ opacity: 0; transform: translate3d(0, -12px, 0); } to{ opacity: 1; transform: none; } }
+@keyframes lumen-spin{ to{ transform: rotate(360deg); } }
+@keyframes skeleton-pulse{ 0%, 100%{ opacity: 1 } 50%{ opacity: .55 } }
+
+/* == Component-internal breakpoints (§22 · §21) ========================== */
+@media (max-width: 1180px){
+  /* A three-column bar row needs its label column to hold the longest name;
+  below 1180 it stacks: label + value, measure underneath. */
+  .bar-row{ grid-template-columns: minmax(0, 1fr) 104px; row-gap: var(--s-2); }
+  .bar-row .bar-measure{ grid-column: 1 / -1; grid-row: 2; }
+  .asset-link{ flex-direction: column; align-items: flex-start; row-gap: 2px; }
+  .asset-link strong, .asset-link small{ max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+@media (max-width: 880px){
+  .range-switcher{ max-width: 100%; overflow-x: auto; }
+  .history-tabs, .language-options{ max-width: 100%; overflow-x: auto; }
+}
+@media (max-width: 680px){
+  /* nav stacks; the capsule padding carries the gutter */
+  .t212-native-topbar{ inset-inline: auto; width: calc(100% - 24px); max-width: none; margin: 12px auto 0; padding: 8px; border-radius: var(--r-3); }
+  .t212-invest-brand-pill{ padding: 8px; column-gap: 4px; }
+  .invest-env-badge{ padding-inline: 6px; }
+  .topbar-tool-btn{ width: 40px; height: 40px; }
+  .topbar-center-nav{ gap: 2px; padding: 3px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .topbar-center-nav::-webkit-scrollbar{ display: none; }
+  .topbar-nav-tab{ flex: 1 1 0; min-width: 0; flex-direction: column; gap: 4px; justify-content: center; padding: 8px 2px; min-height: 44px; }
+  .topbar-nav-tab span{ font-size: var(--fs-micro); }
+  .topbar-search-slot, .invest-chevron-icon{ display: none; }
+  /* plates lose 4px of padding */
+  .cockpit-account-card{ padding: var(--s-4); }
+  .cockpit-cash-summary, .cockpit-holdings-preview, .cockpit-chart-wrap{ padding: var(--s-4); }
+  .account-hero-val{ font-size: var(--fs-hero-sm); line-height: var(--lh-hero-sm); }
+  .section-heading{ flex-direction: column; align-items: flex-start; row-gap: var(--s-1); }
+  .pane-section-header{ flex-direction: column; align-items: flex-start; row-gap: var(--s-2); }
+  .sub-metric-block strong, .holdings-table td strong{ font-size: var(--fs-body); }
+  /* metric band folds to two columns */
+  .inv-metrics-list{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--g-3); }
+  .inv-metric-row{ padding-right: var(--s-3); }
+  .inv-metric-row + .inv-metric-row{ padding-left: var(--s-3); }
+  .inv-metric-row strong{ overflow-wrap: anywhere; }
+  /* table keeps its scroll contract; the first column holds the asset name */
+  .holdings-table{ min-width: 520px; }
+  .holdings-table th:first-child, .holdings-table td:first-child{ min-width: 176px; }
+  .holdings-table th, .holdings-table td{ padding-inline: var(--s-2); }
+  /* segmented control goes full width; the thumb still slides */
+  .range-switcher{ width: 100%; }
+  .range-switcher button{ min-width: max-content; min-height: 40px; padding-inline: 8px; white-space: nowrap; }
+  .history-tabs{ width: 100%; border-radius: var(--r-2); }
+  .history-tabs button{ flex: 1 0 auto; min-height: 40px; }
+  .language-options button{ min-height: 44px; height: auto; padding-block: 8px; }
+}
+@media (prefers-reduced-motion: reduce){
+  :root{ --d-1: .01ms; --d-2: .01ms; --d-3: .01ms; }
+  .spin{ animation-duration: 1.6s; }
+  .chart-loading-box, .page-loading::before, .page-loading::after{ animation: none; }
+  .range-thumb{ transition: none; }
+  .treemap-tile{ transition: none; }
+}
+
+/* == Source selectors, per family ======================================
+   Button             .primary · .pill-btn(.primary,.danger-outline) · .t212-deposit-pill-btn · .cockpit-see-all-btn/.btn-action-chevron · .t212-pill-action · .icon-btn-ghost · .load-more · .error-actions button
+   Segmented control  .range-switcher/.range-switcher button(.active)/.range-thumb · .treemap-mode-toggles/.treemap-mode-pill(.is-active)
+   Badge / tag        .invest-env-badge (DEMO) · .read-only-status · .count-tag · .order-side(.buy,.sell) · .history-side(.buy,.sell) · .status-dot
+   Card / plate       .cockpit-account-card/.account-card-header/.account-hero-val · .cockpit-holdings-preview · .cockpit-chart-wrap · .cockpit-cash-summary/.cockpit-main-pot-card/.pot-info/.pot-val/.pot-sub · .sub-panel(+divider) · .cockpit-pane-footer/.footer-action-pills-row/.t212-legal-disclaimer · .pane-section-header/.section-heading
+   Data table         .table-scroll · .holdings-table(.holdings-table-compact) th/td/tr · .asset-cell/.asset-text · .asset-link(.is-selected)/.is-selected .asset-text · .ticker-ring-logo/.ring-svg/.ring-track/.ring-progress/.ticker-avatar(.fallback) · .tone-positive/.tone-negative/.tone-muted · .positive/.negative
+   Ranked bar list    .bar-list · .bar-row/.bar-label/.bar-measure/.bar-measure i · .bar-positive/.bar-negative/.bar-accent · .exposure-summary
+   Chart chrome       .price-chart-panel(:has) · .chart-compact-meta · .chart-legend/.legend-dot/.chart-cost-legend · .price-chart · .chart-reset · .chart-tooltip/.chart-tooltip-time/.chart-tooltip-row · .legend-line/.legend-marker(.sell)/.buy-marker/.sell-marker
+   Allocation mosaic  .cockpit-treemap-section(+header grid) · .dynamic-treemap-container · .treemap-rect-slot · .treemap-tile(.gain,.loss,.neutral,.selected,:hover,:active,:focus-visible) · .tile-top-row/.tile-ticker/.tile-active-pip/.tile-percent/.tile-subrow/.tile-weight/.tile-value/.tile-quantity · .dynamic-tile
+   Metric band        .inv-metrics-list/.inv-metric-row(+::before/::after) · .account-sub-metrics-grid/.sub-metric-block/.sub-metric-pct · .portfolio-stat-grid/.metric-card · .portfolio-context-strip(.context-reserved)
+   Navigation         .t212-native-topbar · .topbar-navigation-group · .topbar-right-zone · .topbar-left-zone · .topbar-center-nav · .t212-invest-brand-pill · .invest-triangle-glyph/.invest-title-text/.invest-chevron-icon · .topbar-nav-tab(.active) · .topbar-search-slot(:focus-within)/.search-glyph-icon/.topbar-search-field/.clear-search-btn · .topbar-tool-btn · .history-tabs(.active) · .language-options(.active,[aria-checked]) · .hide-balances mask
+   Empty/load/error   .empty-state/.empty-inline · .page-loading/.loading-screen/.fatal-screen(+::before/::after skeleton) · .chart-loading/.history-loading/.chart-loading-box · .error-panel(.compact)/.error-action · .read-only-note/.invalid-credentials/.rate-limited/.history-permission · .spin · .sr-only
+   Shared             §02 RESET subset (box-sizing, button reset, :focus-visible, ::selection) · §03 type tiers and micro-label group · §06 .pane-section-header/.section-heading · §23 keyframes
+   Merged             .treemap-tile transition + hover (§10 with §22.3) · .bar-positive/.bar-negative · .tile-weight/.tile-value · .count-tag (§19 with §20.5) · .status-dot (§19 with §20.5) · .hide-balances transition (§19 with §22.2) · .inv-metrics-list columns (§15 with §21.3) · .table-scroll (§17 with §21.1/§21.6)
+   Dropped            .t212-native-app-root/.app-shell · .workspace/.page/.content-page/.instrument-page/.history-page/.settings-page/.help-page/.setup-page · .t212-cockpit-layout/.cockpit-left-pane/.cockpit-main-pane/.cockpit-analytics-strip/.cockpit-sub-analytics-grid/.cockpit-instrument-container · .cockpit-inst-head/.inst-profile/.inst-price-box · .brand/.legal (kept only inside the shared §03 tier) · old SVG chart marks (.price-chart > path|line|rect|polygon|text, .timeline-grid, .timeline-*) · .tv-lightweight-charts · dialogs (.dialog-backdrop, .confirm-dialog, .shortcuts-modal-*) · setup page (.connection-card, .field, .secret-wrap, .setup-guide, .help-link, .trust-list) · .back-button · settings/help page shells · print and whole-page breakpoints
+   */

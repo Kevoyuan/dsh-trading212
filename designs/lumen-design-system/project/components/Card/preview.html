@@ -1,0 +1,38 @@
+<!-- @dsCard group="Content" height=300 subtitle="Plate with a hero figure, and the same content as a bare band" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 20px; background: var(--canvas); color: var(--ink-1); font-family: var(--font-sans); display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+  .label { font-size: var(--fs-micro); font-weight: 500; letter-spacing: var(--tr-wide); color: var(--ink-3); }
+  .figure { margin-top: var(--s-2); font-size: var(--fs-hero-sm); line-height: var(--lh-hero-sm); letter-spacing: var(--tr-tight); font-weight: var(--fw-display); font-variant-numeric: tabular-nums; }
+  .delta { margin-top: var(--g-1); font-size: var(--fs-body); font-weight: var(--fw-medium); color: var(--pos); font-variant-numeric: tabular-nums; }
+  .quiet { padding: var(--s-3) var(--s-4); border-radius: var(--r-3); background: var(--well); font-size: var(--fs-micro); color: var(--ink-3); line-height: var(--lh-micro); }
+  .bare { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--g-4); }
+  .bare > div { padding-top: var(--s-3); border-top: 1px solid var(--hair); }
+  .bare .v { margin-top: var(--g-1); font-size: var(--fs-row); line-height: var(--lh-row); font-weight: var(--fw-semibold); font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+  <div class="cockpit-account-card">
+    <div class="account-card-header">
+      <span class="label">Account value · EUR</span>
+      <span class="invest-env-badge">DEMO</span>
+    </div>
+    <div class="account-hero-val">
+      <div class="figure">€22,558.45</div>
+      <div class="delta">+€186.42 (+0.83%) today</div>
+    </div>
+    <div class="quiet">Plate level 1: surface, one hairline, sh-plate, padding 20. A card contains exactly one idea.</div>
+  </div>
+  <div>
+    <div class="bare">
+      <div><span class="label">Invested</span><div class="v">€20,610.30</div></div>
+      <div><span class="label">Cash</span><div class="v">€1,948.15</div></div>
+      <div><span class="label">Top-3 concentration</span><div class="v">61.5%</div></div>
+    </div>
+    <div class="quiet" style="margin-top: 20px;">Level 0, bare: the same facts as a band on the canvas, separated by rhythm and one hairline above each cell. No border, no shadow — structure carries it.</div>
+  </div>
+</body>
+</html>

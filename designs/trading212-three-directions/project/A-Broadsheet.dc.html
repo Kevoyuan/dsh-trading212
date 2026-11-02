@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Broadsheet — portfolio overview</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body { margin: 0; background: #F7F4EC; }
+  * { box-sizing: border-box; }
+  a { color: #14120C; text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  h1, h2, p, table { margin: 0; }
+  th { font-weight: 600; }
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-direction: column; background: #F7F4EC; color: #14120C; font-family: -apple-system, BlinkMacSystemFont, &quot;Helvetica Neue&quot;, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1;">
+
+  <header style="height: 64px; display: flex; align-items: center; gap: 30px; padding: 0 48px; border-bottom: 1.5px solid #14120C;">
+    <h1 style="display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">
+      T212
+      <span aria-hidden="true" style="width: 1px; height: 18px; background: rgba(20,18,12,.34);"></span>
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #4B463C;">Portfolio</span>
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; border: 1px solid #14120C; padding: 2px 6px;">Demo</span>
+    </h1>
+    <nav style="display: flex; gap: 26px; font-size: 13px;">
+      <a href="#" style="padding: 22px 0 20px; border-bottom: 2px solid #14120C; font-weight: 600;">Overview</a>
+      <a href="#" style="padding: 22px 0 20px; border-bottom: 2px solid transparent; color: #4B463C;">Holdings</a>
+      <a href="#" style="padding: 22px 0 20px; border-bottom: 2px solid transparent; color: #4B463C;">History</a>
+      <a href="#" style="padding: 22px 0 20px; border-bottom: 2px solid transparent; color: #4B463C;">Settings</a>
+      <a href="#" style="padding: 22px 0 20px; border-bottom: 2px solid transparent; color: #4B463C;">Help</a>
+    </nav>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 14px;">
+      <span style="font-size: 12px; letter-spacing: .06em; color: #4B463C;">01 NOV 2026 · 09:34 CET</span>
+      <button aria-label="Search instruments" style="height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border: 1px solid rgba(20,18,12,.34); font-size: 12px; color: #4B463C;">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#4B463C" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"></circle><path d="M10.4 10.4L14 14"></path></svg>
+        Search
+      </button>
+      <button aria-label="Hide balances" style="width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid rgba(20,18,12,.34);">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#14120C" stroke-width="1.4" aria-hidden="true"><path d="M1.5 10S4.6 4.5 10 4.5 18.5 10 18.5 10 15.4 15.5 10 15.5 1.5 10 1.5 10Z"></path><circle cx="10" cy="10" r="2.6"></circle></svg>
+      </button>
+      <div style="display: flex; gap: 10px; font-size: 12px; letter-spacing: .06em;">
+        <button aria-label="English" style="height: 44px; padding: 0 2px; border-bottom: 2px solid #14120C; font-weight: 600;">EN</button>
+        <button aria-label="Chinese" style="height: 44px; padding: 0 2px; border-bottom: 2px solid transparent; color: #4B463C;">中文</button>
+      </div>
+    </div>
+  </header>
+
+  <section style="padding: 38px 48px 32px; display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); gap: 64px; align-items: start;">
+    <div>
+      <p style="font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #5F594E;">Account value · EUR</p>
+      <p style="margin-top: 12px; font-size: 84px; line-height: .9; font-weight: 500; letter-spacing: -0.045em;">€22,558.45</p>
+      <div style="display: flex; align-items: baseline; gap: 14px; margin-top: 18px; flex-wrap: wrap;">
+        <span style="font-size: 12px; letter-spacing: .1em; color: #5F594E;">24H</span>
+        <span style="font-size: 20px; letter-spacing: -0.01em; color: #1B5E48;">+€186.42</span>
+        <span style="font-size: 14px; color: #1B5E48;">(+0.83%)</span>
+        <span aria-hidden="true" style="width: 1px; height: 20px; background: rgba(20,18,12,.24);"></span>
+        <span style="font-size: 12px; letter-spacing: .1em; color: #5F594E;">Return</span>
+        <span style="font-size: 20px; letter-spacing: -0.01em; color: #1B5E48;">+17.28%</span>
+      </div>
+      <p style="margin-top: 16px; font-size: 12px; color: #5F594E;">Read-only account · 6 holdings · last sync 09:34 CET</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));">
+      <div style="padding-left: 16px;">
+        <p style="font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #5F594E;">Cash</p>
+        <p style="margin-top: 10px; font-size: 19px; letter-spacing: -0.02em;">€1,948.15</p>
+        <p style="margin-top: 8px; font-size: 12px; color: #5F594E;">8.6% of account</p>
+      </div>
+      <div style="padding-left: 16px; border-left: 1px solid rgba(20,18,12,.2);">
+        <p style="font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #5F594E;">Invested</p>
+        <p style="margin-top: 10px; font-size: 19px; letter-spacing: -0.02em;">€20,610.30</p>
+        <p style="margin-top: 8px; font-size: 12px; color: #5F594E;">Market value</p>
+      </div>
+      <div style="padding-left: 16px; border-left: 1px solid rgba(20,18,12,.2);">
+        <p style="font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #5F594E;">Cost basis</p>
+        <p style="margin-top: 10px; font-size: 19px; letter-spacing: -0.02em;">€18,534.24</p>
+        <p style="margin-top: 8px; font-size: 12px; color: #5F594E;">All positions</p>
+      </div>
+      <div style="padding-left: 16px; border-left: 1px solid rgba(20,18,12,.2);">
+        <p style="font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #5F594E;">Realised P/L</p>
+        <p style="margin-top: 10px; font-size: 19px; letter-spacing: -0.02em; color: #1B5E48;">+€1,126.40</p>
+        <p style="margin-top: 8px; font-size: 12px; color: #5F594E;">Closed positions</p>
+      </div>
+      <div style="padding-left: 16px; border-left: 1px solid rgba(20,18,12,.2);">
+        <p style="font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #5F594E;">FX impact</p>
+        <p style="margin-top: 10px; font-size: 19px; letter-spacing: -0.02em; color: #1B5E48;">+€214.60</p>
+        <p style="margin-top: 8px; font-size: 12px; color: #5F594E;">USD into EUR</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="border-top: 1.5px solid #14120C; padding: 22px 48px 24px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+      <div style="display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;">
+        <h2 style="font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;">Total value · 12 months</h2>
+        <span style="font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #5F594E;">EUR · deposits and withdrawals included</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 12px;">
+        <p style="font-size: 18px; letter-spacing: -0.02em;">€22,558.45</p>
+        <p style="font-size: 13px; color: #1B5E48;">+€6,137.85<span style="color: #5F594E;"> net change</span></p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 10px; margin-top: 18px;">
+      <div style="position: relative; height: 200px; font-size: 12px; color: #5F594E; text-align: right;">
+        <span style="position: absolute; right: 0; top: 2px;">€24k</span>
+        <span style="position: absolute; right: 0; top: 45px;">€22k</span>
+        <span style="position: absolute; right: 0; top: 88px;">€20k</span>
+        <span style="position: absolute; right: 0; top: 131px;">€18k</span>
+        <span style="position: absolute; right: 0; top: 173px;">€16k</span>
+      </div>
+      <div style="height: 200px; border-bottom: 1px solid rgba(20,18,12,.24);">
+        <svg viewBox="0 0 1344 200" preserveAspectRatio="none" width="100%" height="200" style="display: block;" role="img" aria-label="Account value over the last twelve months, from €16,420.60 a year ago to €22,558.45 now">
+          <line x1="0" y1="10" x2="1344" y2="10" stroke="rgba(20,18,12,.2)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+          <line x1="0" y1="52.9" x2="1344" y2="52.9" stroke="rgba(20,18,12,.12)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+          <line x1="0" y1="95.7" x2="1344" y2="95.7" stroke="rgba(20,18,12,.12)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+          <line x1="0" y1="138.6" x2="1344" y2="138.6" stroke="rgba(20,18,12,.12)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+          <line x1="0" y1="181.4" x2="1344" y2="181.4" stroke="rgba(20,18,12,.2)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+          <path d="M0 172.4L56 175.5L112 175.7L168 168.1L224 161.7L280 151.8L336 154L392 146.5L448 147.1L504 135.2L560 139.6L616 125.3L672 119.7L728 106.4L784 109.6L840 101.2L896 97.6L952 91.3L1008 85.7L1064 82.4L1120 66.8L1176 58.6L1232 48.3L1288 58L1344 40.9" fill="none" stroke="#14120C" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+        </svg>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 10px; margin-top: 8px;">
+      <span aria-hidden="true"></span>
+      <div style="display: flex; justify-content: space-between; font-size: 12px; letter-spacing: .06em; color: #5F594E;">
+        <span>NOV 2025</span>
+        <span>FEB 2026</span>
+        <span>MAY 2026</span>
+        <span>AUG 2026</span>
+        <span>NOV 2026</span>
+      </div>
+    </div>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 24px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(20,18,12,.24);">
+      <p style="font-size: 12px; color: #5F594E;">Account value includes deposits and withdrawals. It is not a return on investment.</p>
+      <p style="font-size: 12px; color: #5F594E;">Derived from holdings and Yahoo Finance closes · daily · 09:34 CET</p>
+    </div>
+  </section>
+
+  <section style="border-top: 1.5px solid #14120C; padding: 22px 48px 24px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+      <div style="display: flex; align-items: baseline; gap: 16px;">
+        <h2 style="font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;">Apple Inc. · AAPL</h2>
+        <span style="font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #5F594E;">Price and fills · USD</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 24px;">
+        <p style="font-size: 18px; letter-spacing: -0.02em;">$198.17 <span style="font-size: 13px; color: #1B5E48;">+4.30%</span></p>
+        <div style="display: flex; gap: 4px;" role="group" aria-label="Price range">
+          <button style="width: 44px; height: 44px; font-size: 12px; letter-spacing: .04em; border: 1px solid rgba(20,18,12,.3);">1D</button>
+          <button style="width: 44px; height: 44px; font-size: 12px; letter-spacing: .04em; border: 1px solid rgba(20,18,12,.3);">1W</button>
+          <button style="width: 44px; height: 44px; font-size: 12px; letter-spacing: .04em; border: 1px solid rgba(20,18,12,.3);">1M</button>
+          <button style="width: 44px; height: 44px; font-size: 12px; letter-spacing: .04em; border: 1px solid rgba(20,18,12,.3);">3M</button>
+          <button aria-pressed="true" style="width: 44px; height: 44px; font-size: 12px; letter-spacing: .04em; border: 1px solid #14120C; background: #14120C; color: #F7F4EC;">1Y</button>
+          <button style="width: 44px; height: 44px; font-size: 12px; letter-spacing: .04em; border: 1px solid rgba(20,18,12,.3);">5Y</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 10px; margin-top: 18px;">
+      <div style="position: relative; height: 216px; font-size: 12px; color: #5F594E; text-align: right;">
+        <span style="position: absolute; right: 0; top: 9px;">$200</span>
+        <span style="position: absolute; right: 0; top: 55px;">$190</span>
+        <span style="position: absolute; right: 0; top: 100px;">$180</span>
+        <span style="position: absolute; right: 0; top: 146px;">$170</span>
+        <span style="position: absolute; right: 0; top: 191px;">$160</span>
+      </div>
+      <div style="height: 216px; border-bottom: 1px solid rgba(20,18,12,.24);">
+        <svg viewBox="0 0 1344 216" preserveAspectRatio="none" width="100%" height="216" style="display: block;" role="img" aria-label="Apple Inc. one-year price history with three Trading 212 execution fills">
+          <line x1="0" y1="17.1" x2="1344" y2="17.1" stroke="rgba(20,18,12,.2)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+          <line x1="0" y1="62.5" x2="1344" y2="62.5" stroke="rgba(20,18,12,.12)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+          <line x1="0" y1="108" x2="1344" y2="108" stroke="rgba(20,18,12,.12)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+          <line x1="0" y1="153.5" x2="1344" y2="153.5" stroke="rgba(20,18,12,.12)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+          <line x1="0" y1="198.9" x2="1344" y2="198.9" stroke="rgba(20,18,12,.2)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+          <path d="M0 160.7L56 164.2L112 153.2L168 140.4L224 149.1L280 137.9L336 136.7L392 120.9L448 115.4L504 105.2L560 112.5L616 95.6L672 87.1L728 74.8L784 89.1L840 88.7L896 93.1L952 74.1L1008 71.8L1064 50.5L1120 44.8L1176 34.5L1232 26.5L1288 29.4L1344 25.4L1344 216L0 216Z" fill="#E7E0CF"></path>
+          <path d="M0 160.7L56 164.2L112 153.2L168 140.4L224 149.1L280 137.9L336 136.7L392 120.9L448 115.4L504 105.2L560 112.5L616 95.6L672 87.1L728 74.8L784 89.1L840 88.7L896 93.1L952 74.1L1008 71.8L1064 50.5L1120 44.8L1176 34.5L1232 26.5L1288 29.4L1344 25.4" fill="none" stroke="#14120C" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+          <rect x="499.5" y="100.7" width="9" height="9" fill="#1B5E48"></rect>
+          <polygon points="840,82 846.5,94 833.5,94" fill="#8A5A12"></polygon>
+          <rect x="1171.5" y="30" width="9" height="9" fill="#1B5E48"></rect>
+        </svg>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 10px; margin-top: 8px;">
+      <span aria-hidden="true"></span>
+      <div style="display: flex; justify-content: space-between; font-size: 12px; letter-spacing: .06em; color: #5F594E;">
+        <span>NOV 2025</span>
+        <span>FEB 2026</span>
+        <span>MAY 2026</span>
+        <span>AUG 2026</span>
+        <span>NOV 2026</span>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(20,18,12,.24);">
+      <div style="display: flex; align-items: center; gap: 20px; font-size: 12px; color: #4B463C;">
+        <span style="display: flex; align-items: center; gap: 7px;"><span aria-hidden="true" style="width: 14px; height: 2px; background: #14120C;"></span>Close</span>
+        <span style="display: flex; align-items: center; gap: 7px;"><span aria-hidden="true" style="width: 9px; height: 9px; background: #1B5E48;"></span>Buy</span>
+        <span style="display: flex; align-items: center; gap: 7px;"><span aria-hidden="true" style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 9px solid #8A5A12;"></span>Sell</span>
+        <span>3 fills in range</span>
+      </div>
+      <p style="font-size: 12px; color: #5F594E;">Prices from Yahoo Finance, may be delayed · fills from Trading 212 · scaled to the price axis</p>
+    </div>
+  </section><section style="display: grid; grid-template-columns: minmax(0, 1.62fr) minmax(0, 1fr); padding: 30px 48px 34px;">
+    <div style="padding-right: 40px; border-right: 1px solid rgba(20,18,12,.24);">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px;">
+        <h2 style="font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;">Holdings of record</h2>
+        <span style="font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #5F594E;">6 assets · EUR</span>
+      </div>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 14px;">
+        <thead>
+          <tr style="border-top: 1.5px solid #14120C; border-bottom: 1px solid #14120C;">
+            <th scope="col" style="text-align: left; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 10px 0 9px; color: #4B463C;">Asset</th>
+            <th scope="col" style="text-align: right; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 10px 0 9px; color: #4B463C;">Qty</th>
+            <th scope="col" style="text-align: right; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 10px 0 9px; color: #4B463C;">Avg cost</th>
+            <th scope="col" style="text-align: right; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 10px 0 9px; color: #4B463C;">Last</th>
+            <th scope="col" style="text-align: right; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 10px 0 9px; color: #4B463C;">Value</th>
+            <th scope="col" style="text-align: right; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 10px 0 9px; color: #4B463C;">Weight</th>
+            <th scope="col" style="text-align: right; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 10px 0 9px; color: #4B463C;">Unrealised</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid rgba(20,18,12,.16);">
+            <td style="padding: 12px 0;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span aria-hidden="true" style="width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid rgba(20,18,12,.5); font-size: 12px; font-weight: 600; letter-spacing: .02em;">AP</span>
+                <span>
+                  <span style="display: block; font-size: 15px; letter-spacing: -0.01em;">Apple Inc.</span>
+                  <span style="display: block; font-size: 12px; letter-spacing: .06em; color: #5F594E; margin-top: 2px;">AAPL · USD</span>
+                </span>
+              </div>
+            </td>
+            <td style="text-align: right; font-size: 14px;">27.4</td>
+            <td style="text-align: right; font-size: 14px;">$152.30</td>
+            <td style="text-align: right; font-size: 14px;">$198.17</td>
+            <td style="text-align: right; font-size: 14px; font-weight: 600;">€4,962.89</td>
+            <td style="text-align: right; font-size: 14px; color: #4B463C;">24.1%</td>
+            <td style="text-align: right; padding: 12px 0;">
+              <span style="display: block; font-size: 14px; color: #1B5E48;">+€1,148.75</span>
+              <span style="display: block; font-size: 12px; color: #1B5E48; margin-top: 2px;">+30.1%</span>
+            </td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(20,18,12,.16);">
+            <td style="padding: 12px 0;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span aria-hidden="true" style="width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid rgba(20,18,12,.5); font-size: 12px; font-weight: 600; letter-spacing: .02em;">MS</span>
+                <span>
+                  <span style="display: block; font-size: 15px; letter-spacing: -0.01em;">Microsoft Corp.</span>
+                  <span style="display: block; font-size: 12px; letter-spacing: .06em; color: #5F594E; margin-top: 2px;">MSFT · USD</span>
+                </span>
+              </div>
+            </td>
+            <td style="text-align: right; font-size: 14px;">13.25</td>
+            <td style="text-align: right; font-size: 14px;">$298.40</td>
+            <td style="text-align: right; font-size: 14px;">$337.40</td>
+            <td style="text-align: right; font-size: 14px; font-weight: 600;">€4,086.08</td>
+            <td style="text-align: right; font-size: 14px; color: #4B463C;">19.8%</td>
+            <td style="text-align: right; padding: 12px 0;">
+              <span style="display: block; font-size: 14px; color: #1B5E48;">+€472.31</span>
+              <span style="display: block; font-size: 12px; color: #1B5E48; margin-top: 2px;">+13.1%</span>
+            </td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(20,18,12,.16);">
+            <td style="padding: 12px 0;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span aria-hidden="true" style="width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid rgba(20,18,12,.5); font-size: 12px; font-weight: 600; letter-spacing: .02em;">NV</span>
+                <span>
+                  <span style="display: block; font-size: 15px; letter-spacing: -0.01em;">NVIDIA Corp.</span>
+                  <span style="display: block; font-size: 12px; letter-spacing: .06em; color: #5F594E; margin-top: 2px;">NVDA · USD</span>
+                </span>
+              </div>
+            </td>
+            <td style="text-align: right; font-size: 14px;">16.875</td>
+            <td style="text-align: right; font-size: 14px;">$213.40</td>
+            <td style="text-align: right; font-size: 14px;">$234.52</td>
+            <td style="text-align: right; font-size: 14px; font-weight: 600;">€3,617.18</td>
+            <td style="text-align: right; font-size: 14px; color: #4B463C;">17.6%</td>
+            <td style="text-align: right; padding: 12px 0;">
+              <span style="display: block; font-size: 14px; color: #1B5E48;">+€976.63</span>
+              <span style="display: block; font-size: 12px; color: #1B5E48; margin-top: 2px;">+37.0%</span>
+            </td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(20,18,12,.16);">
+            <td style="padding: 12px 0;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span aria-hidden="true" style="width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid rgba(20,18,12,.5); font-size: 12px; font-weight: 600; letter-spacing: .02em;">VO</span>
+                <span>
+                  <span style="display: block; font-size: 15px; letter-spacing: -0.01em;">Vanguard S&amp;P 500 ETF</span>
+                  <span style="display: block; font-size: 12px; letter-spacing: .06em; color: #5F594E; margin-top: 2px;">VOO · USD</span>
+                </span>
+              </div>
+            </td>
+            <td style="text-align: right; font-size: 14px;">6.12</td>
+            <td style="text-align: right; font-size: 14px;">$486.20</td>
+            <td style="text-align: right; font-size: 14px;">$544.70</td>
+            <td style="text-align: right; font-size: 14px; font-weight: 600;">€3,046.88</td>
+            <td style="text-align: right; font-size: 14px; color: #4B463C;">14.8%</td>
+            <td style="text-align: right; padding: 12px 0;">
+              <span style="display: block; font-size: 14px; color: #1B5E48;">+€327.23</span>
+              <span style="display: block; font-size: 12px; color: #1B5E48; margin-top: 2px;">+12.0%</span>
+            </td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(20,18,12,.16);">
+            <td style="padding: 12px 0;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span aria-hidden="true" style="width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid rgba(20,18,12,.5); font-size: 12px; font-weight: 600; letter-spacing: .02em;">AS</span>
+                <span>
+                  <span style="display: block; font-size: 15px; letter-spacing: -0.01em;">ASML Holding N.V.</span>
+                  <span style="display: block; font-size: 12px; letter-spacing: .06em; color: #5F594E; margin-top: 2px;">ASML · EUR</span>
+                </span>
+              </div>
+            </td>
+            <td style="text-align: right; font-size: 14px;">4</td>
+            <td style="text-align: right; font-size: 14px;">€781.40</td>
+            <td style="text-align: right; font-size: 14px;">€648.20</td>
+            <td style="text-align: right; font-size: 14px; font-weight: 600;">€2,592.80</td>
+            <td style="text-align: right; font-size: 14px; color: #4B463C;">12.6%</td>
+            <td style="text-align: right; padding: 12px 0;">
+              <span style="display: block; font-size: 14px; color: #9E3B31;">−€532.80</span>
+              <span style="display: block; font-size: 12px; color: #9E3B31; margin-top: 2px;">−17.0%</span>
+            </td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(20,18,12,.16);">
+            <td style="padding: 12px 0;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span aria-hidden="true" style="width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid rgba(20,18,12,.5); font-size: 12px; font-weight: 600; letter-spacing: .02em;">TS</span>
+                <span>
+                  <span style="display: block; font-size: 15px; letter-spacing: -0.01em;">Tesla Inc.</span>
+                  <span style="display: block; font-size: 12px; letter-spacing: .06em; color: #5F594E; margin-top: 2px;">TSLA · USD</span>
+                </span>
+              </div>
+            </td>
+            <td style="text-align: right; font-size: 14px;">9.5</td>
+            <td style="text-align: right; font-size: 14px;">$301.80</td>
+            <td style="text-align: right; font-size: 14px;">$265.40</td>
+            <td style="text-align: right; font-size: 14px; font-weight: 600;">€2,304.47</td>
+            <td style="text-align: right; font-size: 14px; color: #4B463C;">11.2%</td>
+            <td style="text-align: right; padding: 12px 0;">
+              <span style="display: block; font-size: 14px; color: #9E3B31;">−€316.06</span>
+              <span style="display: block; font-size: 12px; color: #9E3B31; margin-top: 2px;">−12.1%</span>
+            </td>
+          </tr>
+          <tr style="border-top: 1.5px solid #14120C; border-bottom: 1.5px solid #14120C;">
+            <td style="padding: 13px 0; font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;">Total</td>
+            <td style="text-align: right; font-size: 14px; color: #4B463C;">—</td>
+            <td style="text-align: right; font-size: 14px; color: #4B463C;">—</td>
+            <td style="text-align: right; font-size: 14px; color: #4B463C;">—</td>
+            <td style="text-align: right; font-size: 15px; font-weight: 600;">€20,610.30</td>
+            <td style="text-align: right; font-size: 14px; color: #4B463C;">100%</td>
+            <td style="text-align: right; padding: 13px 0;">
+              <span style="display: block; font-size: 15px; font-weight: 600; color: #1B5E48;">+€2,076.06</span>
+              <span style="display: block; font-size: 12px; color: #1B5E48; margin-top: 2px;">+11.2%</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top: 14px; font-size: 12px; line-height: 1.5; color: #5F594E;">Cost basis is the average purchase price including fees. EUR values convert USD quotes at 0.9140. Quantities are trimmed, not rounded.</p>
+    </div>
+
+    <div style="padding-left: 36px; display: flex; flex-direction: column; gap: 24px;">
+      <div>
+        <h2 style="font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;">Allocation</h2>
+        <div style="display: flex; gap: 2px; height: 14px; margin-top: 14px;">
+          <div style="flex: 24.1 1 0; background: #14120C;" aria-hidden="true"></div>
+          <div style="flex: 19.8 1 0; background: #3A362D;" aria-hidden="true"></div>
+          <div style="flex: 17.6 1 0; background: #5F594E;" aria-hidden="true"></div>
+          <div style="flex: 14.8 1 0; background: #837C6E;" aria-hidden="true"></div>
+          <div style="flex: 12.6 1 0; background: #A8A093;" aria-hidden="true"></div>
+          <div style="flex: 11.2 1 0; background: #CFC7B7;" aria-hidden="true"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; margin-top: 14px; font-size: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 10px; height: 10px; background: #14120C;"></span><span style="flex: 1;">AAPL</span><span style="color: #4B463C;">24.1%</span></div>
+          <div style="display: flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 10px; height: 10px; background: #3A362D;"></span><span style="flex: 1;">MSFT</span><span style="color: #4B463C;">19.8%</span></div>
+          <div style="display: flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 10px; height: 10px; background: #5F594E;"></span><span style="flex: 1;">NVDA</span><span style="color: #4B463C;">17.6%</span></div>
+          <div style="display: flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 10px; height: 10px; background: #837C6E;"></span><span style="flex: 1;">VOO</span><span style="color: #4B463C;">14.8%</span></div>
+          <div style="display: flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 10px; height: 10px; background: #A8A093;"></span><span style="flex: 1;">ASML</span><span style="color: #4B463C;">12.6%</span></div>
+          <div style="display: flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 10px; height: 10px; background: #CFC7B7;"></span><span style="flex: 1;">TSLA</span><span style="color: #4B463C;">11.2%</span></div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid rgba(20,18,12,.24); padding-top: 20px;">
+        <h2 style="font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;">P/L contributors</h2>
+        <div style="margin-top: 10px;">
+          <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr) 92px; align-items: center; gap: 14px; padding: 7px 0; border-bottom: 1px solid rgba(20,18,12,.12);">
+            <span style="font-size: 12px; font-weight: 600; letter-spacing: .08em;">AAPL</span>
+            <div style="position: relative; height: 4px; background: #E9E3D5;"><div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 50%; background: #1B5E48;" aria-hidden="true"></div><div style="position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: rgba(20,18,12,.35);" aria-hidden="true"></div></div>
+            <span style="text-align: right; font-size: 13px; color: #1B5E48;">+€1,148.75</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr) 92px; align-items: center; gap: 14px; padding: 7px 0; border-bottom: 1px solid rgba(20,18,12,.12);">
+            <span style="font-size: 12px; font-weight: 600; letter-spacing: .08em;">NVDA</span>
+            <div style="position: relative; height: 4px; background: #E9E3D5;"><div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 42.5%; background: #1B5E48;" aria-hidden="true"></div><div style="position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: rgba(20,18,12,.35);" aria-hidden="true"></div></div>
+            <span style="text-align: right; font-size: 13px; color: #1B5E48;">+€976.63</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr) 92px; align-items: center; gap: 14px; padding: 7px 0; border-bottom: 1px solid rgba(20,18,12,.12);">
+            <span style="font-size: 12px; font-weight: 600; letter-spacing: .08em;">ASML</span>
+            <div style="position: relative; height: 4px; background: #E9E3D5;"><div style="position: absolute; right: 50%; top: 0; bottom: 0; width: 23.2%; background: #9E3B31;" aria-hidden="true"></div><div style="position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: rgba(20,18,12,.35);" aria-hidden="true"></div></div>
+            <span style="text-align: right; font-size: 13px; color: #9E3B31;">−€532.80</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr) 92px; align-items: center; gap: 14px; padding: 7px 0; border-bottom: 1px solid rgba(20,18,12,.12);">
+            <span style="font-size: 12px; font-weight: 600; letter-spacing: .08em;">MSFT</span>
+            <div style="position: relative; height: 4px; background: #E9E3D5;"><div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 20.6%; background: #1B5E48;" aria-hidden="true"></div><div style="position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: rgba(20,18,12,.35);" aria-hidden="true"></div></div>
+            <span style="text-align: right; font-size: 13px; color: #1B5E48;">+€472.31</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr) 92px; align-items: center; gap: 14px; padding: 7px 0; border-bottom: 1px solid rgba(20,18,12,.12);">
+            <span style="font-size: 12px; font-weight: 600; letter-spacing: .08em;">VOO</span>
+            <div style="position: relative; height: 4px; background: #E9E3D5;"><div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 14.2%; background: #1B5E48;" aria-hidden="true"></div><div style="position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: rgba(20,18,12,.35);" aria-hidden="true"></div></div>
+            <span style="text-align: right; font-size: 13px; color: #1B5E48;">+€327.23</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr) 92px; align-items: center; gap: 14px; padding: 7px 0;">
+            <span style="font-size: 12px; font-weight: 600; letter-spacing: .08em;">TSLA</span>
+            <div style="position: relative; height: 4px; background: #E9E3D5;"><div style="position: absolute; right: 50%; top: 0; bottom: 0; width: 13.8%; background: #9E3B31;" aria-hidden="true"></div><div style="position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: rgba(20,18,12,.35);" aria-hidden="true"></div></div>
+            <span style="text-align: right; font-size: 13px; color: #9E3B31;">−€316.06</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid rgba(20,18,12,.24); padding-top: 20px;">
+        <h2 style="font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;">Currency &amp; orders</h2>
+        <div style="margin-top: 8px;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(20,18,12,.12);">
+            <span style="font-size: 13px;">USD <span style="font-size: 12px; color: #5F594E;">5 holdings</span></span>
+            <span style="font-size: 14px;">€18,017.50 <span style="font-size: 12px; color: #4B463C;">87.4%</span></span>
+          </div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(20,18,12,.12);">
+            <span style="font-size: 13px;">EUR <span style="font-size: 12px; color: #5F594E;">1 holding</span></span>
+            <span style="font-size: 14px;">€2,592.80 <span style="font-size: 12px; color: #4B463C;">12.6%</span></span>
+          </div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 10px 0;">
+            <span style="font-size: 13px;">VOO <span style="font-size: 12px; color: #5F594E;">buy limit · 4 @ $536.00</span></span>
+            <span style="font-size: 12px; letter-spacing: .08em; text-transform: uppercase; border: 1px solid rgba(20,18,12,.34); padding: 2px 6px;">Pending</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section><div style="height: 46px; display: flex; align-items: center; padding: 0 48px; border-top: 1px solid rgba(20,18,12,.34); border-bottom: 1.5px solid #14120C; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #4B463C;">
+    <span style="font-weight: 600; color: #14120C;">The book</span>
+    <span aria-hidden="true" style="width: 1px; height: 14px; background: rgba(20,18,12,.3); margin: 0 18px;"></span>
+    <span>6 holdings</span>
+    <span aria-hidden="true" style="width: 1px; height: 14px; background: rgba(20,18,12,.3); margin: 0 18px;"></span>
+    <span>0 pies</span>
+    <span aria-hidden="true" style="width: 1px; height: 14px; background: rgba(20,18,12,.3); margin: 0 18px;"></span>
+    <span>Cash 8.6%</span>
+    <span aria-hidden="true" style="width: 1px; height: 14px; background: rgba(20,18,12,.3); margin: 0 18px;"></span>
+    <span>Top-3 concentration 61.5%</span>
+    <span aria-hidden="true" style="width: 1px; height: 14px; background: rgba(20,18,12,.3); margin: 0 18px;"></span>
+    <span>USD 87.4% · EUR 12.6%</span>
+    <span aria-hidden="true" style="width: 1px; height: 14px; background: rgba(20,18,12,.3); margin: 0 18px;"></span>
+    <span>1 pending order</span>
+  </div>
+
+  
+
+  
+
+  <footer style="margin-top: auto; border-top: 1px solid rgba(20,18,12,.34); padding: 20px 48px 24px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.5fr) minmax(0, 0.8fr); gap: 40px; align-items: start;">
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start;">
+      <p style="font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #5F594E;">Ask dsh</p>
+      <button style="height: 44px; display: inline-flex; align-items: center; padding: 0 16px; border: 1px solid #14120C; font-size: 13px;">Summarise my concentration risk</button>
+    </div>
+    <p style="font-size: 12px; line-height: 1.55; color: #5F594E;">Read-only workspace. Trade and account data come from Trading 212 through your API key; historical prices come from Yahoo Finance and may be delayed or unavailable. Trading 212 EU GmbH is authorised and regulated by BaFin. Personal research only — not investment advice.</p>
+    <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
+      <div style="display: flex; gap: 10px; font-size: 12px; letter-spacing: .06em;">
+        <button aria-label="English" style="height: 44px; padding: 0 2px; border-bottom: 2px solid #14120C; font-weight: 600;">EN</button>
+        <button aria-label="Chinese" style="height: 44px; padding: 0 2px; border-bottom: 2px solid transparent; color: #4B463C;">中文</button>
+      </div>
+      <button style="height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border: 1px solid rgba(20,18,12,.34); font-size: 12px;">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#14120C" stroke-width="1.4" aria-hidden="true"><path d="M1.5 10S4.6 4.5 10 4.5 18.5 10 18.5 10 15.4 15.5 10 15.5 1.5 10 1.5 10Z"></path><circle cx="10" cy="10" r="2.6"></circle></svg>
+        Privacy
+      </button>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1431,"height":1720}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

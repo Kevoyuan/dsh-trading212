@@ -1,0 +1,46 @@
+<!-- @dsCard group="Chrome" height=150 subtitle="Two floating capsules — navigation is one object, search and tools another; selection is a tint, never a fill" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 20px; background: var(--canvas); color: var(--ink-1); font-family: var(--font-sans); font-size: var(--fs-body); line-height: var(--lh-body); }
+  .t212-native-topbar { position: static; margin: 0; width: 100%; justify-content: space-between; }
+  .topbar-nav-tab svg { flex: none; }
+</style>
+</head>
+<body>
+  <div class="t212-native-topbar">
+    <div class="topbar-navigation-group">
+      <div class="topbar-left-zone">
+        <button class="t212-invest-brand-pill" type="button">
+          <span class="invest-triangle-glyph" aria-hidden="true">▲</span>
+          <span class="invest-title-text">INVEST</span>
+          <span class="invest-env-badge">DEMO</span>
+          <svg class="invest-chevron-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"></path></svg>
+        </button>
+      </div>
+      <nav class="topbar-center-nav" aria-label="Workspace views">
+        <a class="topbar-nav-tab active" href="#" aria-current="page"><span>Overview</span></a>
+        <a class="topbar-nav-tab" href="#"><span>Holdings</span></a>
+        <a class="topbar-nav-tab" href="#"><span>History</span></a>
+        <a class="topbar-nav-tab" href="#"><span>Settings</span></a>
+        <a class="topbar-nav-tab" href="#"><span>Help</span></a>
+      </nav>
+    </div>
+    <div class="topbar-right-zone">
+      <label class="topbar-search-slot">
+        <svg class="search-glyph-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="4.5"></circle><path d="M10.4 10.4 14 14"></path></svg>
+        <input class="topbar-search-field" type="search" placeholder="Search instruments" aria-label="Search instruments">
+      </label>
+      <button class="topbar-tool-btn" type="button" aria-label="Hide balances" title="Hide balances">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M1.5 10S4.6 4.5 10 4.5 18.5 10 18.5 10 15.4 15.5 10 15.5 1.5 10 1.5 10Z"></path><circle cx="10" cy="10" r="2.6"></circle></svg>
+      </button>
+      <div class="language-options" role="radiogroup" aria-label="Language">
+        <button type="button" role="radio" aria-checked="true" class="active">EN</button>
+        <button type="button" role="radio" aria-checked="false">中文</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

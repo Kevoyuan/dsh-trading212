@@ -1,0 +1,29 @@
+<!-- @dsCard group="Chrome" height=150 subtitle="Environment, count, account state and signed side tones" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 20px; background: var(--canvas); color: var(--ink-1); font-family: var(--font-sans); }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .note { margin-top: 12px; font-size: var(--fs-micro); color: var(--ink-3); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <span class="invest-env-badge">DEMO</span>
+    <span class="invest-env-badge">LIVE</span>
+    <span class="count-tag">1 pending</span>
+    <span class="read-only-status">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M1.5 10S4.6 4.5 10 4.5 18.5 10 18.5 10 15.4 15.5 10 15.5 1.5 10 1.5 10Z"></path><circle cx="10" cy="10" r="2.6"></circle></svg>
+      Read-only account
+    </span>
+    <span class="order-side buy">Buy</span>
+    <span class="order-side sell">Sell</span>
+    <span class="history-side buy">Filled · 12 May</span>
+    <span class="history-side sell">Filled · 2 Sep</span>
+    <span class="status-dot" aria-hidden="true"></span>
+  </div>
+  <p class="note">A tinted badge is still a label: only signed states take a saturated ground, and the label keeps the low weight.</p>
+</body>
+</html>

@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Overview — refined</title>
+<script src="./support.js"></script>
+<script src="./lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body { margin: 0; }
+  * { box-sizing: border-box; }
+  :root { --ease: cubic-bezier(.32,.72,0,1); }
+  a { color: var(--ink); text-decoration: none; }
+  a:hover { color: var(--accent); }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  input { color: var(--ink); }
+  input::placeholder { color: var(--ink-3); opacity: 1; }
+  h1, h2, h3, p, ul { margin: 0; padding: 0; }
+  ul { list-style: none; }
+  table { border-collapse: collapse; }
+  th { font-weight: 500; }
+  .plate { background: var(--surface); border: 1px solid var(--hair); border-radius: 16px; box-shadow: var(--shadow-plate); }
+  .row, .chip { transition: background-color 140ms var(--ease), color 140ms var(--ease); }
+  .row:hover { background: var(--surface-2); }
+  .chip:hover { background: var(--surface-2); }
+  .chip:active, .row:active { transform: scale(.99); }
+  .num { font-variant-numeric: tabular-nums; }
+  .nowrap { white-space: nowrap; }
+  .ell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .micro { font-size: 12px; line-height: 16px; color: var(--ink-3); }
+  /* chart marks take colour from CSS so var() resolves against the palette */
+  .ln { fill: none; stroke: var(--accent-mark); stroke-width: 2; }
+  .area { fill: var(--accent-mark); opacity: .1; }
+  .spark { fill: none; stroke: var(--hero-spark); stroke-width: 1.5; }
+  .spark-area { fill: url(#spark-fill); }
+  .buy { fill: var(--pos); }
+  .sell { fill: var(--warn); }
+  /* allocation tiles: share of book is the number, return is the tinted line */
+  .slot { position: absolute; padding: 2px; container-type: size; }
+  .tile { height: 100%; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; background: var(--tile-bg); border: 1px solid var(--tile-border); overflow: hidden; }
+  .tile .tk { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .04em; color: var(--ink-2); white-space: nowrap; }
+  .tile .share { margin-block: auto; font-size: 20px; line-height: 24px; font-weight: 600; letter-spacing: -.02em; color: var(--ink); white-space: nowrap; }
+  .tile .ret { font-size: 12px; line-height: 16px; font-weight: 600; color: var(--pos); white-space: nowrap; }
+  .tile .ret.neg { color: var(--neg); }
+  .tile .ret i { font-style: normal; font-size: 11px; margin-right: 3px; }
+  @container (max-width: 112px) { .tile { padding: 8px 10px; } .tile .share { font-size: 16px; line-height: 20px; } }
+  @container (max-width: 76px) { .tile { padding: 8px; } .tile .tk { letter-spacing: 0; } .tile .share { font-size: 14px; line-height: 18px; } .tile .ret i { margin-right: 1px; } }
+  @container (min-width: 150px) { .tile .share { font-size: 24px; line-height: 30px; } }
+  @container (max-height: 92px) { .tile { padding: 8px 10px; } .tile .share { font-size: 18px; line-height: 22px; } }
+  @container (max-height: 74px) { .tile { flex-direction: row; align-items: center; gap: 4px; padding: 6px 6px; } .tile .share { margin: 0 0 0 auto; font-size: 16px; line-height: 18px; } .tile .ret { margin-left: 0; } }
+
+  /* — responsive: the board is a fluid page, not a fixed 1440 sheet.
+       Rules that override inline styles carry !important by necessity. — */
+  .board-nav { min-width: 0; flex-wrap: nowrap; }
+  .board-nav > div { flex: none; min-width: 0; }
+  .board-nav nav a, .board-nav button, .board-nav span { white-space: nowrap; }
+  .board-shell, .board-rail, .board-main, .inst-head, .inst-identity, .chart-tools { min-width: 0; }
+  .inst-identity { flex: 1 1 240px; }
+  .chart-tools { flex-wrap: wrap; row-gap: 10px; }
+  .chart-tools > div:first-child { flex-wrap: wrap; row-gap: 8px; }
+  .ranges { flex: none; max-width: 100%; }
+  @media (max-width: 1320px) {
+    .board-nav { padding-left: 32px !important; padding-right: 32px !important; }
+    .board-shell { grid-template-columns: 300px minmax(0, 1fr) !important; gap: 20px !important; padding-left: 32px !important; padding-right: 32px !important; }
+  }
+  @media (max-width: 1180px) {
+    .board-nav { padding-left: 24px !important; padding-right: 24px !important; }
+    .board-nav nav a:nth-child(n+4) { display: none; }
+    .board-nav nav a { padding-left: 10px !important; padding-right: 10px !important; }
+    .table-card { overflow-x: auto; }
+    .table-card table { min-width: 720px; }
+    .invest-pct { display: none; }
+    .invest-row { grid-template-columns: 24px minmax(0, 1fr) auto !important; }
+    .invest-val { font-size: 14px !important; line-height: 20px !important; }
+    .contrib-row { grid-template-columns: auto minmax(0, 1fr) 96px !important; }
+    .contrib-row > .num { font-size: 14px !important; line-height: 20px !important; }
+  }
+  @media (max-width: 1040px) {
+    .board-nav { padding-left: 16px !important; padding-right: 16px !important; }
+    .board-nav nav a:nth-child(n+2) { display: none; }
+    .board-nav label input { width: 80px !important; }
+    .board-shell { grid-template-columns: 272px minmax(0, 1fr) !important; gap: 16px !important; padding-left: 16px !important; padding-right: 16px !important; }
+    .inst-head { flex-wrap: wrap; row-gap: 12px; }
+    .inst-head > .inst-price { width: 100%; align-items: flex-start !important; }
+    .inst-head > .inst-price > div:first-child { width: 100%; justify-content: flex-start; }
+    .ranges { width: max-content; overflow-x: auto; scrollbar-width: none; }
+    .ranges::-webkit-scrollbar { display: none; }
+    #tv-price-chart { height: 240px !important; }
+    .perf-band { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; row-gap: 14px; }
+    .perf-band > div { border-left: none !important; padding-left: 0 !important; }
+    .table-card table { min-width: 600px; }
+    .table-card td:nth-child(3), .table-card th:nth-child(3) { font-size: 12px !important; }
+  }
+  @media (max-width: 900px) {
+    .table-card table { min-width: 660px; }
+  }
+  @media (max-width: 820px) {
+    .board-shell { grid-template-columns: 248px minmax(0, 1fr) !important; }
+    .board-nav nav, .board-nav label { display: none; }
+    .perf-band { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .split-card { grid-template-columns: minmax(0, 1fr) !important; gap: 18px !important; }
+    .split-card > div:last-child { border-left: none !important; padding-left: 0 !important; border-top: 1px solid var(--hair-2); padding-top: 16px; }
+
+    #tv-price-chart { height: 220px !important; }
+  }
+  @media (max-width: 720px) {
+    .board-shell { grid-template-columns: minmax(0, 1fr) !important; }
+    .board-rail, .board-main { gap: 12px !important; }
+    #tv-price-chart { height: 200px !important; }
+  }
+  @media (max-width: 1040px) {
+    .hero-value { font-size: clamp(32px, 4vw, 44px) !important; line-height: 1.09 !important; }
+  }
+  @media (max-width: 900px) {
+    .invest-row { grid-template-columns: 24px minmax(0, 1fr) auto !important; grid-template-rows: auto auto; row-gap: 0; height: 52px !important; }
+    .invest-row .mono { grid-row: 1 / span 2; grid-column: 1; }
+    .invest-row .ell { grid-column: 2; grid-row: 1 / span 2; }
+    .invest-row .invest-val { grid-column: 3; grid-row: 1; }
+    .invest-row .invest-pct { display: block; grid-column: 3; grid-row: 2; }
+  }
+  @container (max-width: 104px) { .tile .ret { display: none; } }
+  @container (max-width: 104px) and (max-height: 74px) { .tile .tk { grid-column: 1; } }
+  /* allocation blocks below the rail's narrow width */
+  @container (max-width: 86px) { .tile { padding: 4px 6px; } .tile .share { font-size: 14px; line-height: 18px; } }
+</style>
+</helmet>
+<div style="{{rootStyle}} min-height: 100vh; display: flex; flex-direction: column; background: var(--canvas); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, &quot;SF Pro Text&quot;, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, sans-serif; -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums;">
+
+  <div class="board-nav" style="flex: none; padding: 12px 40px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 4px; padding: 4px; height: 44px; border: 1px solid var(--hair); border-radius: 14px; background: var(--header-bg); box-shadow: var(--shadow-plate);">
+      <span style="display: flex; align-items: center; gap: 8px; padding: 8px;">
+        <span aria-hidden="true" style="font-size: 12px; color: var(--accent);">▲</span>
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: .09em;">INVEST</span>
+        <span style="font-size: 12px; padding: 0 8px; line-height: 20px; border-radius: 6px; background: var(--surface-2); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--hair);">Demo</span>
+      </span>
+      <nav aria-label="Workspace views" style="display: flex; align-items: center; gap: 2px;">
+        <a href="#" aria-current="page" style="padding: 8px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; background: var(--accent-soft); color: var(--accent-deep);">Overview</a>
+        <a href="#" style="padding: 8px 12px; border-radius: 10px; font-size: 14px; color: var(--ink-2);">Holdings</a>
+        <a href="#" style="padding: 8px 12px; border-radius: 10px; font-size: 14px; color: var(--ink-2);">History</a>
+        <a href="#" style="padding: 8px 12px; border-radius: 10px; font-size: 14px; color: var(--ink-2);">Settings</a>
+        <a href="#" style="padding: 8px 12px; border-radius: 10px; font-size: 14px; color: var(--ink-2);">Help</a>
+      </nav>
+    </div>
+    <div style="display: flex; align-items: center; gap: 4px; padding: 4px; height: 44px; border: 1px solid var(--hair); border-radius: 14px; background: var(--header-bg); box-shadow: var(--shadow-plate);">
+      <label style="display: flex; align-items: center; gap: 8px; padding: 0 12px; height: 32px; border-radius: 10px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--hair);">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--ink-3); flex: none;" aria-hidden="true"><circle cx="7" cy="7" r="4.5"></circle><path d="M10.4 10.4L14 14"></path></svg>
+        <input type="search" placeholder="Search instruments" aria-label="Search instruments" style="width: 112px; border: 0; background: transparent; font-size: 14px; color: var(--ink);">
+      </label>
+      <button class="chip" aria-label="Ask dsh" title="Ask dsh" style="height: 32px; padding: 0 12px; border-radius: 10px; background: var(--accent-plate); color: var(--accent-plate-ink); font-size: 14px; font-weight: 600;">Ask dsh</button>
+      <button class="chip" aria-label="Hide balances" title="Hide balances" style="width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; color: var(--ink-2);">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M1.5 10S4.6 4.5 10 4.5 18.5 10 18.5 10 15.4 15.5 10 15.5 1.5 10 1.5 10Z"></path><circle cx="10" cy="10" r="2.6"></circle></svg>
+      </button>
+      <div style="display: flex; align-items: center; gap: 2px; margin-left: 2px;">
+        <button class="chip" aria-label="English" style="height: 32px; padding: 0 10px; border-radius: 8px; font-size: 12px; font-weight: 600; background: var(--surface); box-shadow: var(--shadow-plate);">EN</button>
+        <button class="chip" aria-label="Chinese" style="height: 32px; padding: 0 10px; border-radius: 8px; font-size: 12px; color: var(--ink-3);">中文</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="board-shell" style="flex: 1 1 auto; width: 100%; max-width: 1560px; margin-inline: auto; padding: 20px 40px 36px; display: grid; grid-template-columns: 336px minmax(0, 1fr); gap: 24px; align-items: start;">
+
+    <div class="board-rail" style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
+
+      <section class="hero-card" style="background: var(--hero-bg); border-radius: 16px; padding: 20px; color: var(--hero-ink); box-shadow: var(--shadow-hero), inset 0 0 0 1px var(--hero-line);">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <p style="font-size: 12px; line-height: 16px; font-weight: 500; color: var(--hero-muted);">Account value</p>
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; line-height: 16px; color: var(--hero-muted);">EUR</span>
+            <span aria-hidden="true" style="width: 20px; height: 20px; display: grid; place-items: center; border-radius: 6px; color: var(--hero-ink); background: rgba(255,255,255,.10);">
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M4.6 1.4H1.4V4.6"></path><path d="M7.4 10.6H10.6V7.4"></path><path d="M1.4 1.4L5 5"></path><path d="M10.6 10.6L7 7"></path></svg>
+            </span>
+          </span>
+        </div>
+        <p class="num hero-value" style="margin-top: 8px; font-size: 44px; line-height: 48px; font-weight: 560; letter-spacing: -0.03em;">€22,558.45</p>
+        <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: var(--hero-chip-bg); color: var(--hero-chip-ink); font-size: 14px; line-height: 20px; font-weight: 600;">
+            <span aria-hidden="true" style="font-size: 11px;">▲</span>+€186.42 (+0.8%)
+          </span>
+          <span style="font-size: 12px; color: var(--hero-muted);">today</span>
+        </div>
+        <div style="position: relative; margin-top: 12px;">
+          <p style="font-size: 12px; line-height: 16px; color: var(--hero-muted);">Value · 1M</p>
+          <svg width="100%" height="44" viewBox="0 0 290 44" preserveAspectRatio="none" role="img" aria-label="Account value over the last month: €21,990.00 one month ago, €22,558.45 today" style="display: block; margin-top: 4px; overflow: visible;">
+            <defs>
+              <linearGradient id="spark-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" style="stop-color: var(--hero-spark); stop-opacity: .34;"></stop>
+                <stop offset="1" style="stop-color: var(--hero-spark); stop-opacity: 0;"></stop>
+              </linearGradient>
+            </defs>
+            <path class="spark-area" d="M0 34.7L10 36.5L20 39L30 36.3L40 32.1L50 33.4L60 27.9L70 23.5L80 19.3L90 21.1L100 23.2L110 18L120 13L130 15.4L140 18.2L150 20.6L160 24L170 26.4L180 22.7L190 18L200 13.3L210 14.9L220 17.7L230 15.4L240 11.7L250 8.6L260 10.1L270 12.2L280 14.7L290 5L290 44L0 44Z"></path>
+            <path class="spark" d="M0 34.7L10 36.5L20 39L30 36.3L40 32.1L50 33.4L60 27.9L70 23.5L80 19.3L90 21.1L100 23.2L110 18L120 13L130 15.4L140 18.2L150 20.6L160 24L170 26.4L180 22.7L190 18L200 13.3L210 14.9L220 17.7L230 15.4L240 11.7L250 8.6L260 10.1L270 12.2L280 14.7L290 5" vector-effect="non-scaling-stroke"></path>
+            
+          </svg>
+          <span aria-hidden="true" style="position: absolute; right: 0; top: 25px; width: 6px; height: 6px; border-radius: 999px; background: var(--hero-spark); transform: translate(50%, -50%);"></span>
+        </div>
+        <p style="margin-top: 10px; font-size: 12px; line-height: 16px; color: var(--hero-muted);">Total return <span style="color: var(--hero-chip-ink); font-weight: 600;">+17.3%</span> since inception</p>
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--hero-line); display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <span style="font-size: 12px; line-height: 16px; color: var(--hero-muted);">Cash <span style="color: var(--hero-ink); font-weight: 600;">€1,948.15</span></span>
+          <span style="font-size: 12px; line-height: 16px; color: var(--hero-muted);">In pies <span style="color: var(--hero-ink); font-weight: 600;">€0.00</span></span>
+          <button class="chip" style="height: 32px; padding: 0 12px; border-radius: 10px; font-size: 12px; font-weight: 600; color: var(--hero-ink); box-shadow: inset 0 0 0 1px var(--hero-line);">Account</button>
+        </div>
+      </section>
+
+      <section class="plate" style="padding: 20px;">
+        <table style="width: 100%;">
+          <tbody>
+            <tr style="border-bottom: 1px solid var(--hair-2);">
+              <th scope="row" style="text-align: left; padding: 0 0 12px; font-size: 14px; line-height: 20px; font-weight: 400; color: var(--ink-2);">Invested value</th>
+              <td class="num nowrap" style="text-align: right; padding: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600;">€20,610.30</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--hair-2);">
+              <th scope="row" style="text-align: left; padding: 16px 0; font-size: 14px; line-height: 20px; font-weight: 400; color: var(--ink-2);">Cost basis</th>
+              <td class="num nowrap" style="text-align: right; padding: 16px 0; font-size: 16px; line-height: 22px; font-weight: 600;">€18,534.24</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--hair-2);">
+              <th scope="row" style="text-align: left; padding: 16px 0; font-size: 14px; line-height: 20px; font-weight: 400; color: var(--ink-2);">Realised P/L</th>
+              <td class="num nowrap" style="text-align: right; padding: 16px 0; font-size: 16px; line-height: 22px; font-weight: 600; color: var(--pos);">+€1,126.40</td>
+            </tr>
+            <tr>
+              <th scope="row" style="text-align: left; padding: 16px 0 0; font-size: 14px; line-height: 20px; font-weight: 400; color: var(--ink-2);">FX impact</th>
+              <td class="num nowrap" style="text-align: right; padding: 16px 0 0; font-size: 16px; line-height: 22px; font-weight: 600; color: var(--pos);">+€214.60</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="plate" style="padding: 20px 12px 12px;">
+        <div style="padding: 0 6px 12px;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+            <h2 style="font-size: 16px; line-height: 22px; font-weight: 600;">Investments</h2>
+            <span class="num nowrap" style="font-size: 16px; line-height: 22px; font-weight: 600;">€20,610.30</span>
+          </div>
+          <p class="micro" style="margin-top: 4px;">6 holdings · top three 61.5%</p>
+        </div>
+        <ul class="invest-rows">
+          <li><button class="row invest-row" style="width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 48px; align-items: center; gap: 6px; height: 44px; padding: 0 6px; border-radius: 10px; text-align: left;">
+            <span class="mono" aria-hidden="true" style="width: 24px; height: 24px; display: grid; place-items: center; border-radius: 7px; background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 600;">AP</span>
+            <span class="ell" style="font-size: 14px; line-height: 20px;">Apple Inc.</span>
+            <span class="num nowrap invest-val" style="font-size: 16px; line-height: 20px; font-weight: 600;">€4,962.89</span>
+            <span class="num nowrap invest-pct" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--pos);">▲30.1%</span></button></li>
+          <li><button class="row invest-row" style="width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 48px; align-items: center; gap: 6px; height: 44px; padding: 0 6px; border-radius: 10px; text-align: left;">
+            <span class="mono" aria-hidden="true" style="width: 24px; height: 24px; display: grid; place-items: center; border-radius: 7px; background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 600;">MS</span>
+            <span class="ell" style="font-size: 14px; line-height: 20px;">Microsoft Corp.</span>
+            <span class="num nowrap invest-val" style="font-size: 16px; line-height: 20px; font-weight: 600;">€4,086.08</span>
+            <span class="num nowrap invest-pct" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--pos);">▲13.1%</span></button></li>
+          <li><button class="row invest-row" style="width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 48px; align-items: center; gap: 6px; height: 44px; padding: 0 6px; border-radius: 10px; text-align: left;">
+            <span class="mono" aria-hidden="true" style="width: 24px; height: 24px; display: grid; place-items: center; border-radius: 7px; background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 600;">NV</span>
+            <span class="ell" style="font-size: 14px; line-height: 20px;">NVIDIA Corp.</span>
+            <span class="num nowrap invest-val" style="font-size: 16px; line-height: 20px; font-weight: 600;">€3,617.18</span>
+            <span class="num nowrap invest-pct" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--pos);">▲37.0%</span></button></li>
+          <li><button class="row invest-row" style="width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 48px; align-items: center; gap: 6px; height: 44px; padding: 0 6px; border-radius: 10px; text-align: left;">
+            <span class="mono" aria-hidden="true" style="width: 24px; height: 24px; display: grid; place-items: center; border-radius: 7px; background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 600;">VO</span>
+            <span class="ell" style="font-size: 14px; line-height: 20px;">Vanguard S&amp;P 500</span>
+            <span class="num nowrap invest-val" style="font-size: 16px; line-height: 20px; font-weight: 600;">€3,046.88</span>
+            <span class="num nowrap invest-pct" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--pos);">▲12.0%</span></button></li>
+          <li><button class="row invest-row" style="width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 48px; align-items: center; gap: 6px; height: 44px; padding: 0 6px; border-radius: 10px; text-align: left;">
+            <span class="mono" aria-hidden="true" style="width: 24px; height: 24px; display: grid; place-items: center; border-radius: 7px; background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 600;">AS</span>
+            <span class="ell" style="font-size: 14px; line-height: 20px;">ASML Holding</span>
+            <span class="num nowrap invest-val" style="font-size: 16px; line-height: 20px; font-weight: 600;">€2,592.80</span>
+            <span class="num nowrap invest-pct" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--neg);">▼17.0%</span></button></li>
+          <li><button class="row invest-row" style="width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 48px; align-items: center; gap: 6px; height: 44px; padding: 0 6px; border-radius: 10px; text-align: left;">
+            <span class="mono" aria-hidden="true" style="width: 24px; height: 24px; display: grid; place-items: center; border-radius: 7px; background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 600;">TS</span>
+            <span class="ell" style="font-size: 14px; line-height: 20px;">Tesla Inc.</span>
+            <span class="num nowrap invest-val" style="font-size: 16px; line-height: 20px; font-weight: 600;">€2,304.47</span>
+            <span class="num nowrap invest-pct" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--neg);">▼12.1%</span></button></li>
+        </ul>
+      </section>
+
+            <section class="plate" style="padding: 20px;">
+        <div style="padding-bottom: 12px;">
+          <h2 style="font-size: 16px; line-height: 22px; font-weight: 600;">Asset allocation</h2>
+          <p class="micro" style="margin-top: 4px;">Block area and % = share of book · ▲▼ = return</p>
+        </div>
+        <div style="position: relative; height: 188px;">
+          <div class="slot" style="left: 0%; top: 0%; width: 43.86%; height: 54.9%;"><div class="tile"><span class="tk">AAPL</span><span class="share">24.1%</span><span class="ret"><i>▲</i>30.1%</span></div></div>
+          <div class="slot" style="left: 0%; top: 54.9%; width: 43.86%; height: 45.1%;"><div class="tile"><span class="tk">MSFT</span><span class="share">19.8%</span><span class="ret"><i>▲</i>13.1%</span></div></div>
+          <div class="slot" style="left: 43.86%; top: 0%; width: 56.14%; height: 31.32%;"><div class="tile"><span class="tk">NVDA</span><span class="share">17.6%</span><span class="ret"><i>▲</i>37.0%</span></div></div>
+          <div class="slot" style="left: 43.86%; top: 31.32%; width: 56.14%; height: 26.33%;"><div class="tile"><span class="tk">VOO</span><span class="share">14.8%</span><span class="ret"><i>▲</i>12.0%</span></div></div>
+          <div class="slot" style="left: 43.86%; top: 57.65%; width: 29.72%; height: 42.35%;"><div class="tile"><span class="tk">ASML</span><span class="share">12.6%</span><span class="ret neg"><i>▼</i>17.0%</span></div></div>
+          <div class="slot" style="left: 73.58%; top: 57.65%; width: 26.42%; height: 42.35%;"><div class="tile"><span class="tk">TSLA</span><span class="share">11.2%</span><span class="ret neg"><i>▼</i>12.1%</span></div></div>
+                </div>
+      </section>
+    </div>
+
+    <div class="board-main" style="display: flex; flex-direction: column; gap: 24px; min-width: 0;">
+
+      <section class="plate" style="padding: 20px;">
+        <div class="inst-head" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;">
+          <div class="inst-identity" style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+            <span aria-hidden="true" style="width: 44px; height: 44px; display: grid; place-items: center; border-radius: 8px; background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 600; flex: none;">AP</span>
+            <span style="display: flex; flex-direction: column; min-width: 0;">
+              <h1 class="ell" style="font-size: 26px; line-height: 32px; font-weight: 600; letter-spacing: -0.024em;">Apple Inc.</h1>
+              <span class="ell micro">AAPL · USD · NASDAQ</span>
+            </span>
+          </div>
+          <div class="inst-price" style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span class="nowrap" style="font-size: 12px; line-height: 20px; padding: 0 8px; border-radius: 6px; background: var(--surface-2); color: var(--ink-3); box-shadow: inset 0 0 0 1px var(--hair);">Read-only account</span>
+              <span class="num nowrap" style="font-size: 26px; line-height: 32px; font-weight: 600; letter-spacing: -0.024em;">$198.17</span>
+              <span class="num nowrap" style="font-size: 16px; line-height: 22px; font-weight: 600; color: var(--pos);">+$8.17 (+4.3%)</span>
+            </div>
+            <span class="micro">Quote USD · result EUR</span>
+          </div>
+        </div>
+        <div class="chart-tools" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--hair-2);">
+          <div style="display: flex; align-items: center; gap: 16px; font-size: 12px; line-height: 16px; color: var(--ink-2); white-space: nowrap;">
+            <span style="display: flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 14px; height: 2px; border-radius: 999px; background: var(--chart-line);"></span>Close</span>
+            <span style="display: flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 999px; background: var(--chart-buy);"></span>Buy</span>
+            <span style="display: flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 999px; background: var(--chart-sell);"></span>Sell</span>
+            <span style="display: flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 14px; border-top: 1px dashed var(--chart-axis);"></span>Cost basis $152.30</span>
+          </div>
+          <div class="ranges" role="radiogroup" aria-label="Price range" style="display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--hair); flex: none;">
+            <button role="radio" aria-checked="false" style="min-width: 44px; min-height: 28px; padding: 0 8px; border-radius: 8px; font-size: 12px; color: var(--ink-3);">1D</button>
+            <button role="radio" aria-checked="false" style="min-width: 44px; min-height: 28px; padding: 0 8px; border-radius: 8px; font-size: 12px; color: var(--ink-3);">1W</button>
+            <button role="radio" aria-checked="false" style="min-width: 44px; min-height: 28px; padding: 0 8px; border-radius: 8px; font-size: 12px; color: var(--ink-3);">1M</button>
+            <button role="radio" aria-checked="false" style="min-width: 44px; min-height: 28px; padding: 0 8px; border-radius: 8px; font-size: 12px; color: var(--ink-3);">3M</button>
+            <button role="radio" aria-checked="true" style="min-width: 44px; min-height: 28px; padding: 0 8px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--ink); background: var(--surface); box-shadow: var(--shadow-plate), inset 0 0 0 1px var(--hair);">1Y</button>
+            <button role="radio" aria-checked="false" style="min-width: 44px; min-height: 28px; padding: 0 8px; border-radius: 8px; font-size: 12px; color: var(--ink-3);">5Y</button>
+          </div>
+        </div>
+
+        <div id="tv-price-chart" style="width: 100%; height: 300px; margin-top: 12px;" role="img" aria-label="Apple Inc. one-year price chart with three Trading 212 trade dots and a dashed cost basis line"></div>
+        <p class="micro" style="margin-top: 8px;">Daily close · 3 trades in range · scroll or pinch to zoom, drag to pan</p>
+      </section>
+
+      <section class="plate" style="padding: 20px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 12px;">
+          <h2 style="font-size: 16px; line-height: 22px; font-weight: 600;">Your investment</h2>
+          <span class="micro">Apple Inc. · EUR</span>
+        </div>
+        <div class="perf-band" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));">
+          <div style="padding: 12px 16px 0 0; border-top: 1px solid var(--hair-2);">
+            <p class="micro">Value</p>
+            <p class="num nowrap" style="margin-top: 4px; font-size: 16px; line-height: 22px; font-weight: 600;">€4,962.89</p>
+          </div>
+          <div style="padding: 12px 16px 0 16px; border-top: 1px solid var(--hair-2); border-left: 1px solid var(--hair-2);">
+            <p class="micro">Return</p>
+            <p class="num nowrap" style="margin-top: 4px; font-size: 16px; line-height: 22px; font-weight: 600; color: var(--pos);">+€1,148.75</p>
+            <p class="num nowrap" style="font-size: 12px; line-height: 16px; color: var(--pos);">+30.1%</p>
+          </div>
+          <div style="padding: 12px 16px 0 16px; border-top: 1px solid var(--hair-2); border-left: 1px solid var(--hair-2);">
+            <p class="micro">Shares</p>
+            <p class="num nowrap" style="margin-top: 4px; font-size: 16px; line-height: 22px; font-weight: 600;">27.4</p>
+          </div>
+          <div style="padding: 12px 16px 0 16px; border-top: 1px solid var(--hair-2); border-left: 1px solid var(--hair-2);">
+            <p class="micro">Average price</p>
+            <p class="num nowrap" style="margin-top: 4px; font-size: 16px; line-height: 22px; font-weight: 600;">$152.30</p>
+          </div>
+          <div style="padding: 12px 0 0 16px; border-top: 1px solid var(--hair-2); border-left: 1px solid var(--hair-2);">
+            <p class="micro">Cost</p>
+            <p class="num nowrap" style="margin-top: 4px; font-size: 16px; line-height: 22px; font-weight: 600;">€3,814.14</p>
+          </div>
+        </div>
+      </section>
+
+            <section class="plate" style="padding: 20px;">
+        <div class="split-card" style="display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px;">
+          <div style="min-width: 0;">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+              <h2 style="font-size: 16px; line-height: 22px; font-weight: 600;">P/L contributors</h2>
+              <span class="micro">Absolute impact · zero centered</span>
+            </div>
+            <div style="margin-top: 8px;">
+              <div class="contrib-row" style="display: grid; grid-template-columns: auto minmax(0, 1fr) 96px; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--hair-2);">
+                <span class="ell" style="font-size: 14px; line-height: 20px;">Apple Inc.</span>
+                <span style="position: relative; height: 6px; border-radius: 3px; background: var(--bar-track); display: block;" aria-hidden="true"><span style="display: block; height: 6px; width: 50%; margin-left: 50%; border-radius: 3px; background: var(--pos);"></span><span style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--surface);"></span></span>
+                <span class="num nowrap" style="text-align: right; font-size: 16px; line-height: 22px; font-weight: 600; color: var(--pos);">+€1,148.75</span>
+              </div>
+              <div class="contrib-row" style="display: grid; grid-template-columns: auto minmax(0, 1fr) 96px; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--hair-2);">
+                <span class="ell" style="font-size: 14px; line-height: 20px;">NVIDIA Corp.</span>
+                <span style="position: relative; height: 6px; border-radius: 3px; background: var(--bar-track); display: block;" aria-hidden="true"><span style="display: block; height: 6px; width: 42.5%; margin-left: 50%; border-radius: 3px; background: var(--pos);"></span><span style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--surface);"></span></span>
+                <span class="num nowrap" style="text-align: right; font-size: 16px; line-height: 22px; font-weight: 600; color: var(--pos);">+€976.63</span>
+              </div>
+              <div class="contrib-row" style="display: grid; grid-template-columns: auto minmax(0, 1fr) 96px; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--hair-2);">
+                <span class="ell" style="font-size: 14px; line-height: 20px;">ASML Holding</span>
+                <span style="position: relative; height: 6px; border-radius: 3px; background: var(--bar-track); display: block;" aria-hidden="true"><span style="display: block; height: 6px; width: 23.2%; margin-left: 26.8%; border-radius: 3px; background: var(--neg);"></span><span style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--surface);"></span></span>
+                <span class="num nowrap" style="text-align: right; font-size: 16px; line-height: 22px; font-weight: 600; color: var(--neg);">−€532.80</span>
+              </div>
+              <div class="contrib-row" style="display: grid; grid-template-columns: auto minmax(0, 1fr) 96px; align-items: center; gap: 12px; padding: 12px 0;">
+                <span class="ell" style="font-size: 14px; line-height: 20px;">Tesla Inc.</span>
+                <span style="position: relative; height: 6px; border-radius: 3px; background: var(--bar-track); display: block;" aria-hidden="true"><span style="display: block; height: 6px; width: 13.8%; margin-left: 36.2%; border-radius: 3px; background: var(--neg);"></span><span style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--surface);"></span></span>
+                <span class="num nowrap" style="text-align: right; font-size: 16px; line-height: 22px; font-weight: 600; color: var(--neg);">−€316.06</span>
+              </div>
+            </div>
+          </div>
+          <div style="min-width: 0; border-left: 1px solid var(--hair-2); padding-left: 32px;">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+              <h2 style="font-size: 16px; line-height: 22px; font-weight: 600;">Currency load</h2>
+              <span class="micro">Trading currency</span>
+            </div>
+            <div style="margin-top: 8px;">
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--hair-2);">
+                <span style="font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .04em; color: var(--ink-2);">USD</span>
+                <span style="height: 8px; background: var(--bar-track); display: block;" aria-hidden="true"><span style="display: block; height: 8px; width: 87.4%; background: var(--accent-mark);"></span></span>
+                <span class="num nowrap" style="text-align: right; font-size: 14px; line-height: 20px;">€18,017.50 <span class="micro">87.4%</span></span>
+              </div>
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--hair-2);">
+                <span style="font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .04em; color: var(--ink-2);">EUR</span>
+                <span style="height: 8px; background: var(--bar-track); display: block;" aria-hidden="true"><span style="display: block; height: 8px; width: 12.6%; background: var(--accent-mark);"></span></span>
+                <span class="num nowrap" style="text-align: right; font-size: 14px; line-height: 20px;">€2,592.80 <span class="micro">12.6%</span></span>
+              </div>
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 12px 0;">
+                <span class="nowrap" style="font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .04em; color: var(--ink-2);">Pending</span>
+                <span class="num nowrap micro">VOO buy limit · 4 @ $536.00</span>
+              </div>
+            </div>
+            <p class="micro" style="padding-top: 4px;">Results converted to EUR at 0.9140.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="table-card" class="plate" style="padding: 20px 12px 12px;">
+        <div class="table-card" style="display: flex; align-items: baseline; justify-content: space-between; padding: 0 8px 12px;">
+          <h2 style="font-size: 16px; line-height: 22px; font-weight: 600;">Top holdings</h2>
+          <span class="micro">6 assets · EUR</span>
+        </div>
+        <table style="width: 100%; table-layout: fixed;">
+          <colgroup>
+            <col style="width: 38%">
+            <col style="width: 8%">
+            <col style="width: 19%">
+            <col style="width: 17%">
+            <col style="width: 18%">
+          </colgroup>
+          <thead>
+            <tr style="border-bottom: 1px solid var(--hair);">
+              <th scope="col" style="text-align: left; padding: 0 8px 8px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ink-3);">Asset</th>
+              <th scope="col" style="text-align: right; padding: 0 8px 8px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ink-3);">Qty</th>
+              <th scope="col" style="text-align: right; padding: 0 8px 8px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ink-3);">Average / current</th>
+              <th scope="col" style="text-align: right; padding: 0 8px 8px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ink-3);">Value / weight</th>
+              <th scope="col" style="text-align: right; padding: 0 8px 8px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ink-3);">Unrealised</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid var(--hair-2);">
+              <td style="padding: 8px;"><span style="display: flex; align-items: center; gap: 12px; min-width: 0;"><span aria-hidden="true" style="width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 600; flex: none;">AP</span><span style="min-width: 0; flex: 1 1 auto; display: block;"><span class="ell" style="display: block; font-size: 14px; line-height: 20px;">Apple Inc.</span><span class="ell micro" style="display: block;">AAPL · USD</span></span></span></td>
+              <td class="num nowrap" style="text-align: right; padding: 8px; font-size: 14px; line-height: 20px;">27.4</td>
+              <td class="num nowrap" style="text-align: right; padding: 8px; font-size: 14px; line-height: 20px;">$152.30 / $198.17</td>
+              <td style="text-align: right; padding: 8px;"><span class="num nowrap" style="display: block; font-size: 16px; line-height: 20px; font-weight: 600;">€4,962.89</span><span class="num nowrap micro" style="display: block;">24.1%</span></td>
+              <td style="text-align: right; padding: 8px;"><span class="num nowrap" style="display: block; font-size: 16px; line-height: 20px; font-weight: 600; color: var(--pos);">+€1,148.75</span><span class="num nowrap" style="display: block; font-size: 12px; line-height: 16px; color: var(--pos);">+30.1%</span></td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--hair-2);">
+              <td style="padding: 8px;"><span style="display: flex; align-items: center; gap: 12px; min-width: 0;"><span aria-hidden="true" style="width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 600; flex: none;">MS</span><span style="min-width: 0; flex: 1 1 auto; display: block;"><span class="ell" style="display: block; font-size: 14px; line-height: 20px;">Microsoft Corp.</span><span class="ell micro" style="display: block;">MSFT · USD</span></span></span></td>
+              <td class="num nowrap" style="text-align: right; padding: 8px; font-size: 14px; line-height: 20px;">13.25</td>
+              <td class="num nowrap" style="text-align: right; padding: 8px; font-size: 14px; line-height: 20px;">$312.60 / $337.40</td>
+              <td style="text-align: right; padding: 8px;"><span class="num nowrap" style="display: block; font-size: 16px; line-height: 20px; font-weight: 600;">€4,086.08</span><span class="num nowrap micro" style="display: block;">19.8%</span></td>
+              <td style="text-align: right; padding: 8px;"><span class="num nowrap" style="display: block; font-size: 16px; line-height: 20px; font-weight: 600; color: var(--pos);">+€472.31</span><span class="num nowrap" style="display: block; font-size: 12px; line-height: 16px; color: var(--pos);">+13.1%</span></td>
+            </tr>
+            <tr>
+              <td style="padding: 8px;"><span style="display: flex; align-items: center; gap: 12px; min-width: 0;"><span aria-hidden="true" style="width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 600; flex: none;">AS</span><span style="min-width: 0; flex: 1 1 auto; display: block;"><span class="ell" style="display: block; font-size: 14px; line-height: 20px;">ASML Holding N.V.</span><span class="ell micro" style="display: block;">ASML · EUR</span></span></span></td>
+              <td class="num nowrap" style="text-align: right; padding: 8px; font-size: 14px; line-height: 20px;">4</td>
+              <td class="num nowrap" style="text-align: right; padding: 8px; font-size: 14px; line-height: 20px;">€781.40 / €648.20</td>
+              <td style="text-align: right; padding: 8px;"><span class="num nowrap" style="display: block; font-size: 16px; line-height: 20px; font-weight: 600;">€2,592.80</span><span class="num nowrap micro" style="display: block;">12.6%</span></td>
+              <td style="text-align: right; padding: 8px;"><span class="num nowrap" style="display: block; font-size: 16px; line-height: 20px; font-weight: 600; color: var(--neg);">−€532.80</span><span class="num nowrap" style="display: block; font-size: 12px; line-height: 16px; color: var(--neg);">−17.0%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <p class="micro">Data from Trading 212 and Yahoo Finance; prices may be delayed. Not investment advice.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"palette":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":1520}}'>
+class Component extends DCLogic {
+  palettes = {
+    light: {
+      '--canvas': '#F5F7F8', '--surface': '#FFFFFF', '--surface-2': '#EEF0F2',
+      '--ink': '#111214', '--ink-2': '#3F4247', '--ink-3': '#696B70',
+      '--hair': '#E1E3E5', '--hair-2': '#EBEDEF',
+      '--accent': '#0A7C96', '--accent-mark': '#0E93AC', '--accent-deep': '#075E72', '--accent-soft': '#DCF1F6',
+      '--accent-plate': '#0A7C96', '--accent-plate-ink': '#FFFFFF',
+      '--chart-line': '#0E93AC', '--chart-buy': '#0C6E45', '--chart-sell': '#A82C3D', '--chart-axis': '#696B70', '--chart-grid': '#E1E3E5',
+      '--chart-label-bg': '#0A7C96', '--chart-label-ink': '#FFFFFF', '--chart-cost-label-bg': '#696B70', '--chart-cost-label-ink': '#FFFFFF',
+      '--pos': '#0C6E45', '--neg': '#A82C3D', '--warn': '#8A5A12',
+      '--hero-bg': 'linear-gradient(158deg, #0B1014 0%, #103B47 100%)',
+      '--hero-ink': '#FFFFFF', '--hero-muted': 'rgba(255,255,255,.72)',
+      '--hero-chip-bg': 'rgba(18,181,221,.18)', '--hero-chip-ink': '#8FE7F7', '--hero-spark': '#8FE7F7', '--hero-line': 'rgba(255,255,255,.14)',
+      '--tile-bg': '#E7F5F9', '--tile-border': '#CBE8F0', '--bar-track': '#D8E1E5',
+      '--header-bg': 'rgba(255,255,255,.94)',
+      '--shadow-plate': '0 1px 2px rgba(17,18,20,.05), 0 1px 3px rgba(17,18,20,.04)',
+      '--shadow-hero': '0 14px 34px -18px rgba(6,32,40,.6)'
+    },
+    dark: {
+      '--canvas': '#0A0E12', '--surface': '#12181D', '--surface-2': '#1A2128',
+      '--ink': '#F2F5F7', '--ink-2': '#B7C0C7', '--ink-3': '#8B959D',
+      '--hair': '#232B33', '--hair-2': '#1C232A',
+      '--accent': '#12B5DD', '--accent-mark': '#12B5DD', '--accent-deep': '#7FDCF2', '--accent-soft': '#132F38',
+      '--accent-plate': '#12B5DD', '--accent-plate-ink': '#05161C',
+      '--chart-line': '#12B5DD', '--chart-buy': '#3FCB8E', '--chart-sell': '#F0757F', '--chart-axis': '#8B959D', '--chart-grid': '#232B33',
+      '--chart-label-bg': '#12B5DD', '--chart-label-ink': '#05161C', '--chart-cost-label-bg': '#2A343C', '--chart-cost-label-ink': '#E6EBEE',
+      '--pos': '#3FCB8E', '--neg': '#F0757F', '--warn': '#D2A863',
+      '--hero-bg': 'linear-gradient(158deg, #0B1014 0%, #103B47 100%)',
+      '--hero-ink': '#FFFFFF', '--hero-muted': 'rgba(255,255,255,.72)',
+      '--hero-chip-bg': 'rgba(18,181,221,.18)', '--hero-chip-ink': '#8FE7F7', '--hero-spark': '#8FE7F7', '--hero-line': 'rgba(255,255,255,.14)',
+      '--tile-bg': '#172026', '--tile-border': '#253039', '--bar-track': '#2A343C',
+      '--header-bg': 'rgba(18,24,29,.94)',
+      '--shadow-plate': '0 1px 2px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.03)',
+      '--shadow-hero': '0 16px 40px -20px rgba(0,0,0,.8)'
+    }
+  };
+
+  renderVals() {
+    const key = this.props.palette ?? 'light';
+    const p = this.palettes[key] || this.palettes.light;
+    const rootStyle = Object.keys(p).map((k) => k + ': ' + p[k] + ';').join(' ');
+    return { rootStyle };
+  }
+}
+</script>
+<script>
+(function () {
+  'use strict';
+  var chartApi = null;
+  var lastSignature = '';
+
+  function token(host, name, fallback) {
+    if (!host) return fallback;
+    var value = getComputedStyle(host).getPropertyValue(name).trim();
+    return value || fallback;
+  }
+  function withAlpha(color, alpha) {
+    var hex = String(color).trim().replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
+    var n = parseInt(hex, 16);
+    if (hex.length !== 6 || isNaN(n)) return color;
+    return 'rgba(' + ((n >> 16) & 255) + ', ' + ((n >> 8) & 255) + ', ' + (n & 255) + ', ' + alpha + ')';
+  }
+  function money(value) { return '$' + value.toFixed(2); }
+
+  /* One year of business days, pinned to the board's last close. */
+  function buildSeries(count, start, end) {
+    var seed = 20261101;
+    function random() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+    var days = [];
+    var cursor = Date.UTC(2025, 10, 3);
+    while (days.length < count) {
+      var day = new Date(cursor);
+      var weekday = day.getUTCDay();
+      if (weekday !== 0 && weekday !== 6) days.push(day.toISOString().slice(0, 10));
+      cursor += 86400000;
+    }
+    var points = [];
+    var price = start;
+    for (var i = 0; i < days.length; i += 1) {
+      var target = start + (end - start) * (i / (days.length - 1));
+      price = price + (target - price) * 0.09 + (random() - 0.47) * 2.4;
+      points.push({ time: days[i], value: i === days.length - 1 ? end : Math.max(start - 8, price) });
+    }
+    return points;
+  }
+
+  /* Fills drawn in chart coordinates so the dots follow zoom, pan and DPR. */
+  function createTradeDots(dots, surface) {
+    var attached;
+    return {
+      attached: function (params) { attached = params; params.requestUpdate(); },
+      detached: function () { attached = undefined; },
+      paneViews: function () {
+        return [{
+          zOrder: function () { return 'top'; },
+          renderer: function () {
+            return {
+              draw: function (target) {
+                if (!attached) return;
+                var chart = attached.chart, series = attached.series;
+                target.useMediaCoordinateSpace(function (scope) {
+                  var context = scope.context, size = scope.mediaSize;
+                  context.save();
+                  context.beginPath();
+                  context.rect(0, 0, size.width, size.height);
+                  context.clip();
+                  for (var i = 0; i < dots.length; i += 1) {
+                    var x = chart.timeScale().timeToCoordinate(dots[i].time);
+                    var y = series.priceToCoordinate(dots[i].price);
+                    if (x === null || y === null || x < -12 || x > size.width + 12) continue;
+                    context.beginPath();
+                    context.arc(x, y, 3.5, 0, Math.PI * 2);
+                    context.fillStyle = dots[i].color;
+                    context.shadowColor = dots[i].color + '99';
+                    context.shadowBlur = 8;
+                    context.fill();
+                    context.shadowBlur = 0;
+                    context.lineWidth = 1.5;
+                    context.strokeStyle = surface;
+                    context.stroke();
+                  }
+                  context.restore();
+                });
+              },
+            };
+          },
+        }];
+      },
+      autoscaleInfo: function () { return null; },
+    };
+  }
+
+  function render() {
+    var host = document.getElementById('tv-price-chart');
+    if (!host || !host.isConnected || !window.LightweightCharts) return;
+
+    var L = window.LightweightCharts;
+    var accent = token(host, '--chart-line', '#2C3E63');
+    var accentText = accent;
+    var buyColor = token(host, '--chart-buy', '#1B5E48');
+    var sellColor = token(host, '--chart-sell', '#9E3B31');
+    var surface = token(host, '--surface', '#FFFFFF');
+    var axisColor = token(host, '--chart-axis', '#63686F');
+    var gridColor = token(host, '--chart-grid', '#E3E4E6');
+    var labelBg = token(host, '--chart-label-bg', accentText);
+    var labelInk = token(host, '--chart-label-ink', '#FFFFFF');
+    var costLabelBg = token(host, '--chart-cost-label-bg', '#696B70');
+    var costLabelInk = token(host, '--chart-cost-label-ink', '#FFFFFF');
+    var fontMono = token(host, '--font-mono', 'ui-monospace, "SF Mono", Menlo, monospace');
+    var signature = [accent, surface, axisColor, gridColor, labelBg, labelInk, costLabelBg, costLabelInk].join('|');
+    if (signature === lastSignature && chartApi !== null) return;
+    lastSignature = signature;
+    if (chartApi !== null) { chartApi.remove(); chartApi = null; }
+
+    var costBasis = 152.3;
+    var points = buildSeries(252, 149.8, 198.17);
+    var last = points[points.length - 1].value;
+    var n = points.length;
+    var fills = [
+      { index: n - 118, side: 'BUY' },
+      { index: n - 71, side: 'SELL' },
+      { index: n - 27, side: 'BUY' },
+    ];
+
+    var chart = L.createChart(host, {
+      autoSize: true,
+      layout: {
+        background: { color: 'transparent' },
+        textColor: axisColor,
+        fontFamily: fontMono,
+        fontSize: 10.5,
+        attributionLogo: true,
+      },
+      grid: { vertLines: { visible: false }, horzLines: { color: withAlpha(gridColor, 0.55), style: L.LineStyle.Dashed } },
+      crosshair: {
+        mode: L.CrosshairMode.Magnet,
+        vertLine: { color: withAlpha(accentText, 0.6), width: 1, style: L.LineStyle.Dashed, labelBackgroundColor: labelBg },
+        horzLine: { color: withAlpha(accentText, 0.6), width: 1, style: L.LineStyle.Dashed, labelBackgroundColor: labelBg },
+      },
+      rightPriceScale: { borderVisible: false, ticksVisible: false, entireTextOnly: true, scaleMargins: { top: 0.12, bottom: 0.14 } },
+      timeScale: { borderVisible: false, ticksVisible: false, timeVisible: false, secondsVisible: false, rightOffset: 1, minBarSpacing: 0.4, fixLeftEdge: true, fixRightEdge: true, tickMarkFormatter: function (time, type) { var d = typeof time === 'string' ? new Date(time + 'T00:00:00Z') : new Date(time * 1000); if (type === L.TickMarkType.Year) return String(d.getUTCFullYear()); return d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }); } },
+      localization: { locale: 'en-US', priceFormatter: money, timeFormatter: function (time) { return String(time); } },
+      handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
+      handleScale: { axisPressedMouseMove: false, mouseWheel: true, pinch: true },
+    });
+
+    var series = chart.addSeries(L.AreaSeries, {
+      lineColor: accent,
+      topColor: withAlpha(accent, 0.26),
+      bottomColor: withAlpha(accent, 0),
+      lineWidth: 2,
+      autoscaleInfoProvider: function (original) {
+        var info = original();
+        if (info && info.priceRange) {
+          info.priceRange.minValue = Math.min(info.priceRange.minValue, costBasis);
+          info.priceRange.maxValue = Math.max(info.priceRange.maxValue, costBasis);
+        }
+        return info;
+      },
+      priceLineVisible: false,
+      lastValueVisible: false,
+      crosshairMarkerVisible: true,
+      crosshairMarkerRadius: 4,
+      priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
+    });
+    series.setData(points);
+    series.createPriceLine({ price: last, color: accent, lineWidth: 1, lineStyle: L.LineStyle.Dashed, axisLabelVisible: true, axisLabelColor: labelBg, axisLabelTextColor: labelInk });
+    series.createPriceLine({ price: costBasis, color: axisColor, lineWidth: 1, lineStyle: L.LineStyle.Dashed, title: 'Cost basis', axisLabelVisible: true, axisLabelColor: costLabelBg, axisLabelTextColor: costLabelInk });
+
+    series.attachPrimitive(createTradeDots(fills.map(function (fill) {
+      return { time: points[fill.index].time, price: points[fill.index].value, color: fill.side === 'BUY' ? buyColor : sellColor };
+    }), surface));
+
+    chart.timeScale().fitContent();
+    chartApi = chart;
+  }
+
+  function attach() {
+    var host = document.getElementById('tv-price-chart');
+    if (!host) return false;
+    render();
+    if (typeof MutationObserver !== 'function') return true;
+    var root = host.closest('[style*="--canvas"]') || document.body;
+    var observer = new MutationObserver(function () { render(); });
+    observer.observe(root, { attributes: true, attributeFilter: ['style'] });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+    return true;
+  }
+  function boot() {
+    if (attach()) return;
+    var tries = 0;
+    (function poll() {
+      if (attach()) return;
+      if (++tries > 100) return;
+      setTimeout(poll, 100);
+    })();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+</body>
+</html>

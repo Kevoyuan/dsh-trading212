@@ -1,0 +1,29 @@
+<!-- @dsCard group="Actions" height=150 subtitle="Recessed track, sliding thumb; selected label is ink-1 semibold, never white-on-grey" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 20px; background: var(--canvas); color: var(--ink-1); font-family: var(--font-sans); }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
+  .note { margin-top: 12px; font-size: var(--fs-micro); color: var(--ink-3); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="range-switcher" role="radiogroup" aria-label="Price range">
+      <span class="range-thumb" aria-hidden="true" style="width: 52px; transform: translateX(3px);"></span>
+      <button type="button" role="radio" aria-checked="false">1D</button>
+      <button type="button" role="radio" aria-checked="false">1W</button>
+      <button type="button" role="radio" aria-checked="true" class="active">1M</button>
+      <button type="button" role="radio" aria-checked="false">3M</button>
+      <button type="button" role="radio" aria-checked="false">1Y</button>
+    </div>
+    <div class="treemap-mode-toggles" role="group" aria-label="Mosaic measure">
+      <button type="button" class="treemap-mode-pill is-active">Daily</button>
+      <button type="button" class="treemap-mode-pill">Total</button>
+    </div>
+  </div>
+  <p class="note">The thumb slides on <code>transform</code> over 240ms; <code>prefers-reduced-motion</code> jumps it. Arrow keys move the selection.</p>
+</body>
+</html>

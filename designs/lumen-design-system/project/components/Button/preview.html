@@ -1,0 +1,26 @@
+<!-- @dsCard group="Actions" height=170 subtitle="The one filled control, outline secondary, danger, icon, disabled" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 20px; background: var(--canvas); color: var(--ink-1); font-family: var(--font-sans); }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .note { margin-top: 12px; font-size: var(--fs-micro); color: var(--ink-3); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <button class="primary" type="button">Test and save</button>
+    <button class="pill-btn" type="button">Change range</button>
+    <button class="t212-deposit-pill-btn" type="button">Account</button>
+    <button class="t212-pill-action" type="button">Details</button>
+    <button class="pill-btn danger" type="button">Remove key</button>
+    <button class="icon-btn-ghost" type="button" aria-label="Search instruments" title="Search instruments">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="4.5"></circle><path d="M10.4 10.4 14 14"></path></svg>
+    </button>
+    <button class="load-more" type="button" disabled>Load more</button>
+  </div>
+  <p class="note">Disabled carries its reason in the surrounding copy — “Load more” is disabled until a range with more fills is selected.</p>
+</body>
+</html>

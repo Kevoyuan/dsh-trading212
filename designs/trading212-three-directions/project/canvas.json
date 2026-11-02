@@ -1,0 +1,139 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "A-Broadsheet.dc.html": {
+      "expand": "fill",
+      "h": 1720,
+      "title": "A · Broadsheet",
+      "w": 1431,
+      "x": 0,
+      "y": 0
+    },
+    "B-Nightboard.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "is_interactive": true,
+      "title": "B · Nightboard",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "C-Desk.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "C · Desk",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "D-Broadsheet-Desk.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "D · Broadsheet × Desk",
+      "w": 1440,
+      "x": 0,
+      "y": 2020
+    },
+    "E-Nightboard-Desk.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "is_interactive": true,
+      "title": "E · Nightboard × Desk",
+      "w": 1440,
+      "x": 1520,
+      "y": 2020
+    },
+    "F-Nightboard-v2.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "is_interactive": true,
+      "title": "F · Nightboard v2",
+      "w": 1440,
+      "x": 3040,
+      "y": 2020
+    },
+    "G-Dayboard.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "is_interactive": true,
+      "title": "G · Dayboard",
+      "w": 1440,
+      "x": 4560,
+      "y": 2020
+    },
+    "P-Polished-Overview.dc.html": {
+      "expand": "fill",
+      "h": 1520,
+      "title": "P · Polished overview",
+      "w": 1440,
+      "x": 0,
+      "y": 3320
+    },
+    "Q-Investments-Density.dc.html": {
+      "expand": "fill",
+      "h": 748,
+      "title": "Q · Investments density — three treatments",
+      "w": 1440,
+      "x": 1520,
+      "y": 3320
+    },
+    "R-Account-Detail.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "is_interactive": true,
+      "title": "R · Account value detail (click state)",
+      "w": 1440,
+      "x": 3040,
+      "y": 3320
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-01T08:42:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "directions": {
+      "kind": "title1",
+      "maxW": 4480,
+      "text": "Trading 212 portfolio workspace — three directions",
+      "w": 240,
+      "x": 0,
+      "y": -320
+    },
+    "split-row": {
+      "kind": "title1",
+      "maxW": 6000,
+      "text": "Row 2 — split layouts: D (A's language) · E (B's language) · F and G (E deepened: dark, light)",
+      "x": 0,
+      "y": 1760
+    },
+    "polish-row": {
+      "kind": "title1",
+      "maxW": 1440,
+      "text": "Row 3 — refined pass: Trading 212 palette, treemap encodes share of book, chart labels on the gridlines",
+      "x": 0,
+      "y": 3060
+    }
+  },
+  "order": [
+    "A-Broadsheet.dc.html",
+    "B-Nightboard.dc.html",
+    "C-Desk.dc.html",
+    "D-Broadsheet-Desk.dc.html",
+    "E-Nightboard-Desk.dc.html",
+    "F-Nightboard-v2.dc.html",
+    "G-Dayboard.dc.html",
+    "P-Polished-Overview.dc.html",
+    "Q-Investments-Density.dc.html",
+    "R-Account-Detail.dc.html"
+  ],
+  "pages": [],
+  "title": "Trading 212 Portfolio — Three Directions"
+}

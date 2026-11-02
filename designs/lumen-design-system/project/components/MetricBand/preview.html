@@ -1,0 +1,38 @@
+<!-- @dsCard group="Content" height=230 subtitle="Five facts with a hairline above each and 1px rules between; the 2×2 context strip variant" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 20px; background: var(--canvas); color: var(--ink-1); font-family: var(--font-sans); font-size: var(--fs-body); line-height: var(--lh-body); font-variant-numeric: tabular-nums; }
+  .plate { padding: 20px; background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-4); box-shadow: var(--sh-plate); }
+  .plate + .plate { margin-top: 16px; }
+  .cap { display: block; margin-bottom: 10px; font-size: var(--fs-micro); color: var(--ink-3); }
+  .inv-metric-row span { font-size: var(--fs-micro); color: var(--ink-3); }
+  .inv-metric-row strong { font-size: var(--fs-row); line-height: var(--lh-row); letter-spacing: var(--tr-snug); }
+  .pos { color: var(--pos); }
+  .portfolio-context-strip span > span { font-size: var(--fs-micro); color: var(--ink-3); }
+</style>
+</head>
+<body>
+  <div class="plate">
+    <span class="cap">Position · Apple Inc.</span>
+    <div class="inv-metrics-list">
+      <div class="inv-metric-row"><span>Shares</span><strong>27.4</strong></div>
+      <div class="inv-metric-row"><span>Avg cost</span><strong>$152.30</strong></div>
+      <div class="inv-metric-row"><span>Value</span><strong>€4,962.89</strong></div>
+      <div class="inv-metric-row"><span>Unrealised</span><strong class="pos">+€1,148.75</strong></div>
+      <div class="inv-metric-row"><span>Weight</span><strong>24.1%</strong></div>
+    </div>
+  </div>
+  <div class="plate">
+    <span class="cap">Account context · 2×2 strip</span>
+    <div class="portfolio-context-strip">
+      <span><span>Holdings</span><b>6</b></span>
+      <span><span>Cash</span><b>8.6%</b></span>
+      <span><span>Top-3 concentration</span><b>61.5%</b></span>
+      <span><span>Pending orders</span><b>1</b></span>
+    </div>
+  </div>
+</body>
+</html>

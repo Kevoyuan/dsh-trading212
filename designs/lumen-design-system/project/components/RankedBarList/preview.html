@@ -1,0 +1,57 @@
+<!-- @dsCard group="Content" height=300 subtitle="Fixed value column; a gain grows right, a loss grows leftwards from the zero point" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 20px; background: var(--canvas); color: var(--ink-1); font-family: var(--font-sans); font-size: var(--fs-body); line-height: var(--lh-body); font-variant-numeric: tabular-nums; }
+  .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+  .label { font-size: var(--fs-micro); font-weight: 500; letter-spacing: var(--tr-wide); color: var(--ink-3); margin-bottom: 8px; display: block; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <span class="label">P/L contributors · absolute impact</span>
+      <div class="bar-list">
+        <div class="bar-row">
+          <span class="bar-label"><strong>Apple Inc.</strong><small>AAPL · +30.1%</small></span>
+          <span class="bar-measure"><i class="bar-positive" style="width: 100%;"></i></span>
+          <b>+€1,148.75</b>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label"><strong>NVIDIA Corp.</strong><small>NVDA · +37.0%</small></span>
+          <span class="bar-measure"><i class="bar-positive" style="width: 85%;"></i></span>
+          <b>+€976.63</b>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label"><strong>ASML Holding N.V.</strong><small>ASML · −17.0%</small></span>
+          <span class="bar-measure"><i class="bar-negative" style="width: 46%;"></i></span>
+          <b>−€532.80</b>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label"><strong>Tesla Inc.</strong><small>TSLA · −12.1%</small></span>
+          <span class="bar-measure"><i class="bar-negative" style="width: 28%;"></i></span>
+          <b>−€316.06</b>
+        </div>
+      </div>
+    </div>
+    <div>
+      <span class="label">Currency exposure · magnitude</span>
+      <div class="bar-list">
+        <div class="bar-row">
+          <span class="bar-label"><strong>USD</strong><small>5 holdings · quote currency</small></span>
+          <span class="bar-measure"><i class="bar-accent" style="width: 87.4%;"></i></span>
+          <b>€18,017.50</b>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label"><strong>EUR</strong><small>1 holding · listing currency</small></span>
+          <span class="bar-measure"><i class="bar-accent" style="width: 12.6%;"></i></span>
+          <b>€2,592.80</b>
+        </div>
+      </div>
+      <p style="margin: 16px 0 0; font-size: var(--fs-micro); line-height: var(--lh-micro); color: var(--ink-3);">A magnitude bar takes <code>--accent</code>; a signed bar takes <code>--pos</code>/<code>--neg</code> <em>and</em> a direction, so the sign survives greyscale.</p>
+    </div>
+  </div>
+</body>
+</html>

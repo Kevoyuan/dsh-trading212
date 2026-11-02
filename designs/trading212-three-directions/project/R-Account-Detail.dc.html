@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Account value — detail</title>
+<script src="./support.js"></script>
+<script src="./lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body { margin: 0; }
+  * { box-sizing: border-box; }
+  button { font: inherit; color: inherit; background: none; border: 0; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  h2, h3, p, ul { margin: 0; padding: 0; }
+  ul { list-style: none; }
+  .plate { background: var(--surface); border: 1px solid var(--hair); border-radius: 16px; box-shadow: var(--shadow-plate); }
+  .num { font-variant-numeric: tabular-nums; }
+  .nowrap { white-space: nowrap; }
+  .micro { font-size: 12px; line-height: 16px; color: var(--ink-3); }
+  .chiprow { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--hair); }
+  .chip { min-width: 44px; height: 28px; padding: 0 8px; border-radius: 8px; font-size: 12px; color: var(--ink-3); cursor: pointer; }
+  .chip[aria-checked="true"] { font-weight: 600; color: var(--ink); background: var(--surface); box-shadow: var(--shadow-plate), inset 0 0 0 1px var(--hair); }
+  .skel { background: var(--surface-2); border-radius: 6px; }
+
+  .acct-modal { width: min(760px, calc(100vw - 24px)) !important; max-height: calc(100vh - 24px); overflow-y: auto; }
+  @media (max-width: 760px) {
+    .acct-head { flex-wrap: wrap; row-gap: 12px; }
+    .acct-head > div:last-child { width: 100%; justify-content: space-between; }
+    .acct-body { grid-template-columns: minmax(0, 1fr) !important; gap: 18px !important; }
+    #tv-account-chart { height: 190px !important; }
+  }
+  @media (max-width: 520px) {
+    .acct-head { padding: 18px 18px 0 !important; }
+    .acct-body { padding: 14px 18px 0 !important; }
+    #tv-account-chart { height: 170px !important; }
+  }
+</style>
+</helmet>
+<div style="{{rootStyle}} position: relative; height: 100vh; overflow: hidden; background: var(--canvas); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, &quot;SF Pro Text&quot;, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, sans-serif; -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums;">
+
+  <div style="padding: 12px 40px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+    <div class="plate" style="height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 14px;">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: .09em;">INVEST</span>
+      <span class="skel" style="width: 48px; height: 18px;"></span>
+      <span class="skel" style="width: 64px; height: 18px; margin-left: 6px;"></span>
+      <span class="skel" style="width: 52px; height: 18px;"></span>
+      <span class="skel" style="width: 44px; height: 18px;"></span>
+    </div>
+    <div class="plate" style="height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 12px;">
+      <span class="skel" style="width: 120px; height: 30px;"></span>
+      <span class="skel" style="width: 72px; height: 30px;"></span>
+      <span class="skel" style="width: 32px; height: 30px;"></span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 336px minmax(0, 1fr); gap: 24px; max-width: 1560px; margin: 0 auto; padding: 20px 40px 0; align-items: start;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <section style="background: var(--hero-bg); border-radius: 16px; padding: 20px; color: var(--hero-ink); box-shadow: var(--shadow-hero), inset 0 0 0 1px var(--hero-line);">
+        <p style="font-size: 12px; line-height: 16px; color: var(--hero-muted);">Account value</p>
+        <p class="num" style="margin-top: 8px; font-size: 44px; line-height: 48px; font-weight: 560; letter-spacing: -0.03em;">€22,558.45</p>
+        <span class="skel" style="display: block; width: 70%; height: 44px; margin-top: 18px; background: rgba(255,255,255,.12);"></span>
+      </section>
+      <div class="plate" style="height: 220px;"></div>
+      <div class="plate" style="height: 350px;"></div>
+      <div class="plate" style="height: 282px;"></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <div class="plate" style="height: 400px; padding: 20px;">
+        <span class="skel" style="display: block; width: 180px; height: 22px;"></span>
+        <span class="skel" style="display: block; width: 100%; height: 300px; margin-top: 24px;"></span>
+      </div>
+      <div class="plate" style="height: 140px;"></div>
+      <div class="plate" style="height: 240px;"></div>
+    </div>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(17, 18, 20, .40);"></div>
+
+  <div class="acct-modal" role="dialog" aria-modal="true" aria-labelledby="account-detail-title" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 760px; border-radius: 20px; background: var(--surface); border: 1px solid var(--hair); box-shadow: 0 32px 80px -24px rgba(17, 18, 20, .48);">
+
+    <div class="acct-head" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 24px 24px 0;">
+      <div>
+        <h2 id="account-detail-title" style="font-size: 16px; line-height: 22px; font-weight: 600;">Account value</h2>
+        <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 6px;">
+          <span class="num" style="font-size: 32px; line-height: 38px; font-weight: 600; letter-spacing: -0.02em;">€22,558.45</span>
+          <span class="num nowrap" style="font-size: 14px; line-height: 20px; font-weight: 600; color: var(--pos);">+€568.45 (+2.6%)</span>
+        </div>
+        <p class="micro" style="margin-top: 2px;">1 month · daily closes · EUR</p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div role="radiogroup" aria-label="Time range" class="chiprow">
+          <button role="radio" aria-checked="false" class="chip">1D</button>
+          <button role="radio" aria-checked="true" class="chip">1M</button>
+          <button role="radio" aria-checked="false" class="chip">3M</button>
+          <button role="radio" aria-checked="false" class="chip">1Y</button>
+          <button role="radio" aria-checked="false" class="chip">ALL</button>
+        </div>
+        <button aria-label="Close" style="width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; color: var(--ink-3); background: var(--surface-2);">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.4 2.4L11.6 11.6"></path><path d="M11.6 2.4L2.4 11.6"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 16px; padding: 16px 24px 0; font-size: 12px; line-height: 16px; color: var(--ink-2);">
+      <span style="display: flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 14px; height: 2px; border-radius: 999px; background: var(--accent-mark);"></span>Account value</span>
+      <span style="display: flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 14px; border-top: 1px dashed var(--ink-3);"></span>Period open €21,990.00</span>
+      <span class="micro" style="margin-left: auto;">Scroll or pinch to zoom, drag to pan</span>
+    </div>
+
+    <div id="tv-account-chart" style="width: 100%; height: 216px; margin-top: 8px;" role="img" aria-label="Account value over the last month, from €21,990.00 to €22,558.45"></div>
+
+        <div class="acct-body" style="display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 32px; padding: 16px 24px 0;">
+      <div style="min-width: 0;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+          <h3 style="font-size: 14px; line-height: 20px; font-weight: 600;">What moved it</h3>
+          <span class="micro">1M contribution · zero centered</span>
+        </div>
+        <div style="margin-top: 4px;">
+          <div style="display: grid; grid-template-columns: auto minmax(0, 1fr) 86px; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--hair-2);">
+            <span class="ell" style="font-size: 14px; line-height: 20px; white-space: nowrap;">NVIDIA Corp.</span>
+            <span style="position: relative; height: 6px; border-radius: 3px; background: var(--bar-track); display: block;" aria-hidden="true"><span style="display: block; height: 6px; width: 50%; margin-left: 50%; border-radius: 3px; background: var(--pos);"></span><span style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--surface);"></span></span>
+            <span class="num nowrap" style="text-align: right; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--pos);">+€310.00</span>
+          </div>
+          <div style="display: grid; grid-template-columns: auto minmax(0, 1fr) 86px; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--hair-2);">
+            <span class="ell" style="font-size: 14px; line-height: 20px; white-space: nowrap;">Apple Inc.</span>
+            <span style="position: relative; height: 6px; border-radius: 3px; background: var(--bar-track); display: block;" aria-hidden="true"><span style="display: block; height: 6px; width: 29.4%; margin-left: 50%; border-radius: 3px; background: var(--pos);"></span><span style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--surface);"></span></span>
+            <span class="num nowrap" style="text-align: right; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--pos);">+€182.00</span>
+          </div>
+          <div style="display: grid; grid-template-columns: auto minmax(0, 1fr) 86px; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--hair-2);">
+            <span class="ell" style="font-size: 14px; line-height: 20px; white-space: nowrap;">Microsoft Corp.</span>
+            <span style="position: relative; height: 6px; border-radius: 3px; background: var(--bar-track); display: block;" aria-hidden="true"><span style="display: block; height: 6px; width: 15.5%; margin-left: 50%; border-radius: 3px; background: var(--pos);"></span><span style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--surface);"></span></span>
+            <span class="num nowrap" style="text-align: right; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--pos);">+€96.00</span>
+          </div>
+          <div style="display: grid; grid-template-columns: auto minmax(0, 1fr) 86px; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--hair-2);">
+            <span class="ell" style="font-size: 14px; line-height: 20px; white-space: nowrap;">Vanguard S&amp;P 500</span>
+            <span style="position: relative; height: 6px; border-radius: 3px; background: var(--bar-track); display: block;" aria-hidden="true"><span style="display: block; height: 6px; width: 8.3%; margin-left: 50%; border-radius: 3px; background: var(--pos);"></span><span style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--surface);"></span></span>
+            <span class="num nowrap" style="text-align: right; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--pos);">+€51.45</span>
+          </div>
+          <div style="display: grid; grid-template-columns: auto minmax(0, 1fr) 86px; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--hair-2);">
+            <span class="ell" style="font-size: 14px; line-height: 20px; white-space: nowrap;">Tesla Inc.</span>
+            <span style="position: relative; height: 6px; border-radius: 3px; background: var(--bar-track); display: block;" aria-hidden="true"><span style="display: block; height: 6px; width: 6.6%; margin-left: 43.4%; border-radius: 3px; background: var(--neg);"></span><span style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--surface);"></span></span>
+            <span class="num nowrap" style="text-align: right; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--neg);">−€41.00</span>
+          </div>
+          <div style="display: grid; grid-template-columns: auto minmax(0, 1fr) 86px; align-items: center; gap: 12px; padding: 8px 0;">
+            <span class="ell" style="font-size: 14px; line-height: 20px; white-space: nowrap;">ASML Holding</span>
+            <span style="position: relative; height: 6px; border-radius: 3px; background: var(--bar-track); display: block;" aria-hidden="true"><span style="display: block; height: 6px; width: 4.8%; margin-left: 45.2%; border-radius: 3px; background: var(--neg);"></span><span style="position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--surface);"></span></span>
+            <span class="num nowrap" style="text-align: right; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--neg);">−€30.00</span>
+          </div>
+        </div>
+      </div>
+      <div style="min-width: 0;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+          <h3 style="font-size: 14px; line-height: 20px; font-weight: 600;">Period</h3>
+          <span class="micro">EUR</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; margin-top: 8px;">
+          <div style="padding-top: 10px; border-top: 1px solid var(--hair-2);">
+            <p class="micro">Open</p>
+            <p class="num nowrap" style="margin-top: 2px; font-size: 16px; line-height: 20px; font-weight: 600;">€21,990.00</p>
+          </div>
+          <div style="padding-top: 10px; border-top: 1px solid var(--hair-2);">
+            <p class="micro">High</p>
+            <p class="num nowrap" style="margin-top: 2px; font-size: 16px; line-height: 20px; font-weight: 600;">€22,558.45</p>
+          </div>
+          <div style="padding-top: 10px; border-top: 1px solid var(--hair-2);">
+            <p class="micro">Low</p>
+            <p class="num nowrap" style="margin-top: 2px; font-size: 16px; line-height: 20px; font-weight: 600;">€21,908.00</p>
+          </div>
+          <div style="padding-top: 10px; border-top: 1px solid var(--hair-2);">
+            <p class="micro">Net deposits</p>
+            <p class="num nowrap" style="margin-top: 2px; font-size: 16px; line-height: 20px; font-weight: 600;">€0.00</p>
+          </div>
+        </div>
+        <p class="micro" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hair-2);">No deposits or withdrawals in this period.</p>
+      </div>
+    </div>
+
+<p class="micro" style="padding: 0 24px 18px; border-top: 1px solid var(--hair-2); margin: 16px 24px 0; padding-left: 0; padding-right: 0;">Account value is derived from daily closes plus cash; deposits and withdrawals are excluded from the change. Prices from Yahoo Finance, may be delayed.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"palette":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  palettes = {
+    light: {
+      '--canvas': '#F5F7F8', '--surface': '#FFFFFF', '--surface-2': '#EEF0F2',
+      '--ink': '#111214', '--ink-2': '#3F4247', '--ink-3': '#696B70',
+      '--hair': '#E1E3E5', '--hair-2': '#EBEDEF',
+      '--accent': '#0A7C96', '--accent-mark': '#0E93AC', '--accent-deep': '#075E72', '--accent-soft': '#DCF1F6',
+      '--chart-line': '#0E93AC', '--chart-axis': '#696B70', '--chart-grid': '#E1E3E5',
+      '--chart-label-bg': '#0A7C96', '--chart-label-ink': '#FFFFFF', '--chart-cost-label-bg': '#696B70', '--chart-cost-label-ink': '#FFFFFF',
+      '--pos': '#0C6E45', '--neg': '#A82C3D', '--bar-track': '#D8E1E5',
+      '--hero-bg': 'linear-gradient(158deg, #0B1014 0%, #103B47 100%)',
+      '--hero-ink': '#FFFFFF', '--hero-muted': 'rgba(255,255,255,.72)', '--hero-line': 'rgba(255,255,255,.14)',
+      '--shadow-plate': '0 1px 2px rgba(17,18,20,.05), 0 1px 3px rgba(17,18,20,.04)',
+      '--shadow-hero': '0 14px 34px -18px rgba(6,32,40,.6)'
+    },
+    dark: {
+      '--canvas': '#0A0E12', '--surface': '#12181D', '--surface-2': '#1A2128',
+      '--ink': '#F2F5F7', '--ink-2': '#B7C0C7', '--ink-3': '#8B959D',
+      '--hair': '#232B33', '--hair-2': '#1C232A',
+      '--accent': '#12B5DD', '--accent-mark': '#12B5DD', '--accent-deep': '#7FDCF2', '--accent-soft': '#132F38',
+      '--chart-line': '#12B5DD', '--chart-axis': '#8B959D', '--chart-grid': '#232B33',
+      '--chart-label-bg': '#12B5DD', '--chart-label-ink': '#05161C', '--chart-cost-label-bg': '#2A343C', '--chart-cost-label-ink': '#E6EBEE',
+      '--pos': '#3FCB8E', '--neg': '#F0757F', '--bar-track': '#2A343C',
+      '--hero-bg': 'linear-gradient(158deg, #0B1014 0%, #103B47 100%)',
+      '--hero-ink': '#FFFFFF', '--hero-muted': 'rgba(255,255,255,.72)', '--hero-line': 'rgba(255,255,255,.14)',
+      '--shadow-plate': '0 1px 2px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.03)',
+      '--shadow-hero': '0 16px 40px -20px rgba(0,0,0,.8)'
+    }
+  };
+
+  renderVals() {
+    const key = this.props.palette ?? 'light';
+    const p = this.palettes[key] || this.palettes.light;
+    const rootStyle = Object.keys(p).map((k) => k + ': ' + p[k] + ';').join(' ');
+    return { rootStyle };
+  }
+}
+</script>
+<script>
+(function () {
+  'use strict';
+  var chartApi = null;
+  var lastSignature = '';
+
+  function token(host, name, fallback) {
+    if (!host) return fallback;
+    var value = getComputedStyle(host).getPropertyValue(name).trim();
+    return value || fallback;
+  }
+  function withAlpha(color, alpha) {
+    var hex = String(color).trim().replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
+    var n = parseInt(hex, 16);
+    if (hex.length !== 6 || isNaN(n)) return color;
+    return 'rgba(' + ((n >> 16) & 255) + ', ' + ((n >> 8) & 255) + ', ' + (n & 255) + ', ' + alpha + ')';
+  }
+  function euro(value) {
+    return '€' + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  /* Same month of account value the rail sparkline shows. */
+  var values = [21990, 21955, 21908, 21960, 22040, 22015, 22120, 22205, 22285, 22250, 22210, 22310, 22405, 22360, 22305, 22260, 22195, 22150, 22220, 22310, 22400, 22370, 22315, 22360, 22430, 22490, 22460, 22420, 22372.03, 22558.45];
+
+  function buildPoints() {
+    var start = Date.UTC(2026, 9, 3);
+    var points = [];
+    for (var i = 0; i < values.length; i += 1) {
+      var day = new Date(start + i * 86400000);
+      points.push({ time: day.toISOString().slice(0, 10), value: values[i] });
+    }
+    return points;
+  }
+
+  function render() {
+    var host = document.getElementById('tv-account-chart');
+    if (!host || !host.isConnected || !window.LightweightCharts) return;
+
+    var L = window.LightweightCharts;
+    var accent = token(host, '--chart-line', '#0E93AC');
+    var axisColor = token(host, '--chart-axis', '#696B70');
+    var gridColor = token(host, '--chart-grid', '#E1E3E5');
+    var labelBg = token(host, '--chart-label-bg', accent);
+    var labelInk = token(host, '--chart-label-ink', '#FFFFFF');
+    var costLabelBg = token(host, '--chart-cost-label-bg', '#696B70');
+    var costLabelInk = token(host, '--chart-cost-label-ink', '#FFFFFF');
+    var fontMono = token(host, '--font-mono', 'ui-monospace, "SF Mono", Menlo, monospace');
+    var signature = [accent, axisColor, gridColor, labelBg, labelInk, costLabelBg, costLabelInk].join('|');
+    if (signature === lastSignature && chartApi !== null) return;
+    lastSignature = signature;
+    if (chartApi !== null) { chartApi.remove(); chartApi = null; }
+
+    var points = buildPoints();
+    var last = points[points.length - 1].value;
+    var open = values[0];
+
+    var chart = L.createChart(host, {
+      autoSize: true,
+      layout: {
+        background: { color: 'transparent' },
+        textColor: axisColor,
+        fontFamily: fontMono,
+        fontSize: 10.5,
+        attributionLogo: true,
+      },
+      grid: { vertLines: { visible: false }, horzLines: { color: withAlpha(gridColor, 0.55), style: L.LineStyle.Dashed } },
+      crosshair: {
+        mode: L.CrosshairMode.Magnet,
+        vertLine: { color: withAlpha(accent, 0.6), width: 1, style: L.LineStyle.Dashed, labelBackgroundColor: labelBg },
+        horzLine: { color: withAlpha(accent, 0.6), width: 1, style: L.LineStyle.Dashed, labelBackgroundColor: labelBg },
+      },
+      rightPriceScale: { borderVisible: false, ticksVisible: false, entireTextOnly: true, scaleMargins: { top: 0.14, bottom: 0.14 } },
+      timeScale: { borderVisible: false, ticksVisible: false, timeVisible: false, secondsVisible: false, rightOffset: 1, minBarSpacing: 0.4, fixLeftEdge: true, fixRightEdge: true,
+        tickMarkFormatter: function (time, type) {
+          var d = typeof time === 'string' ? new Date(time + 'T00:00:00Z') : new Date(time * 1000);
+          if (type === L.TickMarkType.Year) return String(d.getUTCFullYear());
+          if (type === L.TickMarkType.DayOfMonth) return String(d.getUTCDate());
+          return d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+        } },
+      localization: { locale: 'en-US', priceFormatter: euro, timeFormatter: function (time) { return String(time); } },
+      handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
+      handleScale: { axisPressedMouseMove: false, mouseWheel: true, pinch: true },
+    });
+
+    var series = chart.addSeries(L.AreaSeries, {
+      lineColor: accent,
+      topColor: withAlpha(accent, 0.26),
+      bottomColor: withAlpha(accent, 0),
+      lineWidth: 2,
+      priceLineVisible: false,
+      lastValueVisible: false,
+      crosshairMarkerVisible: true,
+      crosshairMarkerRadius: 4,
+      priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
+    });
+    series.setData(points);
+    series.createPriceLine({ price: last, color: accent, lineWidth: 1, lineStyle: L.LineStyle.Dashed, axisLabelVisible: true, axisLabelColor: labelBg, axisLabelTextColor: labelInk });
+    series.createPriceLine({ price: open, color: axisColor, lineWidth: 1, lineStyle: L.LineStyle.Dashed, title: 'Period open', axisLabelVisible: true, axisLabelColor: costLabelBg, axisLabelTextColor: costLabelInk });
+
+    chart.timeScale().fitContent();
+    chartApi = chart;
+  }
+
+  function attach() {
+    var host = document.getElementById('tv-account-chart');
+    if (!host) return false;
+    render();
+    if (typeof MutationObserver !== 'function') return true;
+    var root = host.closest('[style*="--canvas"]') || document.body;
+    var observer = new MutationObserver(function () { render(); });
+    observer.observe(root, { attributes: true, attributeFilter: ['style'] });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+    return true;
+  }
+  function boot() {
+    if (attach()) return;
+    var tries = 0;
+    (function poll() {
+      if (attach()) return;
+      if (++tries > 100) return;
+      setTimeout(poll, 100);
+    })();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+</body>
+</html>

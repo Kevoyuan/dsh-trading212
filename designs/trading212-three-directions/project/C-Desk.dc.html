@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Desk — instrument workstation</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body { margin: 0; background: #F3F5F8; }
+  * { box-sizing: border-box; }
+  a { color: #2C5CE6; text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  button:focus-visible { outline: 2px solid #2C5CE6; outline-offset: 2px; }
+  h1, h2, p, ul { margin: 0; padding: 0; }
+  ul { list-style: none; }
+  table { border-collapse: collapse; }
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-direction: column; background: #F3F5F8; color: #12171D; font-family: -apple-system, BlinkMacSystemFont, &quot;Helvetica Neue&quot;, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+
+  <header style="height: 56px; flex: none; display: flex; align-items: center; gap: 24px; padding: 0 24px; background: #FFFFFF; border-bottom: 1px solid rgba(18,23,29,.12);">
+    <h1 style="display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">
+      T212
+      <span style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 12px; font-weight: 500; letter-spacing: .06em; color: #626C78; background: #F0F2F6; border-radius: 6px; padding: 3px 7px;">DEMO</span>
+    </h1>
+    <nav style="display: flex; align-items: center; gap: 22px;">
+      <a href="#" style="height: 44px; display: flex; align-items: center; font-size: 13px; font-weight: 600; color: #12171D; box-shadow: inset 0 -2px 0 #2C5CE6;">Overview</a>
+      <a href="#" style="height: 44px; display: flex; align-items: center; font-size: 13px; color: #4C5560;">Holdings</a>
+      <a href="#" style="height: 44px; display: flex; align-items: center; font-size: 13px; color: #4C5560;">History</a>
+      <a href="#" style="height: 44px; display: flex; align-items: center; font-size: 13px; color: #4C5560;">Settings</a>
+      <a href="#" style="height: 44px; display: flex; align-items: center; font-size: 13px; color: #4C5560;">Help</a>
+    </nav>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+      <span style="height: 32px; display: flex; align-items: center; padding: 0 10px; border-radius: 999px; background: #EEF1F6; font-size: 12px; font-weight: 600; color: #4C5560;">Read-only</span>
+      <button aria-label="Search instruments" style="width: 44px; height: 44px; display: grid; place-items: center; border-radius: 10px; border: 1px solid rgba(18,23,29,.12); background: #FFFFFF;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#4C5560" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"></circle><path d="M10.4 10.4L14 14"></path></svg>
+      </button>
+      <button aria-label="Hide balances" style="width: 44px; height: 44px; display: grid; place-items: center; border-radius: 10px; border: 1px solid rgba(18,23,29,.12); background: #FFFFFF;">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#4C5560" stroke-width="1.4" aria-hidden="true"><path d="M1.5 10S4.6 4.5 10 4.5 18.5 10 18.5 10 15.4 15.5 10 15.5 1.5 10 1.5 10Z"></path><circle cx="10" cy="10" r="2.6"></circle></svg>
+      </button>
+      <div style="display: flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 600;">
+        <button aria-label="English" style="height: 44px; padding: 0 9px; border-radius: 8px; background: #EEF1F6;">EN</button>
+        <button aria-label="Chinese" style="height: 44px; padding: 0 9px; border-radius: 8px; color: #626C78; font-weight: 500;">中文</button>
+      </div>
+    </div>
+  </header>
+
+  <div style="flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 368px minmax(0, 1fr);">
+
+    <aside style="background: #FFFFFF; border-right: 1px solid rgba(18,23,29,.12); padding: 18px 16px 16px; display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <p style="font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #626C78;">Account value · EUR</p>
+        <p style="margin-top: 6px; font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 34px; letter-spacing: -0.02em;">€22,558.45</p>
+        <div style="margin-top: 8px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+          <span style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 14px; color: #15704F;">+€186.42</span>
+          <span style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 13px; color: #15704F;">(+0.83%)</span>
+          <span style="font-size: 12px; color: #626C78;">24H</span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; padding: 14px 0; border-top: 1px solid rgba(18,23,29,.1); border-bottom: 1px solid rgba(18,23,29,.1);">
+        <div>
+          <p style="font-size: 12px; color: #626C78;">Cash</p>
+          <p style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 14px; margin-top: 3px;">€1,948.15</p>
+        </div>
+        <div>
+          <p style="font-size: 12px; color: #626C78;">Invested</p>
+          <p style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 14px; margin-top: 3px;">€20,610.30</p>
+        </div>
+        <div>
+          <p style="font-size: 12px; color: #626C78;">Return</p>
+          <p style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 14px; margin-top: 3px; color: #15704F;">+17.28%</p>
+        </div>
+        <div>
+          <p style="font-size: 12px; color: #626C78;">FX impact</p>
+          <p style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 14px; margin-top: 3px; color: #15704F;">+€214.60</p>
+        </div>
+      </div>
+
+      <div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <h2 style="font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #626C78;">Positions</h2>
+          <span style="font-size: 12px; color: #626C78;">6 assets · 8.6% cash</span>
+        </div>
+        <ul style="margin-top: 8px; display: flex; flex-direction: column; gap: 2px;">
+          <sc-for list="{{positions}}" as="p">
+            <li>
+              <button onClick="{{p.pick}}" aria-pressed="{{p.pressed}}" style="{{p.rowStyle}}">
+                <span aria-hidden="true" style="{{p.tileStyle}}">{{p.mono}}</span>
+                <span style="min-width: 0; text-align: left;">
+                  <span style="display: block; font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 12px; letter-spacing: .06em;">{{p.ticker}}</span>
+                  <span style="display: block; font-size: 12px; color: #626C78; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{p.name}}</span>
+                </span>
+                <span style="text-align: right;">
+                  <span style="display: block; font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 13px;">{{p.value}}</span>
+                  <span style="display: block; font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 12px; margin-top: 1px; color: {{p.retColor}};">{{p.ret}}</span>
+                </span>
+              </button>
+            </li>
+          </sc-for>
+        </ul>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; font-size: 12px;">
+          <span style="color: #626C78;">Currency · USD</span>
+          <span style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace;">€18,017.50 · 87.4%</span>
+        </div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; font-size: 12px;">
+          <span style="color: #626C78;">Currency · EUR</span>
+          <span style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace;">€2,592.80 · 12.6%</span>
+        </div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; font-size: 12px;">
+          <span style="color: #626C78;">Pending · VOO buy limit</span>
+          <span style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace;">4 @ $536.00</span>
+        </div>
+      </div>
+
+      <div style="margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(18,23,29,.1); display: flex; flex-direction: column; gap: 8px;">
+        <p style="font-size: 12px; color: #626C78;">Ask dsh about this portfolio</p>
+        <button style="height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: #2C5CE6; color: #FFFFFF; font-size: 13px; font-weight: 600;">Summarise concentration risk</button>
+      </div>
+    </aside>
+
+    <main style="padding: 20px 28px 16px; display: flex; flex-direction: column; min-width: 0;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <span aria-hidden="true" style="width: 42px; height: 42px; display: grid; place-items: center; border-radius: 10px; background: #E8EDFC; color: #2C5CE6; font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 14px;">{{active.mono}}</span>
+          <div>
+            <h2 style="font-size: 20px; font-weight: 600; letter-spacing: -0.015em;">{{active.name}}</h2>
+            <p style="font-size: 12px; color: #626C78; margin-top: 2px; font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; letter-spacing: .04em;">{{active.ticker}} · {{active.ccy}} · {{active.exchange}}</p>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <p style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 32px; letter-spacing: -0.02em;">{{active.price}}</p>
+          <p style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 13px; margin-top: 2px; color: {{active.chgColor}};">{{active.chg}} ({{active.chgPct}})</p>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 16px;">
+        <div style="display: flex; gap: 4px;" role="group" aria-label="Price range">
+          <button style="height: 44px; min-width: 48px; padding: 0 12px; border-radius: 10px; font-size: 12px; font-weight: 600; border: 1px solid rgba(18,23,29,.12); background: #FFFFFF; color: #4C5560;">1D</button>
+          <button style="height: 44px; min-width: 48px; padding: 0 12px; border-radius: 10px; font-size: 12px; font-weight: 600; border: 1px solid rgba(18,23,29,.12); background: #FFFFFF; color: #4C5560;">1W</button>
+          <button aria-pressed="true" style="height: 44px; min-width: 48px; padding: 0 12px; border-radius: 10px; font-size: 12px; font-weight: 600; border: 1px solid #2C5CE6; background: #E8EDFC; color: #2C5CE6;">1M</button>
+          <button style="height: 44px; min-width: 48px; padding: 0 12px; border-radius: 10px; font-size: 12px; font-weight: 600; border: 1px solid rgba(18,23,29,.12); background: #FFFFFF; color: #4C5560;">3M</button>
+          <button style="height: 44px; min-width: 48px; padding: 0 12px; border-radius: 10px; font-size: 12px; font-weight: 600; border: 1px solid rgba(18,23,29,.12); background: #FFFFFF; color: #4C5560;">1Y</button>
+          <button style="height: 44px; min-width: 48px; padding: 0 12px; border-radius: 10px; font-size: 12px; font-weight: 600; border: 1px solid rgba(18,23,29,.12); background: #FFFFFF; color: #4C5560;">5Y</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 18px; font-size: 12px; color: #4C5560;">
+          <span style="display: flex; align-items: center; gap: 7px;"><span aria-hidden="true" style="width: 16px; height: 2px; background: #2C5CE6;"></span>Close</span>
+          <span style="display: flex; align-items: center; gap: 7px;"><span aria-hidden="true" style="width: 10px; height: 10px; background: #15704F;"></span>Buy</span>
+          <span style="display: flex; align-items: center; gap: 7px;"><span aria-hidden="true" style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 10px solid #8A5A12;"></span>Sell</span>
+          <span>3 fills in range</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 10px; background: #FFFFFF; border: 1px solid rgba(18,23,29,.1); border-radius: 10px; padding: 8px 8px 0;">
+        <svg viewBox="0 0 760 300" width="100%" height="auto" style="display: block;" role="img" aria-label="{{active.aria}}">
+          <path d="{{active.area}}" fill="#E8EDFC"></path>
+          <path d="{{active.line}}" fill="none" stroke="#2C5CE6" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+          <sc-for list="{{active.buys}}" as="b">
+            <rect x="{{b.x}}" y="{{b.y}}" width="10" height="10" fill="#15704F"></rect>
+          </sc-for>
+          <sc-for list="{{active.sells}}" as="s">
+            <polygon points="{{s.points}}" fill="#8A5A12"></polygon>
+          </sc-for>
+        </svg>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin-top: 16px; padding: 14px 16px; background: #FFFFFF; border: 1px solid rgba(18,23,29,.1); border-radius: 10px;">
+        <div>
+          <p style="font-size: 12px; color: #626C78;">Shares</p>
+          <p style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 15px; margin-top: 4px;">{{active.shares}}</p>
+        </div>
+        <div>
+          <p style="font-size: 12px; color: #626C78;">Avg cost</p>
+          <p style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 15px; margin-top: 4px;">{{active.avg}}</p>
+        </div>
+        <div>
+          <p style="font-size: 12px; color: #626C78;">Value</p>
+          <p style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 15px; margin-top: 4px;">{{active.value}}</p>
+        </div>
+        <div>
+          <p style="font-size: 12px; color: #626C78;">Unrealised</p>
+          <p style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 15px; margin-top: 4px; color: {{active.plColor}};">{{active.pl}} ({{active.ret}})</p>
+        </div>
+        <div>
+          <p style="font-size: 12px; color: #626C78;">Weight</p>
+          <p style="font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 15px; margin-top: 4px;">{{active.weight}}</p>
+        </div>
+      </div>
+
+      <div style="margin-top: 16px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <h3 style="font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #626C78;">Fills in range</h3>
+          <a href="#" style="font-size: 12px; font-weight: 600;">View all in History</a>
+        </div>
+        <table style="width: 100%; background: #FFFFFF; border: 1px solid rgba(18,23,29,.1); border-radius: 10px; overflow: hidden;">
+          <thead>
+            <tr style="border-bottom: 1px solid rgba(18,23,29,.1);">
+              <th scope="col" style="text-align: left; font-size: 12px; font-weight: 600; color: #626C78; padding: 9px 14px;">Date</th>
+              <th scope="col" style="text-align: left; font-size: 12px; font-weight: 600; color: #626C78; padding: 9px 14px;">Side</th>
+              <th scope="col" style="text-align: right; font-size: 12px; font-weight: 600; color: #626C78; padding: 9px 14px;">Quantity</th>
+              <th scope="col" style="text-align: right; font-size: 12px; font-weight: 600; color: #626C78; padding: 9px 14px;">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{active.fills}}" as="f">
+              <tr style="border-bottom: 1px solid rgba(18,23,29,.07);">
+                <td style="padding: 8px 14px; font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 12px;">{{f.date}}</td>
+                <td style="padding: 8px 14px; font-size: 12px; color: {{f.tone}};">{{f.side}}</td>
+                <td style="padding: 8px 14px; text-align: right; font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 12px;">{{f.qty}}</td>
+                <td style="padding: 8px 14px; text-align: right; font-family: ui-monospace, &quot;SF Mono&quot;, Menlo, monospace; font-size: 12px;">{{f.price}}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-top: auto; padding-top: 12px; font-size: 12px; line-height: 1.5; color: #626C78;">Prices from Yahoo Finance, may be delayed. Fills and positions come from Trading 212 and are read-only — this workspace cannot place, modify or cancel an order.</p>
+    </main>
+  </div>
+
+  <footer style="height: 52px; flex: none; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 0 24px; background: #FFFFFF; border-top: 1px solid rgba(18,23,29,.12);">
+    <p style="font-size: 12px; color: #626C78;">Trading 212 EU GmbH · authorised and regulated by BaFin · personal research only, not investment advice</p>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 600;">
+        <button aria-label="English" style="height: 44px; padding: 0 9px; border-radius: 8px; background: #EEF1F6;">EN</button>
+        <button aria-label="Chinese" style="height: 44px; padding: 0 9px; border-radius: 8px; color: #626C78; font-weight: 500;">中文</button>
+      </div>
+      <button style="height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 10px; border: 1px solid rgba(18,23,29,.14); background: #FFFFFF; font-size: 12px; color: #4C5560;">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#4C5560" stroke-width="1.4" aria-hidden="true"><path d="M1.5 10S4.6 4.5 10 4.5 18.5 10 18.5 10 15.4 15.5 10 15.5 1.5 10 1.5 10Z"></path><circle cx="10" cy="10" r="2.6"></circle></svg>
+        Privacy mode
+      </button>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  state = { sel: 'AAPL' };
+
+  renderVals() {
+    const raw = [
+      { ticker: 'AAPL', mono: 'AP', name: 'Apple Inc.', ccy: 'USD', exchange: 'NASDAQ', price: '$198.17', chg: '+$8.17', chgPct: '+4.30%', up: true,
+        shares: '27.4', avg: '$152.30', value: '€4,962.89', pl: '+€1,148.75', ret: '+30.1%', weight: '24.1%',
+        line: 'M0 287L30.4 290L60.8 259.4L91.2 269.5L121.6 249L152 232.7L182.4 235.4L212.8 275.7L243.2 229.1L273.6 169.3L304 124.8L334.4 183.2L364.8 190.8L395.2 150.8L425.6 177.5L456 120.5L486.4 156.9L516.8 179.9L547.2 193.9L577.6 182.4L608 129L638.4 123.2L668.8 80.4L699.2 64.7L729.6 10L760 33.1',
+        m: [[212.8, 275.7], [395.2, 150.8], [608, 129]],
+        fills: [
+          { date: '21 OCT 2026', side: 'Buy', qty: '4', price: '$196.15', buy: true },
+          { date: '02 SEP 2026', side: 'Sell', qty: '3', price: '$191.20', buy: false },
+          { date: '12 MAY 2026', side: 'Buy', qty: '9', price: '$186.40', buy: true },
+        ] },
+      { ticker: 'MSFT', mono: 'MS', name: 'Microsoft Corp.', ccy: 'USD', exchange: 'NASDAQ', price: '$337.40', chg: '−$1.86', chgPct: '−0.55%', up: false,
+        shares: '13.25', avg: '$312.60', value: '€4,086.08', pl: '+€472.31', ret: '+13.1%', weight: '19.8%',
+        line: 'M0 274.3L30.4 281.9L60.8 246L91.2 290L121.6 264L152 269.4L182.4 279.9L212.8 238.5L243.2 175.1L273.6 228.2L304 188.1L334.4 209.6L364.8 236.7L395.2 220.6L425.6 185L456 129L486.4 79.7L516.8 108.8L547.2 108.1L577.6 104.6L608 128.6L638.4 117.9L668.8 58.9L699.2 13.6L729.6 61.1L760 10',
+        m: [[212.8, 238.5], [395.2, 220.6], [608, 128.6]],
+        fills: [
+          { date: '30 SEP 2026', side: 'Sell', qty: '2', price: '$331.10', buy: false },
+          { date: '15 JUL 2026', side: 'Buy', qty: '5.25', price: '$318.60', buy: true },
+          { date: '27 FEB 2026', side: 'Buy', qty: '8', price: '$301.20', buy: true },
+        ] },
+      { ticker: 'NVDA', mono: 'NV', name: 'NVIDIA Corp.', ccy: 'USD', exchange: 'NASDAQ', price: '$234.52', chg: '+$3.12', chgPct: '+1.35%', up: true,
+        shares: '16.875', avg: '$213.40', value: '€3,617.18', pl: '+€976.63', ret: '+37.0%', weight: '17.6%',
+        line: 'M0 278.5L30.4 290L60.8 270.1L91.2 218.9L121.6 193.5L152 154.9L182.4 158.2L212.8 218.3L243.2 220.3L273.6 194.3L304 148.8L334.4 168.2L364.8 125.5L395.2 116.9L425.6 135.2L456 106.9L486.4 77.2L516.8 54.8L547.2 28.4L577.6 72.8L608 65.7L638.4 59.9L668.8 10L699.2 58.3L729.6 14.1L760 20.3',
+        m: [[212.8, 218.3], [395.2, 116.9], [608, 65.7]],
+        fills: [
+          { date: '09 OCT 2026', side: 'Sell', qty: '2', price: '$228.40', buy: false },
+          { date: '18 AUG 2026', side: 'Buy', qty: '5', price: '$214.80', buy: true },
+          { date: '03 APR 2026', side: 'Buy', qty: '6.875', price: '$196.30', buy: true },
+        ] },
+      { ticker: 'VOO', mono: 'VO', name: 'Vanguard S&P 500 ETF', ccy: 'USD', exchange: 'NYSE Arca', price: '$544.70', chg: '+$2.15', chgPct: '+0.40%', up: true,
+        shares: '6.12', avg: '$486.20', value: '€3,046.88', pl: '+€327.23', ret: '+12.0%', weight: '14.8%',
+        line: 'M0 279.6L30.4 287.1L60.8 290L91.2 235.2L121.6 202.5L152 160.3L182.4 186.9L212.8 178.3L243.2 200.2L273.6 186.1L304 226.4L334.4 216.8L364.8 157.7L395.2 188.9L425.6 201.9L456 183.2L486.4 193.8L516.8 175.1L547.2 139.8L577.6 115.8L608 114.6L638.4 127.1L668.8 70.8L699.2 53.9L729.6 33.8L760 10',
+        m: [[212.8, 178.3], [395.2, 188.9], [608, 114.6]],
+        fills: [
+          { date: '28 SEP 2026', side: 'Sell', qty: '1', price: '$538.20', buy: false },
+          { date: '06 JUN 2026', side: 'Buy', qty: '3', price: '$512.40', buy: true },
+          { date: '11 MAR 2026', side: 'Buy', qty: '3.12', price: '$498.60', buy: true },
+        ] },
+      { ticker: 'ASML', mono: 'AS', name: 'ASML Holding N.V.', ccy: 'EUR', exchange: 'Euronext Amsterdam', price: '€648.20', chg: '−€9.40', chgPct: '−1.43%', up: false,
+        shares: '4', avg: '€781.40', value: '€2,592.80', pl: '−€532.80', ret: '−17.0%', weight: '12.6%',
+        line: 'M0 19.9L30.4 20.8L60.8 48.2L91.2 15.9L121.6 10L152 41.8L182.4 53.3L212.8 88.4L243.2 84L273.6 77L304 112.2L334.4 70.6L364.8 61.6L395.2 92.2L425.6 112.3L456 135.9L486.4 132.7L516.8 132.8L547.2 168.9L577.6 218.2L608 217.4L638.4 252.6L668.8 242.9L699.2 290L729.6 236.5L760 276.6',
+        m: [[212.8, 88.4], [395.2, 92.2], [608, 217.4]],
+        fills: [
+          { date: '17 SEP 2026', side: 'Sell', qty: '1', price: '€668.40', buy: false },
+          { date: '12 MAY 2026', side: 'Buy', qty: '2', price: '€750.20', buy: true },
+          { date: '22 JAN 2026', side: 'Buy', qty: '2', price: '€812.50', buy: true },
+        ] },
+      { ticker: 'TSLA', mono: 'TS', name: 'Tesla Inc.', ccy: 'USD', exchange: 'NASDAQ', price: '$265.40', chg: '−$4.72', chgPct: '−1.75%', up: false,
+        shares: '9.5', avg: '$281.40', value: '€2,304.47', pl: '−€316.06', ret: '−12.1%', weight: '11.2%',
+        line: 'M0 13.7L30.4 10L60.8 13.5L91.2 56.9L121.6 14.6L152 10.5L182.4 85L212.8 33.3L243.2 96.8L273.6 137.5L304 98.3L334.4 135.9L364.8 166.1L395.2 117.4L425.6 174L456 195.4L486.4 204.2L516.8 250.1L547.2 273.1L577.6 207.4L608 188.2L638.4 224.3L668.8 266.4L699.2 228.4L729.6 290L760 276.3',
+        m: [[212.8, 33.3], [395.2, 117.4], [608, 188.2]],
+        fills: [
+          { date: '14 OCT 2026', side: 'Buy', qty: '3.5', price: '$252.80', buy: true },
+          { date: '07 AUG 2026', side: 'Sell', qty: '2', price: '$286.15', buy: false },
+          { date: '19 MAY 2026', side: 'Buy', qty: '6', price: '$318.40', buy: true },
+        ] },
+    ];
+
+    const pos = '#15704F';
+    const neg = '#A32E22';
+    const current = (this.state && this.state.sel) || 'AAPL';
+    const positions = raw.map((r) => {
+      const on = r.ticker === current;
+      return {
+        ticker: r.ticker,
+        mono: r.mono,
+        name: r.name,
+        value: r.value,
+        ret: r.ret,
+        retColor: r.up ? pos : neg,
+        pressed: on ? 'true' : 'false',
+        rowStyle: 'width: 100%; display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; background: ' +
+          (on ? '#EDF1FD' : 'transparent') + '; box-shadow: inset 3px 0 0 ' + (on ? '#2C5CE6' : 'transparent') + ';',
+        tileStyle: 'width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; background: ' +
+          (on ? '#2C5CE6' : '#EDF1FD') + '; color: ' + (on ? '#FFFFFF' : '#2C5CE6') + ';',
+        pick: () => this.setState({ sel: r.ticker }),
+      };
+    });
+
+    const src = raw.find((r) => r.ticker === current) || raw[0];
+    const buys = src.m.filter((point, i) => i !== 1).map((point) => ({ x: point[0] - 5, y: point[1] - 5 }));
+    const sells = src.m.filter((point, i) => i === 1).map((point) => ({
+      points: point[0] + ' ' + (point[1] - 6) + ' ' + (point[0] + 6) + ' ' + (point[1] + 5) + ' ' + (point[0] - 6) + ' ' + (point[1] + 5),
+    }));
+    const active = {
+      mono: src.mono,
+      name: src.name,
+      ticker: src.ticker,
+      ccy: src.ccy,
+      exchange: src.exchange,
+      price: src.price,
+      chg: src.chg,
+      chgPct: src.chgPct,
+      chgColor: src.up ? pos : neg,
+      line: src.line,
+      area: src.line + 'L760 300L0 300Z',
+      buys,
+      sells,
+      shares: src.shares,
+      avg: src.avg,
+      value: src.value,
+      pl: src.pl,
+      ret: src.ret,
+      plColor: src.up ? pos : neg,
+      weight: src.weight,
+      aria: src.name + ' price history with three Trading 212 execution fills',
+      fills: src.fills.map((f) => ({ date: f.date, side: f.side, qty: f.qty, price: f.price, tone: f.buy ? pos : '#8A5A12' })),
+    };
+    return { positions, active };
+  }
+}
+</script>
+</body>
+</html>

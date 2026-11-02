@@ -1,0 +1,55 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; background: var(--canvas); }
+  .cover { position: relative; width: 960px; height: 288px; overflow: hidden; }
+  .cover svg { position: absolute; inset: 0; width: 960px; height: 288px; display: block; }
+  .ground { fill: var(--canvas); }
+  .b-accent { fill: var(--accent); }
+  .b-pos { fill: var(--pos); }
+  .b-neg { fill: var(--neg); }
+  .b-plate { fill: var(--accent-plate); }
+  .rule { stroke: var(--hair); stroke-width: 1; }
+  .dot { fill: var(--ink-4); }
+  .name { position: absolute; left: 48px; bottom: 44px; max-width: 440px; }
+  .name h1 { margin: 0; font-family: var(--font-sans); font-size: 120px; line-height: 0.93; letter-spacing: -0.022em; font-weight: 560; color: var(--ink-1); }
+  .name p { margin: 10px 0 0; font-family: var(--font-sans); font-size: 13px; line-height: 18px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<div class="cover">
+  <!-- Cover derivation.
+       Blocks: --accent 344×72, --pos 256×72, --neg 168×72 — the three longest bars of the
+       product's ranked list, at the book's own weights (24.1% / 17.6% / 11.2%); --accent-plate
+       64×288 bleeding off the right edge = the one filled control.
+       Arrangement: the signature ranked bar list, right-weighted, gutters on --s-3.
+       Pattern: the "structure before surface" row — three 1px --hair rules sitting in the bar
+       gutters, because this system holds a layout up with hairlines and never with a shadow.
+       Scales: --s-6 edge inset, --r-3 on every bar, --sh-* unused on purpose. -->
+  <svg viewBox="0 0 960 288" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <rect class="ground" x="0" y="0" width="960" height="288"></rect>
+
+    <line class="rule" x1="512" y1="32" x2="864" y2="32"></line>
+    <line class="rule" x1="512" y1="116" x2="864" y2="116"></line>
+    <line class="rule" x1="512" y1="196" x2="864" y2="196"></line>
+
+    <rect class="b-accent" x="512" y="40" width="344" height="72" rx="14"></rect>
+    <rect class="b-pos" x="512" y="120" width="256" height="72" rx="14"></rect>
+    <rect class="b-neg" x="512" y="200" width="168" height="72" rx="14"></rect>
+
+    <rect class="b-plate" x="896" y="0" width="64" height="288"></rect>
+
+    <circle class="dot" cx="880" cy="32" r="2.5"></circle>
+    <circle class="dot" cx="880" cy="116" r="2.5"></circle>
+    <circle class="dot" cx="880" cy="196" r="2.5"></circle>
+  </svg>
+  <div class="name">
+    <h1>Lumen</h1>
+    <p>Neutral ground, one ink accent, hairlines before shadows.</p>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Investments card — three density treatments</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body { margin: 0; }
+  * { box-sizing: border-box; }
+  :root { --ease: cubic-bezier(.32,.72,0,1); }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  h1, h2, p, ul { margin: 0; padding: 0; }
+  ul { list-style: none; }
+  .plate { background: var(--surface); border: 1px solid var(--hair); border-radius: 16px; box-shadow: var(--shadow-plate); }
+  .row, .chip { transition: background-color 140ms var(--ease), color 140ms var(--ease); }
+  .row:hover { background: var(--surface-2); }
+  .num { font-variant-numeric: tabular-nums; }
+  .nowrap { white-space: nowrap; }
+  .ell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .micro { font-size: 12px; line-height: 16px; color: var(--ink-3); }
+  .mono { display: grid; place-items: center; background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 600; }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 6px 12px; }
+  .card-head h2 { font-size: 16px; line-height: 22px; font-weight: 600; }
+  .card-head .total { font-size: 16px; line-height: 22px; font-weight: 600; }
+  .card-sub { padding: 0 6px 12px; }
+  .card-sub p { margin-top: 4px; }
+  .tag { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; letter-spacing: .02em; }
+  .tag-q { background: var(--surface-2); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--hair); }
+  .tag-rec { background: var(--accent-soft); color: var(--accent-deep); }
+</style>
+</helmet>
+<div style="{{rootStyle}} min-height: 100vh; background: var(--canvas); color: var(--ink); padding: 40px 40px 48px; font-family: -apple-system, BlinkMacSystemFont, &quot;SF Pro Text&quot;, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, sans-serif; -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums;">
+  <div style="max-width: 1136px; margin: 0 auto;">
+
+    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px;">
+      <h1 style="font-size: 26px; line-height: 32px; font-weight: 600; letter-spacing: -0.022em;">Investments card · three density treatments</h1>
+      <span class="micro">336px rail · same six holdings</span>
+    </div>
+    <p class="micro" style="margin-top: 8px; max-width: 760px; text-wrap: pretty;">The shipped card packs four text runs into every row. Each treatment keeps the glance layer, moves detail into the Top holdings table, and gives up something different. Q1 it is: the Asset allocation blocks own the weight, so the row does not repeat it. Q3 stays as the alternative when you want the weight inline.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 336px); gap: 24px; margin-top: 32px; align-items: start;">
+
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="tag tag-q">Q1</span>
+          <span style="font-size: 14px; line-height: 20px; font-weight: 600;">Single line</span>
+          <span class="tag tag-rec">shipped</span>
+        </div>
+        <p class="micro" style="margin-top: 6px; min-height: 32px;">Name, value, 1M return. Two text runs per row instead of four.</p>
+        <section class="plate" style="padding: 20px 6px 12px; margin-top: 12px;">
+          <div class="card-head"><h2>Investments</h2><span class="total num nowrap">€20,610.30</span></div>
+          <div class="card-sub"><p class="micro">6 holdings · 61.5% in the top three</p></div>
+          <ul>
+            <li><button class="row" style="width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 48px; align-items: center; gap: 6px; height: 44px; padding: 0 6px; border-radius: 10px; text-align: left;"><span class="mono" style="width: 24px; height: 24px; border-radius: 7px;">AP</span><span class="ell" style="font-size: 14px; line-height: 20px;">Apple Inc.</span><span class="num nowrap" style="font-size: 16px; line-height: 20px; font-weight: 600;">€4,962.89</span><span class="num nowrap" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--pos);">▲30.1%</span></button></li>
+            <li><button class="row" style="width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 48px; align-items: center; gap: 6px; height: 44px; padding: 0 6px; border-radius: 10px; text-align: left;"><span class="mono" style="width: 24px; height: 24px; border-radius: 7px;">MS</span><span class="ell" style="font-size: 14px; line-height: 20px;">Microsoft Corp.</span><span class="num nowrap" style="font-size: 16px; line-height: 20px; font-weight: 600;">€4,086.08</span><span class="num nowrap" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--pos);">▲13.1%</span></button></li>
+            <li><button class="row" style="width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 48px; align-items: center; gap: 6px; height: 44px; padding: 0 6px; border-radius: 10px; text-align: left;"><span class="mono" style="width: 24px; height: 24px; border-radius: 7px;">NV</span><span class="ell" style="font-size: 14px; line-height: 20px;">NVIDIA Corp.</span><span class="num nowrap" style="font-size: 16px; line-height: 20px; font-weight: 600;">€3,617.18</span><span class="num nowrap" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--pos);">▲37.0%</span></button></li>
+            <li><button class="row" style="width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 48px; align-items: center; gap: 6px; height: 44px; padding: 0 6px; border-radius: 10px; text-align: left;"><span class="mono" style="width: 24px; height: 24px; border-radius: 7px;">VO</span><span class="ell" style="font-size: 14px; line-height: 20px;">Vanguard S&amp;P 500</span><span class="num nowrap" style="font-size: 16px; line-height: 20px; font-weight: 600;">€3,046.88</span><span class="num nowrap" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--pos);">▲12.0%</span></button></li>
+            <li><button class="row" style="width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 48px; align-items: center; gap: 6px; height: 44px; padding: 0 6px; border-radius: 10px; text-align: left;"><span class="mono" style="width: 24px; height: 24px; border-radius: 7px;">AS</span><span class="ell" style="font-size: 14px; line-height: 20px;">ASML Holding</span><span class="num nowrap" style="font-size: 16px; line-height: 20px; font-weight: 600;">€2,592.80</span><span class="num nowrap" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--neg);">▼17.0%</span></button></li>
+            <li><button class="row" style="width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 48px; align-items: center; gap: 6px; height: 44px; padding: 0 6px; border-radius: 10px; text-align: left;"><span class="mono" style="width: 24px; height: 24px; border-radius: 7px;">TS</span><span class="ell" style="font-size: 14px; line-height: 20px;">Tesla Inc.</span><span class="num nowrap" style="font-size: 16px; line-height: 20px; font-weight: 600;">€2,304.47</span><span class="num nowrap" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--neg);">▼12.1%</span></button></li>
+          </ul>
+        </section>
+        <p class="micro" style="margin-top: 12px;">Gives up: shares, ticker, absolute P/L. All three already live in Top holdings.</p>
+      </div>
+
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="tag tag-q">Q2</span>
+          <span style="font-size: 14px; line-height: 20px; font-weight: 600;">Two lines, fewer words</span>
+        </div>
+        <p class="micro" style="margin-top: 6px; min-height: 32px;">Keeps the shares count for verification. Drops ticker and absolute P/L.</p>
+        <section class="plate" style="padding: 20px 6px 12px; margin-top: 12px;">
+          <div class="card-head"><h2>Investments</h2><span class="total num nowrap">€20,610.30</span></div>
+          <div class="card-sub"><p class="micro">6 holdings · 61.5% in the top three</p></div>
+          <ul>
+            <li><button class="row" style="width: 100%; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px; height: 52px; padding: 0 6px; border-radius: 10px; text-align: left;"><span class="mono" style="width: 28px; height: 28px; border-radius: 8px;">AP</span><span style="display: flex; flex-direction: column; min-width: 0;"><span class="ell" style="font-size: 14px; line-height: 20px;">Apple Inc.</span><span class="ell micro">27.4 shares</span></span><span style="text-align: right;"><span class="num nowrap" style="display: block; font-size: 16px; line-height: 20px; font-weight: 600;">€4,962.89</span><span class="num nowrap" style="display: block; font-size: 12px; line-height: 16px; color: var(--pos);">▲30.1%</span></span></button></li>
+            <li><button class="row" style="width: 100%; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px; height: 52px; padding: 0 6px; border-radius: 10px; text-align: left;"><span class="mono" style="width: 28px; height: 28px; border-radius: 8px;">MS</span><span style="display: flex; flex-direction: column; min-width: 0;"><span class="ell" style="font-size: 14px; line-height: 20px;">Microsoft Corp.</span><span class="ell micro">13.25 shares</span></span><span style="text-align: right;"><span class="num nowrap" style="display: block; font-size: 16px; line-height: 20px; font-weight: 600;">€4,086.08</span><span class="num nowrap" style="display: block; font-size: 12px; line-height: 16px; color: var(--pos);">▲13.1%</span></span></button></li>
+            <li><button class="row" style="width: 100%; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px; height: 52px; padding: 0 6px; border-radius: 10px; text-align: left;"><span class="mono" style="width: 28px; height: 28px; border-radius: 8px;">NV</span><span style="display: flex; flex-direction: column; min-width: 0;"><span class="ell" style="font-size: 14px; line-height: 20px;">NVIDIA Corp.</span><span class="ell micro">16.875 shares</span></span><span style="text-align: right;"><span class="num nowrap" style="display: block; font-size: 16px; line-height: 20px; font-weight: 600;">€3,617.18</span><span class="num nowrap" style="display: block; font-size: 12px; line-height: 16px; color: var(--pos);">▲37.0%</span></span></button></li>
+            <li><button class="row" style="width: 100%; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px; height: 52px; padding: 0 6px; border-radius: 10px; text-align: left;"><span class="mono" style="width: 28px; height: 28px; border-radius: 8px;">VO</span><span style="display: flex; flex-direction: column; min-width: 0;"><span class="ell" style="font-size: 14px; line-height: 20px;">Vanguard S&amp;P 500</span><span class="ell micro">6.12 shares</span></span><span style="text-align: right;"><span class="num nowrap" style="display: block; font-size: 16px; line-height: 20px; font-weight: 600;">€3,046.88</span><span class="num nowrap" style="display: block; font-size: 12px; line-height: 16px; color: var(--pos);">▲12.0%</span></span></button></li>
+            <li><button class="row" style="width: 100%; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px; height: 52px; padding: 0 6px; border-radius: 10px; text-align: left;"><span class="mono" style="width: 28px; height: 28px; border-radius: 8px;">AS</span><span style="display: flex; flex-direction: column; min-width: 0;"><span class="ell" style="font-size: 14px; line-height: 20px;">ASML Holding</span><span class="ell micro">4 shares</span></span><span style="text-align: right;"><span class="num nowrap" style="display: block; font-size: 16px; line-height: 20px; font-weight: 600;">€2,592.80</span><span class="num nowrap" style="display: block; font-size: 12px; line-height: 16px; color: var(--neg);">▼17.0%</span></span></button></li>
+            <li><button class="row" style="width: 100%; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px; height: 52px; padding: 0 6px; border-radius: 10px; text-align: left;"><span class="mono" style="width: 28px; height: 28px; border-radius: 8px;">TS</span><span style="display: flex; flex-direction: column; min-width: 0;"><span class="ell" style="font-size: 14px; line-height: 20px;">Tesla Inc.</span><span class="ell micro">9.5 shares</span></span><span style="text-align: right;"><span class="num nowrap" style="display: block; font-size: 16px; line-height: 20px; font-weight: 600;">€2,304.47</span><span class="num nowrap" style="display: block; font-size: 12px; line-height: 16px; color: var(--neg);">▼12.1%</span></span></button></li>
+          </ul>
+        </section>
+        <p class="micro" style="margin-top: 12px;">Gives up: ticker (the name identifies it), absolute P/L. Row height 52 keeps the two lines calm.</p>
+      </div>
+
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="tag tag-q">Q3</span>
+          <span style="font-size: 14px; line-height: 20px; font-weight: 600;">One line + weight bar</span>
+        </div>
+        <p class="micro" style="margin-top: 6px; min-height: 32px;">No monogram: the bar carries the weight signal. Repeats the treemap if both ship.</p>
+        <section class="plate" style="padding: 20px 6px 12px; margin-top: 12px;">
+          <div class="card-head"><h2>Investments</h2><span class="total num nowrap">€20,610.30</span></div>
+          <div class="card-sub"><p class="micro">Bar = share of book · 6 holdings</p></div>
+          <ul>
+            <li><button class="row" style="width: 100%; display: block; height: 56px; padding: 6px 8px; border-radius: 10px; text-align: left;"><span style="display: grid; grid-template-columns: minmax(0, 1fr) auto 48px; align-items: center; gap: 8px;"><span class="ell" style="font-size: 14px; line-height: 20px;">Apple Inc.</span><span class="num nowrap" style="font-size: 16px; line-height: 20px; font-weight: 600;">€4,962.89</span><span class="num nowrap" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--pos);">▲30.1%</span></span><span style="display: block; height: 4px; margin-top: 6px; border-radius: 2px; background: var(--bar-track);"><span style="display: block; height: 4px; width: 24.1%; border-radius: 2px; background: var(--accent-mark);"></span></span></button></li>
+            <li><button class="row" style="width: 100%; display: block; height: 56px; padding: 6px 8px; border-radius: 10px; text-align: left;"><span style="display: grid; grid-template-columns: minmax(0, 1fr) auto 48px; align-items: center; gap: 8px;"><span class="ell" style="font-size: 14px; line-height: 20px;">Microsoft Corp.</span><span class="num nowrap" style="font-size: 16px; line-height: 20px; font-weight: 600;">€4,086.08</span><span class="num nowrap" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--pos);">▲13.1%</span></span><span style="display: block; height: 4px; margin-top: 6px; border-radius: 2px; background: var(--bar-track);"><span style="display: block; height: 4px; width: 19.8%; border-radius: 2px; background: var(--accent-mark);"></span></span></button></li>
+            <li><button class="row" style="width: 100%; display: block; height: 56px; padding: 6px 8px; border-radius: 10px; text-align: left;"><span style="display: grid; grid-template-columns: minmax(0, 1fr) auto 48px; align-items: center; gap: 8px;"><span class="ell" style="font-size: 14px; line-height: 20px;">NVIDIA Corp.</span><span class="num nowrap" style="font-size: 16px; line-height: 20px; font-weight: 600;">€3,617.18</span><span class="num nowrap" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--pos);">▲37.0%</span></span><span style="display: block; height: 4px; margin-top: 6px; border-radius: 2px; background: var(--bar-track);"><span style="display: block; height: 4px; width: 17.6%; border-radius: 2px; background: var(--accent-mark);"></span></span></button></li>
+            <li><button class="row" style="width: 100%; display: block; height: 56px; padding: 6px 8px; border-radius: 10px; text-align: left;"><span style="display: grid; grid-template-columns: minmax(0, 1fr) auto 48px; align-items: center; gap: 8px;"><span class="ell" style="font-size: 14px; line-height: 20px;">Vanguard S&amp;P 500</span><span class="num nowrap" style="font-size: 16px; line-height: 20px; font-weight: 600;">€3,046.88</span><span class="num nowrap" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--pos);">▲12.0%</span></span><span style="display: block; height: 4px; margin-top: 6px; border-radius: 2px; background: var(--bar-track);"><span style="display: block; height: 4px; width: 14.8%; border-radius: 2px; background: var(--accent-mark);"></span></span></button></li>
+            <li><button class="row" style="width: 100%; display: block; height: 56px; padding: 6px 8px; border-radius: 10px; text-align: left;"><span style="display: grid; grid-template-columns: minmax(0, 1fr) auto 48px; align-items: center; gap: 8px;"><span class="ell" style="font-size: 14px; line-height: 20px;">ASML Holding</span><span class="num nowrap" style="font-size: 16px; line-height: 20px; font-weight: 600;">€2,592.80</span><span class="num nowrap" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--neg);">▼17.0%</span></span><span style="display: block; height: 4px; margin-top: 6px; border-radius: 2px; background: var(--bar-track);"><span style="display: block; height: 4px; width: 12.6%; border-radius: 2px; background: var(--accent-mark);"></span></span></button></li>
+            <li><button class="row" style="width: 100%; display: block; height: 56px; padding: 6px 8px; border-radius: 10px; text-align: left;"><span style="display: grid; grid-template-columns: minmax(0, 1fr) auto 48px; align-items: center; gap: 8px;"><span class="ell" style="font-size: 14px; line-height: 20px;">Tesla Inc.</span><span class="num nowrap" style="font-size: 16px; line-height: 20px; font-weight: 600;">€2,304.47</span><span class="num nowrap" style="text-align: right; font-size: 12px; line-height: 16px; color: var(--neg);">▼12.1%</span></span><span style="display: block; height: 4px; margin-top: 6px; border-radius: 2px; background: var(--bar-track);"><span style="display: block; height: 4px; width: 11.2%; border-radius: 2px; background: var(--accent-mark);"></span></span></button></li>
+          </ul>
+        </section>
+        <p class="micro" style="margin-top: 12px;">Gives up: monogram, shares, ticker, absolute P/L. Gains a per-row weight read without a word.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"palette":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":748}}'>
+class Component extends DCLogic {
+  palettes = {
+    light: {
+      '--canvas': '#F4F5F6', '--surface': '#FFFFFF', '--surface-2': '#EEF0F2',
+      '--ink': '#111214', '--ink-2': '#3F4247', '--ink-3': '#696B70',
+      '--hair': '#E1E3E5', '--hair-2': '#EBEDEF',
+      '--accent': '#0A7C96', '--accent-mark': '#0E93AC', '--accent-deep': '#075E72', '--accent-soft': '#DCF1F6',
+      '--bar-track': '#D5DDE1',
+      '--pos': '#0C6E45', '--neg': '#A82C3D',
+      '--shadow-plate': '0 1px 2px rgba(17,18,20,.05), 0 1px 3px rgba(17,18,20,.04)'
+    },
+    dark: {
+      '--canvas': '#0A0E12', '--surface': '#12181D', '--surface-2': '#1A2128',
+      '--ink': '#F2F5F7', '--ink-2': '#B7C0C7', '--ink-3': '#8B959D',
+      '--hair': '#232B33', '--hair-2': '#1C232A',
+      '--accent': '#12B5DD', '--accent-mark': '#12B5DD', '--accent-deep': '#7FDCF2', '--accent-soft': '#132F38',
+      '--bar-track': '#2A343C',
+      '--pos': '#3FCB8E', '--neg': '#F0757F',
+      '--shadow-plate': '0 1px 2px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.03)'
+    }
+  };
+
+  renderVals() {
+    const key = this.props.palette ?? 'light';
+    const p = this.palettes[key] || this.palettes.light;
+    const rootStyle = Object.keys(p).map((k) => k + ': ' + p[k] + ';').join(' ');
+    return { rootStyle };
+  }
+}
+</script>
+</body>
+</html>

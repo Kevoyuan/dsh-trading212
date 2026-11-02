@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "threads": [
+    {
+      "id": "c_6c894ab717",
+      "anchor": "#dc-root > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(3) > svg:nth-of-type(1) > dct:nth-of-type(57) > dce239a12d86f0768095187:nth-of-type(1)",
+      "label": "P · Polished overview › shape",
+      "detail": "P-Polished-Overview.dc.html: #56:1/1/0/0/3/1/3 shape",
+      "location": {
+        "file": "project/P-Polished-Overview.dc.html",
+        "board": "P-Polished-Overview.dc.html"
+      },
+      "status": "resolved",
+      "createdAt": "2026-11-02T00:03:41.502Z",
+      "updatedAt": "2026-11-02T00:03:50.734Z",
+      "messages": [
+        {
+          "id": "m_19dd7362fc",
+          "author": {
+            "kind": "user",
+            "name": "kevinsyuan"
+          },
+          "text": "怎么不是圆形",
+          "at": "2026-11-02T00:03:41.502Z"
+        }
+      ],
+      "resolvedAt": "2026-11-02T00:03:50.734Z"
+    },
+    {
+      "id": "c_5e8d803233",
+      "anchor": "#dc-root > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(3) > svg:nth-of-type(1) > dct:nth-of-type(57) > dce239a12d86f0767797218:nth-of-type(1)",
+      "label": "P · Polished overview › shape",
+      "detail": "P-Polished-Overview.dc.html: #56:1/1/0/0/3/1/3 shape",
+      "location": {
+        "file": "project/P-Polished-Overview.dc.html",
+        "board": "P-Polished-Overview.dc.html"
+      },
+      "status": "resolved",
+      "createdAt": "2026-11-02T00:04:13.242Z",
+      "updatedAt": "2026-11-02T00:05:58.098Z",
+      "messages": [
+        {
+          "id": "m_bbae8c47f5",
+          "author": {
+            "kind": "user",
+            "name": "kevinsyuan"
+          },
+          "text": "怎么不是圆形",
+          "at": "2026-11-02T00:04:13.242Z"
+        },
+        {
+          "id": "m_35b4013f24",
+          "author": {
+            "kind": "agent",
+            "name": "agent"
+          },
+          "text": "原因找到了：这个圆点在 SVG 里，而迷你折线图用了 preserveAspectRatio=\"none\" 横向拉伸填满栏宽，圆在这种非等比变换下会被抻成椭圆。已改成 HTML 圆点（6×6px，border-radius: 999px）叠在折线末端，任何宽度下都是正圆。",
+          "at": "2026-11-02T00:05:58.056Z"
+        }
+      ],
+      "resolvedAt": "2026-11-02T00:05:58.098Z"
+    }
+  ]
+}

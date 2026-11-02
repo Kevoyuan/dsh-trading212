@@ -1,0 +1,43 @@
+<!-- @dsCard group="States" height=270 subtitle="Empty: one sentence and one action. Loading: the incoming shape. Error: what happened, what it means, one retry." -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 20px; background: var(--canvas); color: var(--ink-1); font-family: var(--font-sans); font-size: var(--fs-body); line-height: var(--lh-body); font-variant-numeric: tabular-nums; }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+  .col { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-3); padding: 16px; }
+  .cap { display: block; margin-bottom: 10px; font-size: var(--fs-micro); font-weight: 500; letter-spacing: var(--tr-wide); color: var(--ink-3); }
+  .empty-state { padding: 24px 12px; }
+  .page-loading { min-height: 0; padding: 0; gap: 12px; }
+  .page-loading::before { height: 72px; }
+  .page-loading::after { height: 96px; }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="col">
+      <span class="cap">Empty</span>
+      <div class="empty-state">
+        <strong>No trades in this range.</strong>
+        <span>Apple Inc. has no Trading 212 fills between 1 Sep and 1 Oct 2026.</span>
+        <button class="pill-btn" type="button" style="margin-top: 4px;">Change range</button>
+      </div>
+    </div>
+    <div class="col">
+      <span class="cap">Loading</span>
+      <div class="page-loading" aria-busy="true" aria-label="Loading the chart"></div>
+    </div>
+    <div class="col">
+      <span class="cap">Error</span>
+      <div class="error-panel">
+        <strong>Prices are unavailable right now.</strong>
+        <p>Holdings and history are still accurate; the chart is hidden.</p>
+        <div class="error-actions">
+          <button type="button">Retry</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

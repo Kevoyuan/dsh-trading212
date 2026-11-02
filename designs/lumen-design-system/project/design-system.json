@@ -1,0 +1,19 @@
+{
+  "v": 3,
+  "layout": "files",
+  "createdOnFiles": { "v": 1, "at": "2026-11-01T17:11:34Z" },
+  "title": "Lumen",
+  "namespace": "Lumen",
+  "libraries": [],
+  "sections": {},
+  "groups": [],
+  "assetGroups": {},
+  "blobs": {},
+  "docs": { "readme": "project/README.md", "sections": [] },
+  "lastChange": {
+    "by": "kevinsyuan",
+    "via": "Claude Code",
+    "at": "2026-11-01T17:11:34Z",
+    "note": "Built from design-system/tokens.css, SPEC.md and src/app/styles.css: 22 colour roles in two themes, the type ladder, space/shape/elevation, and 11 component families with a CSS layer extracted from the app."
+  }
+}
