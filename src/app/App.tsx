@@ -273,6 +273,20 @@ interface TreemapRect {
   h: number
 }
 
+function TileLogo({ ticker }: { ticker: string }) {
+  const clean = tickerLabel(ticker)
+  const initial = clean.slice(0, 2).toUpperCase()
+  const [logoFailed, setLogoFailed] = useState(false)
+  useEffect(() => setLogoFailed(false), [ticker])
+  return (
+    <span className="tile-logo" aria-hidden="true">
+      {logoFailed
+        ? initial
+        : <img src={`/api/trading212/logo?ticker=${encodeURIComponent(ticker)}`} alt="" loading="lazy" onError={() => setLogoFailed(true)} />}
+    </span>
+  )
+}
+
 function computeTreemapLayout(
   items: Array<{
     ticker: string
@@ -364,11 +378,11 @@ function DynamicTreemapGrid({
           ? rect.dailyChangePercent
           : rect.returnPercent
 
+        const displayVal = val === undefined ? (metricMode === 'daily' ? tx('同步中…', 'Syncing…') : '-') : percent(val)
         const isPositive = val !== undefined && val > 0
         const isNegative = val !== undefined && val < 0
         const isSelected = rect.ticker === activeTicker
         const quantity = positions.find(position => position.instrument?.ticker === rect.ticker)?.quantity
-        const displayVal = val === undefined ? (metricMode === 'daily' ? tx('同步中…', 'Syncing…') : '-') : percent(val)
 
         return (
           <div
@@ -387,18 +401,14 @@ function DynamicTreemapGrid({
               onClick={() => onSelect?.(rect.ticker)}
               title={`${tickerLabel(rect.ticker)} · ${rect.name} · ${metricMode === 'daily' ? tx('今日变化', 'Today') : tx('累计收益', 'Total')} ${val !== undefined ? percent(val) : tx('数据同步中', 'Syncing...')} · ${tx('权重', 'Weight')} ${plainPercent(rect.weightPercent)}${!hideBalances && currency ? ` · ${money(rect.currentValue, currency)}` : ''}${!hideBalances && quantity !== undefined ? ` · ${shareCount(quantity)} ${tx('股', 'shares')}` : ''}`}
             >
-              <div className="tile-top-row">
-                <strong className="tile-ticker">{tickerLabel(rect.ticker)}</strong>
-                {isSelected && <span className="tile-active-pip" aria-hidden="true" />}
-              </div>
-              <span className={`tile-percent ${isPositive ? 'tone-positive' : isNegative ? 'tone-negative' : 'tone-muted'}`}>
-                {displayVal}
-              </span>
-              <div className="tile-subrow">
-                <span className="tile-weight">{plainPercent(rect.weightPercent)}</span>
+              <TileLogo ticker={rect.ticker} />
+              <strong className="tile-ticker">{tickerLabel(rect.ticker)}</strong>
+              <span className="tile-weight-main">{plainPercent(rect.weightPercent)}</span>
+              <span className={`tile-percent ${isPositive ? 'tone-positive' : isNegative ? 'tone-negative' : 'tone-muted'}`}>{displayVal}</span>
+              <span className="tile-sr">
                 {currency && <span className="tile-value">{hideBalances ? '••••' : money(rect.currentValue, currency)}</span>}
                 {quantity !== undefined && <span className="tile-quantity">{hideBalances ? '••••' : shareCount(quantity)} {tx('股', 'shares')}</span>}
-              </div>
+              </span>
             </button>
           </div>
         )

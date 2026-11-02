@@ -64,39 +64,39 @@
      canvas → surface → well. The canvas is deliberately one step deeper than
      the plate: a card edge must be legible from the surface step alone, so a
      shadow is a decision rather than the only thing holding the layout up. */
-  --canvas:       #EAEBEC;
+  --canvas:       #F5F7F8;
   --surface:      #FFFFFF;
-  --well:         #F4F5F6;
+  --well:         #EEF0F2;
   --glass:        rgba(255, 255, 255, .86);
 
   /* — ink: 15.8 / 8.6 / 4.9 : 1 on the plate ————————————————————
      ink-4 is the icon-and-rule tier. It is never used for text. */
-  --ink-1:        #17181A;
-  --ink-2:        #464A50;
-  --ink-3:        #63686F;
-  --ink-4:        #90959C;
+  --ink-1:        #111214;
+  --ink-2:        #3F4247;
+  --ink-3:        #696B70;
+  --ink-4:        #8A9098;
 
   /* — signal: one accent, reserved for interaction ——————————————— */
-  --accent:       #2C3E63;
-  --accent-deep:  #20304F;
-  --accent-soft:  #E8EBF1;
-  --accent-plate: #181A1D;
+  --accent:       #0A7C96;
+  --accent-deep:  #075E72;
+  --accent-soft:  #DCF1F6;
+  --accent-plate: #0A7C96;
   --accent-plate-ink: #FFFFFF;
 
   /* — signed finance: never decorative, never a magnitude ————————— */
-  --pos:          #1B5E48;
-  --neg:          #9E3B31;
-  --warn:         #87611A;
-  --pos-soft:     #E7F0EB;
-  --neg-soft:     #F7EAE8;
+  --pos:          #0C6E45;
+  --neg:          #A82C3D;
+  --warn:         #8A5A12;
+  --pos-soft:     #E4F2EC;
+  --neg-soft:     #F9E9EB;
 
   /* — lines: one hairline, one emphasis ————————————————————— */
-  --hair:         #E3E4E6;
-  --hair-strong:  #D1D3D6;
+  --hair:         #E1E3E5;
+  --hair-strong:  #D3D8DA;
 
   /* — chart label chips: the only marks that carry white text ——————— */
-  --chart-label-bg:      #2C3E63;
-  --chart-cost-label-bg: #6B7078;
+  --chart-label-bg:      #0A7C96;
+  --chart-cost-label-bg: #696B70;
 
   /* — type: six desktop tiers + one mobile hero ———————————————
      12 / 14 / 16 / 20 / 26 / 40, mobile hero 32.
@@ -170,33 +170,33 @@
 [data-theme="dark"]{
   color-scheme: dark;
 
-  --canvas:       #0B0B0D;
-  --surface:      #151619;
-  --well:         #101114;
-  --glass:        rgba(21, 22, 25, .82);
+  --canvas:       #0A0E12;
+  --surface:      #12181D;
+  --well:         #161C22;
+  --glass:        rgba(18, 24, 29, .82);
 
-  --ink-1:        #F2F3F5;
-  --ink-2:        #B8BCC2;
-  --ink-3:        #888D94;
-  --ink-4:        #5F646B;
+  --ink-1:        #F2F5F7;
+  --ink-2:        #B7C0C7;
+  --ink-3:        #8B959D;
+  --ink-4:        #6B737A;
 
-  --accent:       #9FB0CE;
-  --accent-deep:  #C4D1E6;
-  --accent-soft:  #1F2530;
-  --accent-plate: #E7E9ED;
-  --accent-plate-ink: #131417;
+  --accent:       #12B5DD;
+  --accent-deep:  #7FDCF2;
+  --accent-soft:  #132F38;
+  --accent-plate: #12B5DD;
+  --accent-plate-ink: #05161C;
 
-  --pos:          #5FB78F;
-  --neg:          #D98A80;
+  --pos:          #3FCB8E;
+  --neg:          #F0757F;
   --warn:         #D2A863;
-  --pos-soft:     #15241D;
-  --neg-soft:     #281B19;
+  --pos-soft:     #12291F;
+  --neg-soft:     #2A1A1D;
 
-  --hair:         #26282C;
-  --hair-strong:  #36393E;
+  --hair:         #232B33;
+  --hair-strong:  #2F3A42;
 
-  --chart-label-bg:      #46587A;
-  --chart-cost-label-bg: #4B4F56;
+  --chart-label-bg:      #0A6E82;
+  --chart-cost-label-bg: #2A343C;
 
   --sh-plate:   0 1px 2px rgba(0, 0, 0, .40), inset 0 1px 0 rgba(255, 255, 255, .03);
   --sh-float:   0 2px 8px rgba(0, 0, 0, .45), 0 12px 32px -12px rgba(0, 0, 0, .60);

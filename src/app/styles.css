@@ -16,39 +16,39 @@
      canvas → surface → well. The canvas is deliberately one step deeper than
      the plate: a card edge must be legible from the surface step alone, so a
      shadow is a decision rather than the only thing holding the layout up. */
-  --canvas:       #EAEBEC;
+  --canvas:       #F5F7F8;
   --surface:      #FFFFFF;
-  --well:         #F4F5F6;
+  --well:         #EEF0F2;
   --glass:        rgba(255, 255, 255, .86);
 
   /* — ink: 15.8 / 8.6 / 4.9 : 1 on the plate ————————————————————
      ink-4 is the icon-and-rule tier. It is never used for text. */
-  --ink-1:        #17181A;
-  --ink-2:        #464A50;
-  --ink-3:        #63686F;
-  --ink-4:        #90959C;
+  --ink-1:        #111214;
+  --ink-2:        #3F4247;
+  --ink-3:        #696B70;
+  --ink-4:        #8A9098;
 
   /* — signal: one accent, reserved for interaction ——————————————— */
-  --accent:       #2C3E63;
-  --accent-deep:  #20304F;
-  --accent-soft:  #E8EBF1;
-  --accent-plate: #181A1D;
+  --accent:       #0A7C96;
+  --accent-deep:  #075E72;
+  --accent-soft:  #DCF1F6;
+  --accent-plate: #0A7C96;
   --accent-plate-ink: #FFFFFF;
 
   /* — signed finance: never decorative, never a magnitude ————————— */
-  --pos:          #1B5E48;
-  --neg:          #9E3B31;
-  --warn:         #87611A;
-  --pos-soft:     #E7F0EB;
-  --neg-soft:     #F7EAE8;
+  --pos:          #0C6E45;
+  --neg:          #A82C3D;
+  --warn:         #8A5A12;
+  --pos-soft:     #E4F2EC;
+  --neg-soft:     #F9E9EB;
 
   /* — lines: one hairline, one emphasis ————————————————————— */
-  --hair:         #E3E4E6;
-  --hair-strong:  #D1D3D6;
+  --hair:         #E1E3E5;
+  --hair-strong:  #D3D8DA;
 
   /* — chart label chips: the only marks that carry white text ——————— */
-  --chart-label-bg:      #2C3E63;
-  --chart-cost-label-bg: #6B7078;
+  --chart-label-bg:      #0A7C96;
+  --chart-cost-label-bg: #696B70;
 
   /* — type: six desktop tiers + one mobile hero ———————————————
      12 / 14 / 16 / 20 / 26 / 40, mobile hero 32.
@@ -122,33 +122,33 @@
 [data-theme="dark"]{
   color-scheme: dark;
 
-  --canvas:       #0B0B0D;
-  --surface:      #151619;
-  --well:         #101114;
-  --glass:        rgba(21, 22, 25, .82);
+  --canvas:       #0A0E12;
+  --surface:      #12181D;
+  --well:         #161C22;
+  --glass:        rgba(18, 24, 29, .82);
 
-  --ink-1:        #F2F3F5;
-  --ink-2:        #B8BCC2;
-  --ink-3:        #888D94;
-  --ink-4:        #5F646B;
+  --ink-1:        #F2F5F7;
+  --ink-2:        #B7C0C7;
+  --ink-3:        #8B959D;
+  --ink-4:        #6B737A;
 
-  --accent:       #9FB0CE;
-  --accent-deep:  #C4D1E6;
-  --accent-soft:  #1F2530;
-  --accent-plate: #E7E9ED;
-  --accent-plate-ink: #131417;
+  --accent:       #12B5DD;
+  --accent-deep:  #7FDCF2;
+  --accent-soft:  #132F38;
+  --accent-plate: #12B5DD;
+  --accent-plate-ink: #05161C;
 
-  --pos:          #5FB78F;
-  --neg:          #D98A80;
+  --pos:          #3FCB8E;
+  --neg:          #F0757F;
   --warn:         #D2A863;
-  --pos-soft:     #15241D;
-  --neg-soft:     #281B19;
+  --pos-soft:     #12291F;
+  --neg-soft:     #2A1A1D;
 
-  --hair:         #26282C;
-  --hair-strong:  #36393E;
+  --hair:         #232B33;
+  --hair-strong:  #2F3A42;
 
-  --chart-label-bg:      #46587A;
-  --chart-cost-label-bg: #4B4F56;
+  --chart-label-bg:      #0A6E82;
+  --chart-cost-label-bg: #2A343C;
 
   --sh-plate:   0 1px 2px rgba(0, 0, 0, .40), inset 0 1px 0 rgba(255, 255, 255, .03);
   --sh-float:   0 2px 8px rgba(0, 0, 0, .45), 0 12px 32px -12px rgba(0, 0, 0, .60);
@@ -265,6 +265,18 @@ fieldset{ border: 0; }
 /* Two capsules, not one strip: navigation is one object, search + tools another.
    Nothing here is a pill. A 34px control with a 999px radius is a lozenge, and
    lozenges are the fastest way to make a dense data product look like a toy. */
+.t212-native-topbar::before{
+  content: "";
+  position: absolute;
+  top: calc(-1 * max(12px, env(safe-area-inset-top)));
+  bottom: 0;
+  left: calc(-50vw + 50%);
+  right: calc(-50vw + 50%);
+  z-index: -1;
+  pointer-events: none;
+  /* opaque: at 94% the cards ghosted through between the capsules */
+  background: var(--canvas);
+}
 .t212-native-topbar{
   position: sticky;
   top: max(12px, env(safe-area-inset-top));
@@ -551,49 +563,89 @@ fieldset{ border: 0; }
 .treemap-tile{
   --tile-color: var(--ink-3);
   position: absolute; inset: 3px;
-  display: flex; flex-direction: column; align-items: flex-start;
-  padding: var(--s-3);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px;
+  padding: 8px;
+  text-align: center;
   border-radius: var(--r-2);
-  border: 1px solid color-mix(in srgb, var(--tile-color) 20%, var(--hair));
-  background: color-mix(in srgb, var(--tile-color) 7%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--tile-color) 30%, var(--hair));
+  background: color-mix(in srgb, var(--tile-color) 12%, var(--surface));
+  overflow: hidden;
   transition: border-color var(--d-1) var(--ease), transform var(--d-1) var(--ease);
 }
 .treemap-tile.gain{ --tile-color: var(--pos); }
 .treemap-tile.loss{ --tile-color: var(--neg); }
 .treemap-tile.neutral{ --tile-color: var(--ink-3); }
-.treemap-tile:hover{ border-color: color-mix(in srgb, var(--tile-color) 45%, var(--hair)); transform: translateY(-1px); }
+.treemap-tile:hover{ border-color: color-mix(in srgb, var(--tile-color) 55%, var(--hair)); transform: translateY(-1px); }
 .treemap-tile:active{ transform: scale(.99); }
 /* selection is interaction, so it is the accent — never the tile's own signal */
 .treemap-tile.selected{ border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .treemap-tile:focus-visible{ outline: 2px solid var(--focus); outline-offset: 2px; }
-.tile-top-row{ display: flex; align-items: center; justify-content: space-between; column-gap: var(--s-2); width: 100%; }
-.tile-ticker{ color: var(--ink-2); letter-spacing: .04em; font-weight: var(--fw-semibold); }
-.tile-active-pip{ width: 5px; height: 5px; border-radius: var(--r-pill); background: var(--accent); }
-/* The percent is the tile's answer, so it sits in the optical centre of whatever
-   area the layout gave it — not pinned to the bottom edge, which left the upper
-   two-thirds of a tall tile empty. */
-.tile-percent{ margin-block: auto; line-height: 1.1; color: var(--ink-1); }
-@container (min-height: 150px){
-  .treemap-tile .tile-percent{ font-size: var(--fs-title); }
+/* T212 tile: brand mark, ticker, weight — centred, one accent on the number */
+.tile-logo{
+  display: grid; place-items: center;
+  width: 24px; height: 24px; flex: none;
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  background: var(--surface);
+  color: var(--ink-3);
+  font-size: 10px; font-weight: var(--fw-semibold); letter-spacing: .02em;
 }
-/* colour-blind cue: every tile carries a direction glyph, not colour alone */
+.tile-logo img{ width: 100%; height: 100%; object-fit: contain; }
+.tile-ticker{
+  max-width: 100%;
+  color: var(--ink-2);
+  font-size: var(--fs-micro); line-height: 1.2;
+  font-weight: var(--fw-semibold); letter-spacing: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tile-weight-main{
+  max-width: 100%; margin: 0;
+  color: var(--tile-color);
+  font-size: var(--fs-body); line-height: 1.15;
+  font-weight: var(--fw-semibold); letter-spacing: var(--tr-tight);
+  overflow: hidden; white-space: nowrap;
+}
+/* the toggle-selected change rides under the weight, but only where the tile
+   has room for a fourth line; smaller tiles keep the T212 three-line look */
+.tile-percent{ max-width: 100%; color: var(--ink-3); font-size: var(--fs-micro); line-height: 1.2; font-weight: var(--fw-medium); overflow: hidden; white-space: nowrap; }
 .treemap-tile.gain .tile-percent{ color: var(--pos); }
 .treemap-tile.loss .tile-percent{ color: var(--neg); }
-.treemap-tile.gain .tile-percent::before{ content: "▲"; font-size: 9px; margin-right: 3px; }
-.treemap-tile.loss .tile-percent::before{ content: "▼"; font-size: 9px; margin-right: 3px; }
-.tile-subrow{
-  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
-  column-gap: var(--s-2); width: 100%; margin-top: 4px;
+.treemap-tile.gain .tile-percent::before{ content: "▲"; font-size: 8px; margin-right: 3px; }
+.treemap-tile.loss .tile-percent::before{ content: "▼"; font-size: 8px; margin-right: 3px; }
+@container (max-width: 120px){ .tile-percent{ display: none; } }
+@container (max-height: 140px){ .tile-percent{ display: none; } }
+/* money + shares live here for masking and screen readers, never painted */
+.tile-sr{
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
 }
-/* Tinted ground lifts the floor: ink-3 clears 4.9:1 on the plate but only 4.49:1
-   on a 7% signal tint, so tile meta takes ink-2. */
-.tile-weight{ color: var(--ink-2); }
-.tile-value{ color: var(--ink-2); }
-.tile-quantity{ color: var(--ink-2); flex-basis: 100%; }
-@container (max-height: 104px){
-  .treemap-tile{ padding: var(--s-2) 10px; }
-  .tile-subrow{ margin-top: 2px; gap: 0 6px; }
-  .tile-quantity{ flex-basis: auto; }
+/* size tiers: shed lines as the rail's split gives a tile less room */
+@container (max-width: 96px){
+  .treemap-tile{ padding: 5px 4px; gap: 1px; }
+  .tile-logo{ width: 16px; height: 16px; }
+  .tile-weight-main{ font-size: var(--fs-micro); }
+}
+@container (max-height: 72px){
+  .treemap-tile{ padding: 5px 4px; gap: 1px; }
+  .tile-logo{ width: 16px; height: 16px; }
+  .tile-weight-main{ font-size: var(--fs-micro); }
+}
+@container (max-height: 54px){
+  .treemap-tile{ padding: 4px; }
+  .tile-ticker{ display: none; }
+  .tile-logo{ width: 14px; height: 14px; }
+}
+@container (max-height: 36px){
+  .treemap-tile{ padding: 3px; gap: 0; }
+  .tile-logo{ width: 11px; height: 11px; }
+}
+@container (max-width: 40px){
+  .tile-weight-main{ display: none; }
+}
+@container (max-width: 24px){
+  .treemap-tile{ padding: 2px; }
+  .tile-logo{ width: 10px; height: 10px; font-size: 7px; }
 }
 .cockpit-see-all-btn{
   position: relative;
